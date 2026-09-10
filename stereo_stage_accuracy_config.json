@@ -1,0 +1,123 @@
+{
+  "name": "stereo_depth_stage_cube",
+  "description": "Ossila depth sweep with static PAT centre/cuboid measurements for stereo accuracy.",
+  "stage": {
+    "sample_dir": "Ossila_LinearStage_Python_sample",
+    "config": "Ossila_LinearStage_Python_sample/config.md",
+    "axis": "y",
+    "datum_mm": 200.0,
+    "expected_travel_mm": 200.0,
+    "hardware_min_mm": 5.0,
+    "hardware_max_mm": 200.0,
+    "positions_global_mm": [0.0, -20.0, -40.0, -60.0, -80.0, -100.0, -120.0, -140.0, -160.0, -180.0, -195.0],
+    "reference_global_mm": 0.0,
+    "speed_mm_s": 5.0,
+    "expected_acceleration_mm_s2": null,
+    "expected_deceleration_mm_s2": null,
+    "settings_match_tolerance_mm_s2": 0.001,
+    "settle_sec": 1.0,
+    "readback_tolerance_mm": 0.1,
+    "home_readback_tolerance_mm": 0.5,
+    "motion_timeout_sec": 90.0,
+    "command_timeout_sec": 1.0,
+    "status_poll_sec": 0.05,
+    "require_clear_alarms": true,
+    "expected_device_response": "",
+    "expected_stage_serial_response": "",
+    "return_to_reference_on_success": true
+  },
+  "distance_reporting": {
+    "intended_reference_hardware_mm": 200.0,
+    "intended_sweep_hardware_mm": [200.0, 5.0],
+    "independent_absolute_reference": {
+      "available": false,
+      "definition": "pat_origin_to_stereo_optical_center_baseline_line_perpendicular",
+      "distance_mm": null,
+      "standard_uncertainty_mm": null,
+      "method": "",
+      "instrument": ""
+    }
+  },
+  "target": {
+    "mode": "pat",
+    "controller_ids": [101, 3],
+    "pat_center_mm": [0.0, 0.0, 0.0],
+    "acoustools_zero_in_pat_mm": [0.0, 0.0, 0.0],
+    "cube_half_extent_mm": [5.0, 5.0, 5.0],
+    "transfer_step_mm": 0.25,
+    "transfer_dwell_sec": 0.04,
+    "settle_sec": 0.8,
+    "return_to_center": true
+  },
+  "experiment": {
+    "moving_body": "camera",
+    "moving_body_translation_per_global_mm_in_pat": [0.0, 1.0, 0.0],
+    "scan_order": "configured",
+    "scan_cycles": 5,
+    "center_before_and_after": true,
+    "dedicated_registration_pass": true,
+    "cube_positions_global_mm": "all"
+  },
+  "camera": {
+    "left_serial": "00000508",
+    "right_serial": "00000509",
+    "expected_square_mm": 7.12,
+    "stereo_calibration": "stereo_checkerboard_calib/stereo_calibration_square7p12_left00508_right00509.npz",
+    "record_sec": 0.4,
+    "delta_t_us": 1000,
+    "start_delay_sec": 1.0,
+    "hw_sync": "left-master",
+    "hw_sync_timeout_sec": 10.0,
+    "npz_compression": "none",
+    "max_events": 0,
+    "max_capture_attempts": 2,
+    "minimum_events_per_camera": 1000,
+    "camera_reopen_wait_sec": 1.0,
+    "sensor_width": 1280,
+    "sensor_height": 720,
+    "preview": {
+      "enabled": true,
+      "delta_t_us": 5000,
+      "scale": 0.5,
+      "point_size": 1
+    }
+  },
+  "tracking": {
+    "window_us": 500,
+    "hop_us": 500,
+    "dt_us": 500,
+    "roi": "0,0,1280,720",
+    "tracking_method": "event_weighted",
+    "threshold_count": 1,
+    "min_events": 20,
+    "min_area": 5,
+    "min_mass": 30,
+    "polarity": "all",
+    "right_time_offset_sec": null,
+    "max_time_gap_sec": 0.001
+  },
+  "analysis": {
+    "evaluation_frame": "pat",
+    "camera_to_pat_transform": "pat_stereo_grid_records/SELECT_SESSION/registration/camera_to_pat_transform.json",
+    "transform_stage_readback_tolerance_mm": 0.5,
+    "minimum_valid_samples": 100,
+    "minimum_sample_valid_fraction": 0.8,
+    "trim_start_sec": 0.05,
+    "trim_end_sec": 0.05,
+    "sample_outlier_floor_mm": 0.5,
+    "sample_outlier_mad_factor": 6.0,
+    "reference_stage_global_mm": 0.0,
+    "registration_pass_name": "registration",
+    "pixel_sigma_scenarios": [0.1, 0.25, 0.323912, 0.5],
+    "theory_coverage_sigma": 1.96,
+    "acceptance": {
+      "minimum_vertex_fraction": 1.0,
+      "minimum_successful_pass_fraction": 1.0,
+      "minimum_center_capture_fraction_per_pass": 1.0,
+      "max_abs_center_axial_error_mm": 1.0,
+      "max_cube_vertex_rmse_mm": 1.0,
+      "max_abs_edge_error_mm": 1.0,
+      "max_median_static_scatter_p95_mm": 0.5
+    }
+  }
+}

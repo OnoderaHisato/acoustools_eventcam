@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "purpose": "Tier-B-only discontinuous trap-jump staircase responses, enabled after all Tier-A jumps retained the particle in both stereo cameras.",
+  "defaults": {
+    "sample_hz": 10000,
+    "duration_sec": 10.0,
+    "ramp_sec": 0.0,
+    "safety_limits": {
+      "max_offset_mm": 1.25,
+      "max_step_mm": 1.25,
+      "max_speed_mm_s": 100.0,
+      "max_acceleration_mm_s2": 28000.0
+    }
+  },
+  "escalation_note": "Tier A was inspected on 2026-08-21 and all 48 jumps retained the particle in both cameras. Record B0_x_staircase_ladder_r01 first. Inspect particle retention and stereo visibility before recording the remaining five Tier-B runs. Do not enable Tier C from this plan.",
+  "experiments": [
+    {
+      "name": "B0_x_staircase_ladder",
+      "kind": "staircase",
+      "tier": "B",
+      "axis": "x",
+      "hold_sec": 0.3,
+      "initial_hold_sec": 2.0,
+      "final_hold_sec": 0.3,
+      "amplitudes_mm": [0.25, 0.5, 0.7],
+      "directions": [1, -1],
+      "repeats_within_run": 2,
+      "order_seed": 3102,
+      "repeats": 2,
+      "enabled": true
+    },
+    {
+      "name": "B1_y_staircase_ladder",
+      "kind": "staircase",
+      "tier": "B",
+      "axis": "y",
+      "hold_sec": 0.3,
+      "initial_hold_sec": 2.0,
+      "final_hold_sec": 0.3,
+      "amplitudes_mm": [0.25, 0.5, 0.7],
+      "directions": [1, -1],
+      "repeats_within_run": 2,
+      "order_seed": 3202,
+      "repeats": 2,
+      "enabled": true
+    },
+    {
+      "name": "B2_z_staircase_ladder",
+      "kind": "staircase",
+      "tier": "B",
+      "axis": "z",
+      "hold_sec": 0.3,
+      "initial_hold_sec": 2.0,
+      "final_hold_sec": 0.3,
+      "amplitudes_mm": [0.25, 0.5, 0.7],
+      "directions": [1, -1],
+      "repeats_within_run": 2,
+      "order_seed": 3302,
+      "repeats": 2,
+      "enabled": true
+    }
+  ]
+}

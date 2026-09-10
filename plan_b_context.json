@@ -1,0 +1,108 @@
+{
+  "runs": {
+    "30_particle1_static_30s": {
+      "particle_id": "20260826_P01",
+      "particle_description": "EPS球、直径1.3mm、白色、完全な球ではなく所々凸凹あり"
+    },
+    "31_particle1_z_staircase_ringdown": {
+      "particle_id": "20260826_P01",
+      "particle_description": "staticと同じ物理粒子。"
+    },
+
+    "30_particle2_static_30s": {
+      "particle_id": "20260826_P02",
+      "particle_description": "EPS球、直径1.4mm、白色、完全な球ではなく所々凸凹あり、particle_id : 20260826_P01に比べて真円度は高い（実験者の目視）"
+    },
+    "31_particle2_z_staircase_ringdown": {
+      "particle_id": "20260826_P02",
+      "particle_description": "staticと同じ物理粒子。"
+    },
+
+    "30_particle3_static_30s": {
+      "particle_id": "20260826_P03",
+      "particle_description": "EPS球、直径1.3mm、白色、完全な球ではなく所々凸凹あり、particle_id : 20260826_P01に比べて凸凹は少ない"
+    },
+    "31_particle3_z_staircase_ringdown": {
+      "particle_id": "20260826_P03",
+      "particle_description": "staticと同じ物理粒子。実物の特徴を記入"
+    },
+
+    "40_shield_off_warm00_static_60s": {
+      "actual_warmup_minutes": 0,
+      "shield_state": "off",
+      "hvac_state": "on",
+      "room_temperature_c": null,
+      "room_temperature_end_c": null,
+      "array_surface_temperature_c": null,
+      "array_surface_temperature_end_c": null,
+      "temperature_unavailable_reason": "放射温度計を使用できなかった",
+      "particle_id": "20260826_P03",
+      "operator_note": "PAT通電直後。囲いなし。通常空調"
+    },
+
+    "41_shield_off_warm05_static_60s": {
+      "actual_warmup_minutes": 5,
+      "shield_state": "off",
+      "hvac_state": "on",
+      "room_temperature_c": null,
+      "room_temperature_end_c": null,
+      "array_surface_temperature_c": null,
+      "array_surface_temperature_end_c": null,
+      "temperature_unavailable_reason": "放射温度計を使用できなかった",
+      "particle_id": "20260826_P03",
+      "operator_note": "囲いなし。通常空調。実際の予熱時間をactual_warmup_minutesへ記録"
+    },
+
+    "42_shield_off_warm10_static_60s": {
+      "actual_warmup_minutes": 10,
+      "shield_state": "off",
+      "hvac_state": "on",
+      "room_temperature_c": null,
+      "room_temperature_end_c": null,
+      "array_surface_temperature_c": null,
+      "array_surface_temperature_end_c": null,
+      "temperature_unavailable_reason": "放射温度計を使用できなかった",
+      "particle_id": "20260826_P03",
+      "operator_note": "囲いなし。通常空調"
+    },
+
+    "43_shield_on_warm05_static_60s": {
+      "actual_warmup_minutes": 5,
+      "shield_state": "on",
+      "hvac_state": "on",
+      "room_temperature_c": null,
+      "room_temperature_end_c": null,
+      "array_surface_temperature_c": null,
+      "array_surface_temperature_end_c": null,
+      "temperature_unavailable_reason": "放射温度計を使用できなかった",
+      "particle_id": "20260826_P03",
+      "operator_note": "アクリル囲いあり。通常空調"
+    },
+
+    "44_shield_on_hvac_off_warm05_static_60s": {
+      "actual_warmup_minutes": 5,
+      "shield_state": "on",
+      "hvac_state": "off",
+      "room_temperature_c": null,
+      "room_temperature_end_c": null,
+      "array_surface_temperature_c": null,
+      "array_surface_temperature_end_c": null,
+      "temperature_unavailable_reason": "放射温度計を使用できなかった",
+      "particle_id": "20260826_P03",
+      "operator_note": "アクリル囲いあり。空調・近傍ファン停止"
+    },
+
+    "45_shield_off_hvac_off_warm05_static_60s": {
+      "actual_warmup_minutes": 5,
+      "shield_state": "off",
+      "hvac_state": "off",
+      "room_temperature_c": null,
+      "room_temperature_end_c": null,
+      "array_surface_temperature_c": null,
+      "array_surface_temperature_end_c": null,
+      "temperature_unavailable_reason": "放射温度計を使用できなかった",
+      "particle_id": "20260826_P03",
+      "operator_note": "囲いなし。空調・近傍ファン停止"
+    }
+  }
+}

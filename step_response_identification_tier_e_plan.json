@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "purpose": "Near-boundary Tier-E trap-jump responses with one-second target and centre holds for observing slower particle decay tails.",
+  "defaults": {
+    "sample_hz": 10000,
+    "duration_sec": 18.0,
+    "ramp_sec": 0.0,
+    "safety_limits": {
+      "max_offset_mm": 1.7,
+      "max_step_mm": 1.7,
+      "max_speed_mm_s": 100.0,
+      "max_acceleration_mm_s2": 28000.0
+    }
+  },
+  "escalation_note": "Do not record Tier E until every Tier-D run selected for the escalation has retained the particle in both cameras. Every Tier-E amplitude is beyond the estimated force maximum near 1.072 mm. The largest 1.70 mm jump is about 79.3% of the estimated 2.144 mm escape boundary. Record exactly one exported run per hardware session and inspect it before selecting the next run.",
+  "experiments": [
+    {
+      "name": "E0_x_staircase_boundary_long_hold",
+      "kind": "staircase",
+      "tier": "E",
+      "axis": "x",
+      "hold_sec": 1.0,
+      "initial_hold_sec": 2.0,
+      "final_hold_sec": 1.0,
+      "amplitudes_mm": [1.25, 1.4, 1.55, 1.7],
+      "directions": [1, -1],
+      "repeats_within_run": 1,
+      "order_seed": 3105,
+      "repeats": 2,
+      "enabled": true
+    },
+    {
+      "name": "E1_y_staircase_boundary_long_hold",
+      "kind": "staircase",
+      "tier": "E",
+      "axis": "y",
+      "hold_sec": 1.0,
+      "initial_hold_sec": 2.0,
+      "final_hold_sec": 1.0,
+      "amplitudes_mm": [1.25, 1.4, 1.55, 1.7],
+      "directions": [1, -1],
+      "repeats_within_run": 1,
+      "order_seed": 3205,
+      "repeats": 2,
+      "enabled": true
+    },
+    {
+      "name": "E2_z_staircase_boundary_long_hold",
+      "kind": "staircase",
+      "tier": "E",
+      "axis": "z",
+      "hold_sec": 1.0,
+      "initial_hold_sec": 2.0,
+      "final_hold_sec": 1.0,
+      "amplitudes_mm": [1.25, 1.4, 1.55, 1.7],
+      "directions": [1, -1],
+      "repeats_within_run": 1,
+      "order_seed": 3305,
+      "repeats": 2,
+      "enabled": true
+    }
+  ]
+}

@@ -1,0 +1,183 @@
+[
+  {
+    "shape": "Chirped_3D",
+    "role": "train",
+    "risk_level": "standard",
+    "params": {
+      "label": "axis_x_linear_2_50hz_amp2",
+      "duration_sec": 8,
+      "x_amp_mm": 2.0,
+      "y_amp_mm": 0.0,
+      "z_amp_mm": 0.0,
+      "x_f_start_hz": 2,
+      "x_f_end_hz": 50,
+      "max_speed_mm_s": 900,
+      "max_accel_mm_s2": 250000
+    }
+  },
+  {
+    "shape": "Chirped_3D",
+    "role": "train",
+    "risk_level": "standard",
+    "params": {
+      "label": "axis_y_linear_2_50hz_amp2",
+      "duration_sec": 8,
+      "x_amp_mm": 0.0,
+      "y_amp_mm": 2.0,
+      "z_amp_mm": 0.0,
+      "y_f_start_hz": 2,
+      "y_f_end_hz": 50,
+      "max_speed_mm_s": 900,
+      "max_accel_mm_s2": 250000
+    }
+  },
+  {
+    "shape": "Chirped_3D",
+    "role": "train",
+    "risk_level": "standard",
+    "params": {
+      "label": "axis_z_linear_2_50hz_amp1p5",
+      "duration_sec": 8,
+      "x_amp_mm": 0.0,
+      "y_amp_mm": 0.0,
+      "z_amp_mm": 1.5,
+      "z_f_start_hz": 2,
+      "z_f_end_hz": 50,
+      "max_speed_mm_s": 900,
+      "max_accel_mm_s2": 250000
+    }
+  },
+  {
+    "shape": "Chirped_3D",
+    "role": "train",
+    "risk_level": "standard",
+    "params": {
+      "label": "swept_helix_xz2_40_y3_55hz",
+      "duration_sec": 8,
+      "x_amp_mm": 1.5,
+      "y_amp_mm": 0.75,
+      "z_amp_mm": 1.5,
+      "x_f_start_hz": 2,
+      "x_f_end_hz": 40,
+      "y_f_start_hz": 3,
+      "y_f_end_hz": 55,
+      "z_f_start_hz": 2,
+      "z_f_end_hz": 40,
+      "x_phase_deg": 0,
+      "y_phase_deg": 45,
+      "z_phase_deg": 90,
+      "max_speed_mm_s": 900,
+      "max_accel_mm_s2": 300000
+    }
+  },
+  {
+    "shape": "Chirped_3D",
+    "role": "train",
+    "risk_level": "challenge",
+    "params": {
+      "label": "counter_sweep_xyz_3_70hz",
+      "duration_sec": 8,
+      "x_amp_mm": 1.2,
+      "y_amp_mm": 1.2,
+      "z_amp_mm": 1.0,
+      "x_f_start_hz": 3,
+      "x_f_end_hz": 60,
+      "y_f_start_hz": 60,
+      "y_f_end_hz": 3,
+      "z_f_start_hz": 8,
+      "z_f_end_hz": 70,
+      "max_speed_mm_s": 900,
+      "max_accel_mm_s2": 350000
+    }
+  },
+  {
+    "shape": "Chirped_3D",
+    "role": "train",
+    "risk_level": "challenge",
+    "params": {
+      "label": "log_sweep_xyz_3_90hz",
+      "duration_sec": 8,
+      "x_amp_mm": 1.0,
+      "y_amp_mm": 0.9,
+      "z_amp_mm": 0.8,
+      "x_f_start_hz": 3,
+      "x_f_end_hz": 70,
+      "y_f_start_hz": 5,
+      "y_f_end_hz": 80,
+      "z_f_start_hz": 8,
+      "z_f_end_hz": 90,
+      "sweep_law": "logarithmic",
+      "max_speed_mm_s": 900,
+      "max_accel_mm_s2": 500000
+    }
+  },
+  {
+    "shape": "Chirped_3D",
+    "role": "train",
+    "risk_level": "challenge",
+    "params": {
+      "label": "am_breathing_xyz_5_80hz",
+      "duration_sec": 8,
+      "x_amp_mm": 1.3,
+      "y_amp_mm": 1.1,
+      "z_amp_mm": 0.9,
+      "x_f_start_hz": 5,
+      "x_f_end_hz": 70,
+      "y_f_start_hz": 7,
+      "y_f_end_hz": 75,
+      "z_f_start_hz": 9,
+      "z_f_end_hz": 80,
+      "amplitude_modulation_hz": 1.5,
+      "amplitude_modulation_depth": 0.6,
+      "max_speed_mm_s": 900,
+      "max_accel_mm_s2": 500000
+    }
+  },
+  {
+    "shape": "Chirped_3D",
+    "role": "validation",
+    "risk_level": "challenge",
+    "params": {
+      "label": "unseen_log_xyz_4_100hz",
+      "duration_sec": 8,
+      "x_amp_mm": 0.9,
+      "y_amp_mm": 0.8,
+      "z_amp_mm": 0.7,
+      "x_f_start_hz": 4,
+      "x_f_end_hz": 85,
+      "y_f_start_hz": 6,
+      "y_f_end_hz": 90,
+      "z_f_start_hz": 8,
+      "z_f_end_hz": 100,
+      "x_phase_deg": 20,
+      "y_phase_deg": 150,
+      "z_phase_deg": 270,
+      "sweep_law": "logarithmic",
+      "max_speed_mm_s": 900,
+      "max_accel_mm_s2": 600000
+    }
+  },
+  {
+    "shape": "Chirped_3D",
+    "role": "validation",
+    "risk_level": "challenge",
+    "params": {
+      "label": "unseen_descending_xyz_90_3hz",
+      "duration_sec": 8,
+      "x_amp_mm": 1.0,
+      "y_amp_mm": 1.0,
+      "z_amp_mm": 0.8,
+      "x_f_start_hz": 80,
+      "x_f_end_hz": 5,
+      "y_f_start_hz": 70,
+      "y_f_end_hz": 3,
+      "z_f_start_hz": 90,
+      "z_f_end_hz": 8,
+      "x_phase_deg": 0,
+      "y_phase_deg": 90,
+      "z_phase_deg": 210,
+      "max_speed_mm_s": 900,
+      "max_accel_mm_s2": 600000
+    }
+  }
+]

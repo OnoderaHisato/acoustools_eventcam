@@ -1,0 +1,1447 @@
+[
+  {
+    "shape": "Diagonal_Line",
+    "params": {
+      "Major axis(mm)": 1,
+      "minor axis(mm)": 1
+    }
+  },
+  {
+    "shape": "Diagonal_Line",
+    "params": {
+      "Major axis(mm)": 1,
+      "minor axis(mm)": 2
+    }
+  },
+  {
+    "shape": "Diagonal_Line",
+    "params": {
+      "Major axis(mm)": 2,
+      "minor axis(mm)": 1
+    }
+  },
+  {
+    "shape": "Diagonal_Line",
+    "params": {
+      "Major axis(mm)": 2,
+      "minor axis(mm)": 2
+    }
+  },
+  {
+    "shape": "Diagonal_Line",
+    "params": {
+      "Major axis(mm)": 2,
+      "minor axis(mm)": 3
+    }
+  },
+  {
+    "shape": "Diagonal_Line",
+    "params": {
+      "Major axis(mm)": 2,
+      "minor axis(mm)": 4
+    }
+  },
+  {
+    "shape": "Diagonal_Line",
+    "params": {
+      "Major axis(mm)": 3,
+      "minor axis(mm)": 2
+    }
+  },
+  {
+    "shape": "Diagonal_Line",
+    "params": {
+      "Major axis(mm)": 3,
+      "minor axis(mm)": 3
+    }
+  },
+  {
+    "shape": "Diagonal_Line",
+    "params": {
+      "Major axis(mm)": 3,
+      "minor axis(mm)": 4
+    }
+  },
+  {
+    "shape": "Diagonal_Line",
+    "params": {
+      "Major axis(mm)": 3,
+      "minor axis(mm)": 5
+    }
+  },
+  {
+    "shape": "Diagonal_Line",
+    "params": {
+      "Major axis(mm)": 3,
+      "minor axis(mm)": 6
+    }
+  },
+  {
+    "shape": "Diagonal_Line",
+    "params": {
+      "Major axis(mm)": 4,
+      "minor axis(mm)": 2
+    }
+  },
+  {
+    "shape": "Diagonal_Line",
+    "params": {
+      "Major axis(mm)": 4,
+      "minor axis(mm)": 3
+    }
+  },
+  {
+    "shape": "Diagonal_Line",
+    "params": {
+      "Major axis(mm)": 4,
+      "minor axis(mm)": 4
+    }
+  },
+  {
+    "shape": "Diagonal_Line",
+    "params": {
+      "Major axis(mm)": 4,
+      "minor axis(mm)": 5
+    }
+  },
+  {
+    "shape": "Diagonal_Line",
+    "params": {
+      "Major axis(mm)": 4,
+      "minor axis(mm)": 6
+    }
+  },
+  {
+    "shape": "Diagonal_Line",
+    "params": {
+      "Major axis(mm)": 4,
+      "minor axis(mm)": 7
+    }
+  },
+  {
+    "shape": "Diagonal_Line",
+    "params": {
+      "Major axis(mm)": 4,
+      "minor axis(mm)": 8
+    }
+  },
+  {
+    "shape": "Diagonal_Line",
+    "params": {
+      "Major axis(mm)": 5,
+      "minor axis(mm)": 3
+    }
+  },
+  {
+    "shape": "Diagonal_Line",
+    "params": {
+      "Major axis(mm)": 5,
+      "minor axis(mm)": 4
+    }
+  },
+  {
+    "shape": "Diagonal_Line",
+    "params": {
+      "Major axis(mm)": 5,
+      "minor axis(mm)": 5
+    }
+  },
+  {
+    "shape": "Diagonal_Line",
+    "params": {
+      "Major axis(mm)": 5,
+      "minor axis(mm)": 6
+    }
+  },
+  {
+    "shape": "Diagonal_Line",
+    "params": {
+      "Major axis(mm)": 5,
+      "minor axis(mm)": 7
+    }
+  },
+  {
+    "shape": "Diagonal_Line",
+    "params": {
+      "Major axis(mm)": 5,
+      "minor axis(mm)": 8
+    }
+  },
+  {
+    "shape": "Diagonal_Line",
+    "params": {
+      "Major axis(mm)": 5,
+      "minor axis(mm)": 9
+    }
+  },
+  {
+    "shape": "Diagonal_Line",
+    "params": {
+      "Major axis(mm)": 6,
+      "minor axis(mm)": 3
+    }
+  },
+  {
+    "shape": "Diagonal_Line",
+    "params": {
+      "Major axis(mm)": 6,
+      "minor axis(mm)": 4
+    }
+  },
+  {
+    "shape": "Diagonal_Line",
+    "params": {
+      "Major axis(mm)": 6,
+      "minor axis(mm)": 5
+    }
+  },
+  {
+    "shape": "Diagonal_Line",
+    "params": {
+      "Major axis(mm)": 6,
+      "minor axis(mm)": 6
+    }
+  },
+  {
+    "shape": "Diagonal_Line",
+    "params": {
+      "Major axis(mm)": 6,
+      "minor axis(mm)": 7
+    }
+  },
+  {
+    "shape": "Diagonal_Line",
+    "params": {
+      "Major axis(mm)": 6,
+      "minor axis(mm)": 8
+    }
+  },
+  {
+    "shape": "Diagonal_Line",
+    "params": {
+      "Major axis(mm)": 6,
+      "minor axis(mm)": 9
+    }
+  },
+  {
+    "shape": "Diagonal_Line",
+    "params": {
+      "Major axis(mm)": 7,
+      "minor axis(mm)": 4
+    }
+  },
+  {
+    "shape": "Diagonal_Line",
+    "params": {
+      "Major axis(mm)": 7,
+      "minor axis(mm)": 5
+    }
+  },
+  {
+    "shape": "Diagonal_Line",
+    "params": {
+      "Major axis(mm)": 7,
+      "minor axis(mm)": 6
+    }
+  },
+  {
+    "shape": "Diagonal_Line",
+    "params": {
+      "Major axis(mm)": 7,
+      "minor axis(mm)": 7
+    }
+  },
+  {
+    "shape": "Diagonal_Line",
+    "params": {
+      "Major axis(mm)": 7,
+      "minor axis(mm)": 8
+    }
+  },
+  {
+    "shape": "Diagonal_Line",
+    "params": {
+      "Major axis(mm)": 7,
+      "minor axis(mm)": 9
+    }
+  },
+  {
+    "shape": "Diagonal_Line",
+    "params": {
+      "Major axis(mm)": 8,
+      "minor axis(mm)": 4
+    }
+  },
+  {
+    "shape": "Diagonal_Line",
+    "params": {
+      "Major axis(mm)": 8,
+      "minor axis(mm)": 5
+    }
+  },
+  {
+    "shape": "Diagonal_Line",
+    "params": {
+      "Major axis(mm)": 8,
+      "minor axis(mm)": 6
+    }
+  },
+  {
+    "shape": "Diagonal_Line",
+    "params": {
+      "Major axis(mm)": 8,
+      "minor axis(mm)": 7
+    }
+  },
+  {
+    "shape": "Diagonal_Line",
+    "params": {
+      "Major axis(mm)": 8,
+      "minor axis(mm)": 8
+    }
+  },
+  {
+    "shape": "Diagonal_Line",
+    "params": {
+      "Major axis(mm)": 8,
+      "minor axis(mm)": 9
+    }
+  },
+  {
+    "shape": "Diagonal_Line",
+    "params": {
+      "Major axis(mm)": 9,
+      "minor axis(mm)": 5
+    }
+  },
+  {
+    "shape": "Diagonal_Line",
+    "params": {
+      "Major axis(mm)": 9,
+      "minor axis(mm)": 6
+    }
+  },
+  {
+    "shape": "Diagonal_Line",
+    "params": {
+      "Major axis(mm)": 9,
+      "minor axis(mm)": 7
+    }
+  },
+  {
+    "shape": "Diagonal_Line",
+    "params": {
+      "Major axis(mm)": 9,
+      "minor axis(mm)": 8
+    }
+  },
+  {
+    "shape": "Diagonal_Line",
+    "params": {
+      "Major axis(mm)": 9,
+      "minor axis(mm)": 9
+    }
+  },
+  {
+    "shape": "Diagonal_One_Line",
+    "params": {
+      "Major axis(mm)": 1,
+      "minor axis(mm)": 1
+    }
+  },
+  {
+    "shape": "Diagonal_One_Line",
+    "params": {
+      "Major axis(mm)": 1,
+      "minor axis(mm)": 2
+    }
+  },
+  {
+    "shape": "Diagonal_One_Line",
+    "params": {
+      "Major axis(mm)": 2,
+      "minor axis(mm)": 1
+    }
+  },
+  {
+    "shape": "Diagonal_One_Line",
+    "params": {
+      "Major axis(mm)": 2,
+      "minor axis(mm)": 2
+    }
+  },
+  {
+    "shape": "Diagonal_One_Line",
+    "params": {
+      "Major axis(mm)": 2,
+      "minor axis(mm)": 3
+    }
+  },
+  {
+    "shape": "Diagonal_One_Line",
+    "params": {
+      "Major axis(mm)": 2,
+      "minor axis(mm)": 4
+    }
+  },
+  {
+    "shape": "Diagonal_One_Line",
+    "params": {
+      "Major axis(mm)": 3,
+      "minor axis(mm)": 2
+    }
+  },
+  {
+    "shape": "Diagonal_One_Line",
+    "params": {
+      "Major axis(mm)": 3,
+      "minor axis(mm)": 3
+    }
+  },
+  {
+    "shape": "Diagonal_One_Line",
+    "params": {
+      "Major axis(mm)": 3,
+      "minor axis(mm)": 4
+    }
+  },
+  {
+    "shape": "Diagonal_One_Line",
+    "params": {
+      "Major axis(mm)": 3,
+      "minor axis(mm)": 5
+    }
+  },
+  {
+    "shape": "Diagonal_One_Line",
+    "params": {
+      "Major axis(mm)": 3,
+      "minor axis(mm)": 6
+    }
+  },
+  {
+    "shape": "Diagonal_One_Line",
+    "params": {
+      "Major axis(mm)": 4,
+      "minor axis(mm)": 2
+    }
+  },
+  {
+    "shape": "Diagonal_One_Line",
+    "params": {
+      "Major axis(mm)": 4,
+      "minor axis(mm)": 3
+    }
+  },
+  {
+    "shape": "Diagonal_One_Line",
+    "params": {
+      "Major axis(mm)": 4,
+      "minor axis(mm)": 4
+    }
+  },
+  {
+    "shape": "Diagonal_One_Line",
+    "params": {
+      "Major axis(mm)": 4,
+      "minor axis(mm)": 5
+    }
+  },
+  {
+    "shape": "Diagonal_One_Line",
+    "params": {
+      "Major axis(mm)": 4,
+      "minor axis(mm)": 6
+    }
+  },
+  {
+    "shape": "Diagonal_One_Line",
+    "params": {
+      "Major axis(mm)": 4,
+      "minor axis(mm)": 7
+    }
+  },
+  {
+    "shape": "Diagonal_One_Line",
+    "params": {
+      "Major axis(mm)": 4,
+      "minor axis(mm)": 8
+    }
+  },
+  {
+    "shape": "Diagonal_One_Line",
+    "params": {
+      "Major axis(mm)": 5,
+      "minor axis(mm)": 3
+    }
+  },
+  {
+    "shape": "Diagonal_One_Line",
+    "params": {
+      "Major axis(mm)": 5,
+      "minor axis(mm)": 4
+    }
+  },
+  {
+    "shape": "Diagonal_One_Line",
+    "params": {
+      "Major axis(mm)": 5,
+      "minor axis(mm)": 5
+    }
+  },
+  {
+    "shape": "Diagonal_One_Line",
+    "params": {
+      "Major axis(mm)": 5,
+      "minor axis(mm)": 6
+    }
+  },
+  {
+    "shape": "Diagonal_One_Line",
+    "params": {
+      "Major axis(mm)": 5,
+      "minor axis(mm)": 7
+    }
+  },
+  {
+    "shape": "Diagonal_One_Line",
+    "params": {
+      "Major axis(mm)": 5,
+      "minor axis(mm)": 8
+    }
+  },
+  {
+    "shape": "Diagonal_One_Line",
+    "params": {
+      "Major axis(mm)": 5,
+      "minor axis(mm)": 9
+    }
+  },
+  {
+    "shape": "Diagonal_One_Line",
+    "params": {
+      "Major axis(mm)": 6,
+      "minor axis(mm)": 3
+    }
+  },
+  {
+    "shape": "Diagonal_One_Line",
+    "params": {
+      "Major axis(mm)": 6,
+      "minor axis(mm)": 4
+    }
+  },
+  {
+    "shape": "Diagonal_One_Line",
+    "params": {
+      "Major axis(mm)": 6,
+      "minor axis(mm)": 5
+    }
+  },
+  {
+    "shape": "Diagonal_One_Line",
+    "params": {
+      "Major axis(mm)": 6,
+      "minor axis(mm)": 6
+    }
+  },
+  {
+    "shape": "Diagonal_One_Line",
+    "params": {
+      "Major axis(mm)": 6,
+      "minor axis(mm)": 7
+    }
+  },
+  {
+    "shape": "Diagonal_One_Line",
+    "params": {
+      "Major axis(mm)": 6,
+      "minor axis(mm)": 8
+    }
+  },
+  {
+    "shape": "Diagonal_One_Line",
+    "params": {
+      "Major axis(mm)": 6,
+      "minor axis(mm)": 9
+    }
+  },
+  {
+    "shape": "Diagonal_One_Line",
+    "params": {
+      "Major axis(mm)": 7,
+      "minor axis(mm)": 4
+    }
+  },
+  {
+    "shape": "Diagonal_One_Line",
+    "params": {
+      "Major axis(mm)": 7,
+      "minor axis(mm)": 5
+    }
+  },
+  {
+    "shape": "Diagonal_One_Line",
+    "params": {
+      "Major axis(mm)": 7,
+      "minor axis(mm)": 6
+    }
+  },
+  {
+    "shape": "Diagonal_One_Line",
+    "params": {
+      "Major axis(mm)": 7,
+      "minor axis(mm)": 7
+    }
+  },
+  {
+    "shape": "Diagonal_One_Line",
+    "params": {
+      "Major axis(mm)": 7,
+      "minor axis(mm)": 8
+    }
+  },
+  {
+    "shape": "Diagonal_One_Line",
+    "params": {
+      "Major axis(mm)": 7,
+      "minor axis(mm)": 9
+    }
+  },
+  {
+    "shape": "Diagonal_One_Line",
+    "params": {
+      "Major axis(mm)": 8,
+      "minor axis(mm)": 4
+    }
+  },
+  {
+    "shape": "Diagonal_One_Line",
+    "params": {
+      "Major axis(mm)": 8,
+      "minor axis(mm)": 5
+    }
+  },
+  {
+    "shape": "Diagonal_One_Line",
+    "params": {
+      "Major axis(mm)": 8,
+      "minor axis(mm)": 6
+    }
+  },
+  {
+    "shape": "Diagonal_One_Line",
+    "params": {
+      "Major axis(mm)": 8,
+      "minor axis(mm)": 7
+    }
+  },
+  {
+    "shape": "Diagonal_One_Line",
+    "params": {
+      "Major axis(mm)": 8,
+      "minor axis(mm)": 8
+    }
+  },
+  {
+    "shape": "Diagonal_One_Line",
+    "params": {
+      "Major axis(mm)": 8,
+      "minor axis(mm)": 9
+    }
+  },
+  {
+    "shape": "Diagonal_One_Line",
+    "params": {
+      "Major axis(mm)": 9,
+      "minor axis(mm)": 5
+    }
+  },
+  {
+    "shape": "Diagonal_One_Line",
+    "params": {
+      "Major axis(mm)": 9,
+      "minor axis(mm)": 6
+    }
+  },
+  {
+    "shape": "Diagonal_One_Line",
+    "params": {
+      "Major axis(mm)": 9,
+      "minor axis(mm)": 7
+    }
+  },
+  {
+    "shape": "Diagonal_One_Line",
+    "params": {
+      "Major axis(mm)": 9,
+      "minor axis(mm)": 8
+    }
+  },
+  {
+    "shape": "Diagonal_One_Line",
+    "params": {
+      "Major axis(mm)": 9,
+      "minor axis(mm)": 9
+    }
+  },
+  {
+    "shape": "Eight",
+    "params": {
+      "X(mm)": 1,
+      "Z(mm)": 2
+    }
+  },
+  {
+    "shape": "Eight",
+    "params": {
+      "X(mm)": 2,
+      "Z(mm)": 3
+    }
+  },
+  {
+    "shape": "Eight",
+    "params": {
+      "X(mm)": 2,
+      "Z(mm)": 4
+    }
+  },
+  {
+    "shape": "Eight",
+    "params": {
+      "X(mm)": 3,
+      "Z(mm)": 5
+    }
+  },
+  {
+    "shape": "Eight",
+    "params": {
+      "X(mm)": 3,
+      "Z(mm)": 6
+    }
+  },
+  {
+    "shape": "Eight",
+    "params": {
+      "X(mm)": 4,
+      "Z(mm)": 6
+    }
+  },
+  {
+    "shape": "Eight",
+    "params": {
+      "X(mm)": 4,
+      "Z(mm)": 8
+    }
+  },
+  {
+    "shape": "Eight",
+    "params": {
+      "X(mm)": 5,
+      "Z(mm)": 8
+    }
+  },
+  {
+    "shape": "Eight",
+    "params": {
+      "X(mm)": 5,
+      "Z(mm)": 10
+    }
+  },
+  {
+    "shape": "Ellipse",
+    "params": {
+      "Major axis(mm)": 1,
+      "minor axis(mm)": 1
+    }
+  },
+  {
+    "shape": "Ellipse",
+    "params": {
+      "Major axis(mm)": 1,
+      "minor axis(mm)": 2
+    }
+  },
+  {
+    "shape": "Ellipse",
+    "params": {
+      "Major axis(mm)": 2,
+      "minor axis(mm)": 1
+    }
+  },
+  {
+    "shape": "Ellipse",
+    "params": {
+      "Major axis(mm)": 2,
+      "minor axis(mm)": 2
+    }
+  },
+  {
+    "shape": "Ellipse",
+    "params": {
+      "Major axis(mm)": 2,
+      "minor axis(mm)": 3
+    }
+  },
+  {
+    "shape": "Ellipse",
+    "params": {
+      "Major axis(mm)": 2,
+      "minor axis(mm)": 4
+    }
+  },
+  {
+    "shape": "Ellipse",
+    "params": {
+      "Major axis(mm)": 3,
+      "minor axis(mm)": 2
+    }
+  },
+  {
+    "shape": "Ellipse",
+    "params": {
+      "Major axis(mm)": 3,
+      "minor axis(mm)": 3
+    }
+  },
+  {
+    "shape": "Ellipse",
+    "params": {
+      "Major axis(mm)": 3,
+      "minor axis(mm)": 4
+    }
+  },
+  {
+    "shape": "Ellipse",
+    "params": {
+      "Major axis(mm)": 3,
+      "minor axis(mm)": 5
+    }
+  },
+  {
+    "shape": "Ellipse",
+    "params": {
+      "Major axis(mm)": 3,
+      "minor axis(mm)": 6
+    }
+  },
+  {
+    "shape": "Ellipse",
+    "params": {
+      "Major axis(mm)": 4,
+      "minor axis(mm)": 2
+    }
+  },
+  {
+    "shape": "Ellipse",
+    "params": {
+      "Major axis(mm)": 4,
+      "minor axis(mm)": 3
+    }
+  },
+  {
+    "shape": "Ellipse",
+    "params": {
+      "Major axis(mm)": 4,
+      "minor axis(mm)": 4
+    }
+  },
+  {
+    "shape": "Ellipse",
+    "params": {
+      "Major axis(mm)": 4,
+      "minor axis(mm)": 5
+    }
+  },
+  {
+    "shape": "Ellipse",
+    "params": {
+      "Major axis(mm)": 4,
+      "minor axis(mm)": 6
+    }
+  },
+  {
+    "shape": "Ellipse",
+    "params": {
+      "Major axis(mm)": 4,
+      "minor axis(mm)": 7
+    }
+  },
+  {
+    "shape": "Ellipse",
+    "params": {
+      "Major axis(mm)": 4,
+      "minor axis(mm)": 8
+    }
+  },
+  {
+    "shape": "Ellipse",
+    "params": {
+      "Major axis(mm)": 5,
+      "minor axis(mm)": 3
+    }
+  },
+  {
+    "shape": "Ellipse",
+    "params": {
+      "Major axis(mm)": 5,
+      "minor axis(mm)": 4
+    }
+  },
+  {
+    "shape": "Ellipse",
+    "params": {
+      "Major axis(mm)": 5,
+      "minor axis(mm)": 5
+    }
+  },
+  {
+    "shape": "Ellipse",
+    "params": {
+      "Major axis(mm)": 5,
+      "minor axis(mm)": 6
+    }
+  },
+  {
+    "shape": "Ellipse",
+    "params": {
+      "Major axis(mm)": 5,
+      "minor axis(mm)": 7
+    }
+  },
+  {
+    "shape": "Ellipse",
+    "params": {
+      "Major axis(mm)": 5,
+      "minor axis(mm)": 8
+    }
+  },
+  {
+    "shape": "Ellipse",
+    "params": {
+      "Major axis(mm)": 5,
+      "minor axis(mm)": 9
+    }
+  },
+  {
+    "shape": "Ellipse",
+    "params": {
+      "Major axis(mm)": 5,
+      "minor axis(mm)": 10
+    }
+  },
+  {
+    "shape": "Ellipse",
+    "params": {
+      "Major axis(mm)": 6,
+      "minor axis(mm)": 3
+    }
+  },
+  {
+    "shape": "Ellipse",
+    "params": {
+      "Major axis(mm)": 6,
+      "minor axis(mm)": 4
+    }
+  },
+  {
+    "shape": "Ellipse",
+    "params": {
+      "Major axis(mm)": 6,
+      "minor axis(mm)": 5
+    }
+  },
+  {
+    "shape": "Ellipse",
+    "params": {
+      "Major axis(mm)": 6,
+      "minor axis(mm)": 6
+    }
+  },
+  {
+    "shape": "Ellipse",
+    "params": {
+      "Major axis(mm)": 6,
+      "minor axis(mm)": 7
+    }
+  },
+  {
+    "shape": "Ellipse",
+    "params": {
+      "Major axis(mm)": 6,
+      "minor axis(mm)": 8
+    }
+  },
+  {
+    "shape": "Ellipse",
+    "params": {
+      "Major axis(mm)": 6,
+      "minor axis(mm)": 9
+    }
+  },
+  {
+    "shape": "Ellipse",
+    "params": {
+      "Major axis(mm)": 6,
+      "minor axis(mm)": 10
+    }
+  },
+  {
+    "shape": "Ellipse",
+    "params": {
+      "Major axis(mm)": 7,
+      "minor axis(mm)": 4
+    }
+  },
+  {
+    "shape": "Ellipse",
+    "params": {
+      "Major axis(mm)": 7,
+      "minor axis(mm)": 5
+    }
+  },
+  {
+    "shape": "Ellipse",
+    "params": {
+      "Major axis(mm)": 7,
+      "minor axis(mm)": 6
+    }
+  },
+  {
+    "shape": "Ellipse",
+    "params": {
+      "Major axis(mm)": 7,
+      "minor axis(mm)": 7
+    }
+  },
+  {
+    "shape": "Ellipse",
+    "params": {
+      "Major axis(mm)": 7,
+      "minor axis(mm)": 8
+    }
+  },
+  {
+    "shape": "Ellipse",
+    "params": {
+      "Major axis(mm)": 7,
+      "minor axis(mm)": 9
+    }
+  },
+  {
+    "shape": "Ellipse",
+    "params": {
+      "Major axis(mm)": 7,
+      "minor axis(mm)": 10
+    }
+  },
+  {
+    "shape": "Ellipse",
+    "params": {
+      "Major axis(mm)": 8,
+      "minor axis(mm)": 4
+    }
+  },
+  {
+    "shape": "Ellipse",
+    "params": {
+      "Major axis(mm)": 8,
+      "minor axis(mm)": 5
+    }
+  },
+  {
+    "shape": "Ellipse",
+    "params": {
+      "Major axis(mm)": 8,
+      "minor axis(mm)": 6
+    }
+  },
+  {
+    "shape": "Ellipse",
+    "params": {
+      "Major axis(mm)": 8,
+      "minor axis(mm)": 7
+    }
+  },
+  {
+    "shape": "Ellipse",
+    "params": {
+      "Major axis(mm)": 8,
+      "minor axis(mm)": 8
+    }
+  },
+  {
+    "shape": "Ellipse",
+    "params": {
+      "Major axis(mm)": 8,
+      "minor axis(mm)": 9
+    }
+  },
+  {
+    "shape": "Ellipse",
+    "params": {
+      "Major axis(mm)": 8,
+      "minor axis(mm)": 10
+    }
+  },
+  {
+    "shape": "Ellipse",
+    "params": {
+      "Major axis(mm)": 9,
+      "minor axis(mm)": 5
+    }
+  },
+  {
+    "shape": "Ellipse",
+    "params": {
+      "Major axis(mm)": 9,
+      "minor axis(mm)": 6
+    }
+  },
+  {
+    "shape": "Ellipse",
+    "params": {
+      "Major axis(mm)": 9,
+      "minor axis(mm)": 7
+    }
+  },
+  {
+    "shape": "Ellipse",
+    "params": {
+      "Major axis(mm)": 9,
+      "minor axis(mm)": 8
+    }
+  },
+  {
+    "shape": "Ellipse",
+    "params": {
+      "Major axis(mm)": 9,
+      "minor axis(mm)": 9
+    }
+  },
+  {
+    "shape": "Ellipse",
+    "params": {
+      "Major axis(mm)": 9,
+      "minor axis(mm)": 10
+    }
+  },
+  {
+    "shape": "Ellipse",
+    "params": {
+      "Major axis(mm)": 10,
+      "minor axis(mm)": 5
+    }
+  },
+  {
+    "shape": "Ellipse",
+    "params": {
+      "Major axis(mm)": 10,
+      "minor axis(mm)": 6
+    }
+  },
+  {
+    "shape": "Ellipse",
+    "params": {
+      "Major axis(mm)": 10,
+      "minor axis(mm)": 7
+    }
+  },
+  {
+    "shape": "Ellipse",
+    "params": {
+      "Major axis(mm)": 10,
+      "minor axis(mm)": 8
+    }
+  },
+  {
+    "shape": "Ellipse",
+    "params": {
+      "Major axis(mm)": 10,
+      "minor axis(mm)": 9
+    }
+  },
+  {
+    "shape": "Ellipse",
+    "params": {
+      "Major axis(mm)": 10,
+      "minor axis(mm)": 10
+    }
+  },
+  {
+    "shape": "Heart",
+    "params": {
+      "Scale(mm)": 1
+    }
+  },
+  {
+    "shape": "Heart",
+    "params": {
+      "Scale(mm)": 2
+    }
+  },
+  {
+    "shape": "Heart",
+    "params": {
+      "Scale(mm)": 3
+    }
+  },
+  {
+    "shape": "Heart",
+    "params": {
+      "Scale(mm)": 4
+    }
+  },
+  {
+    "shape": "Heart",
+    "params": {
+      "Scale(mm)": 5
+    }
+  },
+  {
+    "shape": "Heart",
+    "params": {
+      "Scale(mm)": 6
+    }
+  },
+  {
+    "shape": "Heart",
+    "params": {
+      "Scale(mm)": 7
+    }
+  },
+  {
+    "shape": "Infinite",
+    "params": {
+      "X(mm)": 2,
+      "Z(mm)": 1
+    }
+  },
+  {
+    "shape": "Infinite",
+    "params": {
+      "X(mm)": 3,
+      "Z(mm)": 2
+    }
+  },
+  {
+    "shape": "Infinite",
+    "params": {
+      "X(mm)": 4,
+      "Z(mm)": 2
+    }
+  },
+  {
+    "shape": "Infinite",
+    "params": {
+      "X(mm)": 5,
+      "Z(mm)": 3
+    }
+  },
+  {
+    "shape": "Infinite",
+    "params": {
+      "X(mm)": 6,
+      "Z(mm)": 3
+    }
+  },
+  {
+    "shape": "Infinite",
+    "params": {
+      "X(mm)": 6,
+      "Z(mm)": 4
+    }
+  },
+  {
+    "shape": "Infinite",
+    "params": {
+      "X(mm)": 8,
+      "Z(mm)": 4
+    }
+  },
+  {
+    "shape": "Line",
+    "params": {
+      "Amplitude(mm)": 1
+    }
+  },
+  {
+    "shape": "Line",
+    "params": {
+      "Amplitude(mm)": 2
+    }
+  },
+  {
+    "shape": "Line",
+    "params": {
+      "Amplitude(mm)": 3
+    }
+  },
+  {
+    "shape": "Line",
+    "params": {
+      "Amplitude(mm)": 4
+    }
+  },
+  {
+    "shape": "Line",
+    "params": {
+      "Amplitude(mm)": 5
+    }
+  },
+  {
+    "shape": "Line",
+    "params": {
+      "Amplitude(mm)": 6
+    }
+  },
+  {
+    "shape": "Line",
+    "params": {
+      "Amplitude(mm)": 7
+    }
+  },
+  {
+    "shape": "Line",
+    "params": {
+      "Amplitude(mm)": 8
+    }
+  },
+  {
+    "shape": "Line",
+    "params": {
+      "Amplitude(mm)": 9
+    }
+  },
+  {
+    "shape": "Line",
+    "params": {
+      "Amplitude(mm)": 10
+    }
+  },
+  {
+    "shape": "Line",
+    "params": {
+      "Amplitude(mm)": 11
+    }
+  },
+  {
+    "shape": "Rectangle",
+    "params": {
+      "X(mm)": 1,
+      "Z(mm)": 1
+    }
+  },
+  {
+    "shape": "Rectangle",
+    "params": {
+      "X(mm)": 1,
+      "Z(mm)": 2
+    }
+  },
+  {
+    "shape": "Rectangle",
+    "params": {
+      "X(mm)": 2,
+      "Z(mm)": 1
+    }
+  },
+  {
+    "shape": "Rectangle",
+    "params": {
+      "X(mm)": 2,
+      "Z(mm)": 2
+    }
+  },
+  {
+    "shape": "Rectangle",
+    "params": {
+      "X(mm)": 2,
+      "Z(mm)": 3
+    }
+  },
+  {
+    "shape": "Rectangle",
+    "params": {
+      "X(mm)": 2,
+      "Z(mm)": 4
+    }
+  },
+  {
+    "shape": "Rectangle",
+    "params": {
+      "X(mm)": 3,
+      "Z(mm)": 2
+    }
+  },
+  {
+    "shape": "Rectangle",
+    "params": {
+      "X(mm)": 3,
+      "Z(mm)": 3
+    }
+  },
+  {
+    "shape": "Rectangle",
+    "params": {
+      "X(mm)": 3,
+      "Z(mm)": 4
+    }
+  },
+  {
+    "shape": "Rectangle",
+    "params": {
+      "X(mm)": 3,
+      "Z(mm)": 5
+    }
+  },
+  {
+    "shape": "Rectangle",
+    "params": {
+      "X(mm)": 4,
+      "Z(mm)": 2
+    }
+  },
+  {
+    "shape": "Rectangle",
+    "params": {
+      "X(mm)": 4,
+      "Z(mm)": 3
+    }
+  },
+  {
+    "shape": "Rectangle",
+    "params": {
+      "X(mm)": 4,
+      "Z(mm)": 4
+    }
+  },
+  {
+    "shape": "Rectangle",
+    "params": {
+      "X(mm)": 4,
+      "Z(mm)": 5
+    }
+  },
+  {
+    "shape": "Rectangle",
+    "params": {
+      "X(mm)": 5,
+      "Z(mm)": 3
+    }
+  },
+  {
+    "shape": "Rectangle",
+    "params": {
+      "X(mm)": 5,
+      "Z(mm)": 4
+    }
+  },
+  {
+    "shape": "Rectangle",
+    "params": {
+      "X(mm)": 5,
+      "Z(mm)": 5
+    }
+  }
+]

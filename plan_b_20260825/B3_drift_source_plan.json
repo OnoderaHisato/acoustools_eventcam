@@ -1,0 +1,156 @@
+{
+  "schema_version": 1,
+  "campaign": "plan_b_20260825",
+  "measurement_family": "plan_b3_drift_source",
+  "purpose": "Attribute sub-5-Hz drift to enclosure airflow, HVAC, or warm-up.",
+  "defaults": {
+    "sample_hz": 10000,
+    "duration_sec": 60.0,
+    "ramp_sec": 0.0,
+    "safety_limits": {
+      "max_offset_mm": 0.5,
+      "max_speed_mm_s": 200.0,
+      "max_acceleration_mm_s2": 400000.0
+    }
+  },
+  "experiments": [
+    {
+      "name": "40_shield_off_warm00_static_60s",
+      "kind": "static",
+      "axis": "x",
+      "duration_sec": 60.0,
+      "repeats": 1,
+      "enabled": true,
+      "campaign": "plan_b_20260825",
+      "measurement_family": "plan_b3_drift_source",
+      "condition": "shield_off_warm00",
+      "note": "no enclosure, first capture after active PAT output",
+      "warmup_definition": "elapsed time since confirmed non-zero PAT output",
+      "nominal_active_warmup_minutes": 0,
+      "drive_amplitude_scale": 1.0,
+      "response_gate": "go",
+      "requires_operator_context": [
+        "actual_warmup_minutes",
+        "shield_state",
+        "hvac_state",
+        "temperature"
+      ],
+      "operator_checkpoint": "verify environment and temperature context before capture"
+    },
+    {
+      "name": "41_shield_off_warm05_static_60s",
+      "kind": "static",
+      "axis": "x",
+      "duration_sec": 60.0,
+      "repeats": 1,
+      "enabled": true,
+      "campaign": "plan_b_20260825",
+      "measurement_family": "plan_b3_drift_source",
+      "condition": "shield_off_warm05",
+      "note": "no enclosure, 5 min of active PAT output",
+      "warmup_definition": "elapsed time since confirmed non-zero PAT output",
+      "nominal_active_warmup_minutes": 5,
+      "drive_amplitude_scale": 1.0,
+      "response_gate": "go",
+      "requires_operator_context": [
+        "actual_warmup_minutes",
+        "shield_state",
+        "hvac_state",
+        "temperature"
+      ],
+      "operator_checkpoint": "verify environment and temperature context before capture"
+    },
+    {
+      "name": "42_shield_off_warm10_static_60s",
+      "kind": "static",
+      "axis": "x",
+      "duration_sec": 60.0,
+      "repeats": 1,
+      "enabled": true,
+      "campaign": "plan_b_20260825",
+      "measurement_family": "plan_b3_drift_source",
+      "condition": "shield_off_warm10",
+      "note": "no enclosure, 10 min of active PAT output",
+      "warmup_definition": "elapsed time since confirmed non-zero PAT output",
+      "nominal_active_warmup_minutes": 10,
+      "drive_amplitude_scale": 1.0,
+      "response_gate": "go",
+      "requires_operator_context": [
+        "actual_warmup_minutes",
+        "shield_state",
+        "hvac_state",
+        "temperature"
+      ],
+      "operator_checkpoint": "verify environment and temperature context before capture"
+    },
+    {
+      "name": "43_shield_on_warm05_static_60s",
+      "kind": "static",
+      "axis": "x",
+      "duration_sec": 60.0,
+      "repeats": 1,
+      "enabled": true,
+      "campaign": "plan_b_20260825",
+      "measurement_family": "plan_b3_drift_source",
+      "condition": "shield_on_warm05",
+      "note": "acrylic enclosure, 5 min of active PAT output",
+      "warmup_definition": "elapsed time since confirmed non-zero PAT output",
+      "nominal_active_warmup_minutes": 5,
+      "drive_amplitude_scale": 1.0,
+      "response_gate": "go",
+      "requires_operator_context": [
+        "actual_warmup_minutes",
+        "shield_state",
+        "hvac_state",
+        "temperature"
+      ],
+      "operator_checkpoint": "verify environment and temperature context before capture"
+    },
+    {
+      "name": "44_shield_on_hvac_off_warm05_static_60s",
+      "kind": "static",
+      "axis": "x",
+      "duration_sec": 60.0,
+      "repeats": 1,
+      "enabled": true,
+      "campaign": "plan_b_20260825",
+      "measurement_family": "plan_b3_drift_source",
+      "condition": "shield_on_hvac_off_warm05",
+      "note": "enclosure and HVAC/fans off, 5 min of active PAT output",
+      "warmup_definition": "elapsed time since confirmed non-zero PAT output",
+      "nominal_active_warmup_minutes": 5,
+      "drive_amplitude_scale": 1.0,
+      "response_gate": "go",
+      "requires_operator_context": [
+        "actual_warmup_minutes",
+        "shield_state",
+        "hvac_state",
+        "temperature"
+      ],
+      "operator_checkpoint": "verify environment and temperature context before capture"
+    },
+    {
+      "name": "45_shield_off_hvac_off_warm05_static_60s",
+      "kind": "static",
+      "axis": "x",
+      "duration_sec": 60.0,
+      "repeats": 1,
+      "enabled": true,
+      "campaign": "plan_b_20260825",
+      "measurement_family": "plan_b3_drift_source",
+      "condition": "shield_off_hvac_off_warm05",
+      "note": "no enclosure and HVAC/fans off, 5 min of active PAT output",
+      "warmup_definition": "elapsed time since confirmed non-zero PAT output",
+      "nominal_active_warmup_minutes": 5,
+      "drive_amplitude_scale": 1.0,
+      "response_gate": "go",
+      "requires_operator_context": [
+        "actual_warmup_minutes",
+        "shield_state",
+        "hvac_state",
+        "temperature"
+      ],
+      "operator_checkpoint": "verify environment and temperature context before capture"
+    }
+  ]
+}

@@ -1,0 +1,234 @@
+[
+  {
+    "shape": "Cusped_3D",
+    "role": "train",
+    "risk_level": "standard",
+    "params": {
+      "label": "cardioid_sharp_xz_f4",
+      "curve": "cardioid",
+      "plane": "xz",
+      "u_amp_mm": 3.0,
+      "v_amp_mm": 3.0,
+      "out_of_plane_amp_mm": 0.0,
+      "rounding": 0.0,
+      "steps_per_cycle": 1000,
+      "frequency_hz": 4,
+      "loops": 8,
+      "max_speed_mm_s": 900,
+      "max_accel_mm_s2": 500000
+    }
+  },
+  {
+    "shape": "Cusped_3D",
+    "role": "train",
+    "risk_level": "standard",
+    "params": {
+      "label": "cardioid_rounded08_xz_f4_control",
+      "curve": "cardioid",
+      "plane": "xz",
+      "u_amp_mm": 3.0,
+      "v_amp_mm": 3.0,
+      "out_of_plane_amp_mm": 0.0,
+      "rounding": 0.08,
+      "steps_per_cycle": 1000,
+      "frequency_hz": 4,
+      "loops": 8,
+      "max_speed_mm_s": 900,
+      "max_accel_mm_s2": 500000
+    }
+  },
+  {
+    "shape": "Cusped_3D",
+    "role": "train",
+    "risk_level": "standard",
+    "params": {
+      "label": "cardioid_lifted_xz_y_f5",
+      "curve": "cardioid",
+      "plane": "xz",
+      "u_amp_mm": 3.0,
+      "v_amp_mm": 3.0,
+      "out_of_plane_amp_mm": 0.75,
+      "rounding": 0.0,
+      "steps_per_cycle": 1000,
+      "frequency_hz": 5,
+      "loops": 8,
+      "max_speed_mm_s": 900,
+      "max_accel_mm_s2": 500000
+    }
+  },
+  {
+    "shape": "Cusped_3D",
+    "role": "train",
+    "risk_level": "standard",
+    "params": {
+      "label": "nephroid_lifted_xy_z_f4",
+      "curve": "nephroid",
+      "plane": "xy",
+      "u_amp_mm": 3.0,
+      "v_amp_mm": 2.5,
+      "out_of_plane_amp_mm": 0.75,
+      "rounding": 0.0,
+      "steps_per_cycle": 1000,
+      "frequency_hz": 4,
+      "loops": 8,
+      "max_speed_mm_s": 900,
+      "max_accel_mm_s2": 500000
+    }
+  },
+  {
+    "shape": "Cusped_3D",
+    "role": "train",
+    "risk_level": "challenge",
+    "params": {
+      "label": "deltoid_sharp_xz_y_f4",
+      "curve": "deltoid",
+      "plane": "xz",
+      "u_amp_mm": 3.0,
+      "v_amp_mm": 3.0,
+      "out_of_plane_amp_mm": 0.75,
+      "rounding": 0.0,
+      "steps_per_cycle": 1000,
+      "frequency_hz": 4,
+      "loops": 8,
+      "max_speed_mm_s": 900,
+      "max_accel_mm_s2": 500000
+    }
+  },
+  {
+    "shape": "Cusped_3D",
+    "role": "train",
+    "risk_level": "challenge",
+    "params": {
+      "label": "deltoid_rounded08_xz_y_f4_control",
+      "curve": "deltoid",
+      "plane": "xz",
+      "u_amp_mm": 3.0,
+      "v_amp_mm": 3.0,
+      "out_of_plane_amp_mm": 0.75,
+      "rounding": 0.08,
+      "steps_per_cycle": 1000,
+      "frequency_hz": 4,
+      "loops": 8,
+      "max_speed_mm_s": 900,
+      "max_accel_mm_s2": 500000
+    }
+  },
+  {
+    "shape": "Cusped_3D",
+    "role": "train",
+    "risk_level": "challenge",
+    "params": {
+      "label": "astroid_lifted_yz_x_f4",
+      "curve": "astroid",
+      "plane": "yz",
+      "u_amp_mm": 3.0,
+      "v_amp_mm": 3.0,
+      "out_of_plane_amp_mm": 0.75,
+      "rounding": 0.0,
+      "steps_per_cycle": 1000,
+      "frequency_hz": 4,
+      "loops": 8,
+      "max_speed_mm_s": 900,
+      "max_accel_mm_s2": 500000
+    }
+  },
+  {
+    "shape": "Cusped_3D",
+    "role": "train",
+    "risk_level": "challenge",
+    "params": {
+      "label": "hypocycloid5_lifted_xyz_f4",
+      "curve": "hypocycloid",
+      "plane": "xz",
+      "cusp_count": 5,
+      "u_amp_mm": 3.0,
+      "v_amp_mm": 3.0,
+      "out_of_plane_amp_mm": 1.0,
+      "rounding": 0.0,
+      "steps_per_cycle": 1000,
+      "frequency_hz": 4,
+      "loops": 8,
+      "max_speed_mm_s": 900,
+      "max_accel_mm_s2": 500000
+    }
+  },
+  {
+    "shape": "Cusped_3D",
+    "role": "validation",
+    "risk_level": "challenge",
+    "params": {
+      "label": "unseen_nephroid_xz_y_rot30_f8",
+      "curve": "nephroid",
+      "plane": "xz",
+      "u_amp_mm": 2.5,
+      "v_amp_mm": 2.5,
+      "out_of_plane_amp_mm": 1.0,
+      "plane_rotation_deg": 30,
+      "rounding": 0.0,
+      "steps_per_cycle": 1000,
+      "frequency_hz": 8,
+      "loops": 8,
+      "max_speed_mm_s": 1200,
+      "max_accel_mm_s2": 800000
+    }
+  },
+  {
+    "shape": "Cusped_3D",
+    "role": "validation",
+    "risk_level": "challenge",
+    "params": {
+      "label": "unseen_hypocycloid6_xy_z_f5",
+      "curve": "hypocycloid",
+      "plane": "xy",
+      "cusp_count": 6,
+      "u_amp_mm": 2.5,
+      "v_amp_mm": 2.5,
+      "out_of_plane_amp_mm": 1.0,
+      "rounding": 0.0,
+      "steps_per_cycle": 1000,
+      "frequency_hz": 5,
+      "loops": 8,
+      "max_speed_mm_s": 1200,
+      "max_accel_mm_s2": 800000
+    }
+  },
+  {
+    "shape": "Cusped_3D",
+    "role": "validation",
+    "risk_level": "challenge",
+    "params": {
+      "label": "unseen_cardioid_yz_x_rot45_f8",
+      "curve": "cardioid",
+      "plane": "yz",
+      "u_amp_mm": 2.5,
+      "v_amp_mm": 2.5,
+      "out_of_plane_amp_mm": 1.0,
+      "plane_rotation_deg": 45,
+      "rounding": 0.0,
+      "steps_per_cycle": 1000,
+      "frequency_hz": 8,
+      "loops": 8,
+      "max_speed_mm_s": 1200,
+      "max_accel_mm_s2": 800000
+    }
+  },
+  {
+    "shape": "Cusped_3D",
+    "role": "train",
+    "risk_level": "challenge",
+    "params": {
+      "label": "astroid_lifted_yz_x_f10_high40",
+      "curve": "astroid",
+      "plane": "yz",
+      "u_amp_mm": 2.5,
+      "v_amp_mm": 2.5,
+      "out_of_plane_amp_mm": 0.75,
+      "rounding": 0.0,
+      "steps_per_cycle": 1000,
+      "frequency_hz": 10,
+      "loops": 12,
+      "max_speed_mm_s": 1200,
+      "max_accel_mm_s2": 800000
+    }
+  }
+]

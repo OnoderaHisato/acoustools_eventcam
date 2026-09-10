@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "description": "Unified auto plan: extended random/parametric, chirped, cusped, then cusped and chirped retention-boundary diagnostics.",
+  "includes": [
+    {
+      "path": "extended_3d_dataset_plan.json",
+      "group": "01_extended"
+    },
+    {
+      "path": "chirped_3d_dataset_plan.json",
+      "group": "02_chirped"
+    },
+    {
+      "path": "cusped_3d_dataset_plan.json",
+      "group": "03_cusped"
+    },
+    {
+      "path": "cusped_3d_retention_boundary_plan.json",
+      "group": "89_cusped_retention_boundary"
+    },
+    {
+      "path": "chirped_3d_retention_boundary_plan.json",
+      "group": "90_chirped_retention_boundary"
+    }
+  ]
+}

@@ -1,0 +1,361 @@
+{
+  "schema_version": 1,
+  "campaign": "plan_b_20260825",
+  "measurement_family": "plan_b2_z_line_source",
+  "purpose": "Distinguish the coherent z line's drive-level and particle dependence.",
+  "defaults": {
+    "sample_hz": 10000,
+    "duration_sec": 10.0,
+    "ramp_sec": 0.5,
+    "safety_limits": {
+      "max_offset_mm": 0.5,
+      "max_step_mm": 0.5,
+      "max_speed_mm_s": 200.0,
+      "max_acceleration_mm_s2": 400000.0
+    }
+  },
+  "experiments": [
+    {
+      "campaign": "plan_b_20260825",
+      "measurement_family": "plan_b2_z_line_source",
+      "condition": "driveA",
+      "drive_amplitude_scale": 1.0,
+      "response_gate": "go",
+      "operator_checkpoint": "confirm the displayed drive scale and particle retention",
+      "name": "20_driveA_static_30s",
+      "kind": "static",
+      "axis": "z",
+      "duration_sec": 30.0,
+      "repeats": 1
+    },
+    {
+      "campaign": "plan_b_20260825",
+      "measurement_family": "plan_b2_z_line_source",
+      "condition": "driveA",
+      "drive_amplitude_scale": 1.0,
+      "response_gate": "go",
+      "operator_checkpoint": "confirm the displayed drive scale and particle retention",
+      "name": "21_driveA_z_staircase_ringdown",
+      "kind": "staircase",
+      "axis": "z",
+      "hold_sec": 1.0,
+      "initial_hold_sec": 2.0,
+      "final_hold_sec": 1.0,
+      "amplitudes_mm": [
+        0.25
+      ],
+      "directions": [
+        1,
+        -1
+      ],
+      "repeats_within_run": 2,
+      "order_seed": 4201,
+      "repeats": 1
+    },
+    {
+      "campaign": "plan_b_20260825",
+      "measurement_family": "plan_b2_z_line_source",
+      "condition": "driveA",
+      "drive_amplitude_scale": 1.0,
+      "response_gate": "go",
+      "operator_checkpoint": "confirm the displayed drive scale and particle retention",
+      "name": "22_driveA_z_probe_multisine_262_332hz",
+      "kind": "multisine",
+      "axis": "z",
+      "frequencies_hz": [
+        262.5,
+        267.5,
+        272.5,
+        277.5,
+        282.5,
+        287.5,
+        292.5,
+        297.5,
+        302.5,
+        307.5,
+        312.5,
+        317.5,
+        322.5,
+        327.5,
+        332.5
+      ],
+      "target_acceleration_mm_s2": 10000000.0,
+      "tone_displacement_cap_mm": 0.001,
+      "seed": 4301,
+      "repeats": 1
+    },
+    {
+      "campaign": "plan_b_20260825",
+      "measurement_family": "plan_b2_z_line_source",
+      "condition": "driveB",
+      "drive_amplitude_scale": 0.85,
+      "response_gate": "go",
+      "operator_checkpoint": "confirm the displayed drive scale and particle retention",
+      "name": "20_driveB_static_30s",
+      "kind": "static",
+      "axis": "z",
+      "duration_sec": 30.0,
+      "repeats": 1
+    },
+    {
+      "campaign": "plan_b_20260825",
+      "measurement_family": "plan_b2_z_line_source",
+      "condition": "driveB",
+      "drive_amplitude_scale": 0.85,
+      "response_gate": "go",
+      "operator_checkpoint": "confirm the displayed drive scale and particle retention",
+      "name": "21_driveB_z_staircase_ringdown",
+      "kind": "staircase",
+      "axis": "z",
+      "hold_sec": 1.0,
+      "initial_hold_sec": 2.0,
+      "final_hold_sec": 1.0,
+      "amplitudes_mm": [
+        0.25
+      ],
+      "directions": [
+        1,
+        -1
+      ],
+      "repeats_within_run": 2,
+      "order_seed": 4201,
+      "repeats": 1
+    },
+    {
+      "campaign": "plan_b_20260825",
+      "measurement_family": "plan_b2_z_line_source",
+      "condition": "driveB",
+      "drive_amplitude_scale": 0.85,
+      "response_gate": "go",
+      "operator_checkpoint": "confirm the displayed drive scale and particle retention",
+      "name": "22_driveB_z_probe_multisine_262_332hz",
+      "kind": "multisine",
+      "axis": "z",
+      "frequencies_hz": [
+        262.5,
+        267.5,
+        272.5,
+        277.5,
+        282.5,
+        287.5,
+        292.5,
+        297.5,
+        302.5,
+        307.5,
+        312.5,
+        317.5,
+        322.5,
+        327.5,
+        332.5
+      ],
+      "target_acceleration_mm_s2": 10000000.0,
+      "tone_displacement_cap_mm": 0.001,
+      "seed": 4301,
+      "repeats": 1
+    },
+    {
+      "campaign": "plan_b_20260825",
+      "measurement_family": "plan_b2_z_line_source",
+      "condition": "driveC",
+      "drive_amplitude_scale": 0.7,
+      "response_gate": "go",
+      "operator_checkpoint": "confirm the displayed drive scale and particle retention",
+      "name": "20_driveC_static_30s",
+      "kind": "static",
+      "axis": "z",
+      "duration_sec": 30.0,
+      "repeats": 1
+    },
+    {
+      "campaign": "plan_b_20260825",
+      "measurement_family": "plan_b2_z_line_source",
+      "condition": "driveC",
+      "drive_amplitude_scale": 0.7,
+      "response_gate": "go",
+      "operator_checkpoint": "confirm the displayed drive scale and particle retention",
+      "name": "21_driveC_z_staircase_ringdown",
+      "kind": "staircase",
+      "axis": "z",
+      "hold_sec": 1.0,
+      "initial_hold_sec": 2.0,
+      "final_hold_sec": 1.0,
+      "amplitudes_mm": [
+        0.25
+      ],
+      "directions": [
+        1,
+        -1
+      ],
+      "repeats_within_run": 2,
+      "order_seed": 4201,
+      "repeats": 1
+    },
+    {
+      "campaign": "plan_b_20260825",
+      "measurement_family": "plan_b2_z_line_source",
+      "condition": "driveC",
+      "drive_amplitude_scale": 0.7,
+      "response_gate": "go",
+      "operator_checkpoint": "confirm the displayed drive scale and particle retention",
+      "name": "22_driveC_z_probe_multisine_262_332hz",
+      "kind": "multisine",
+      "axis": "z",
+      "frequencies_hz": [
+        262.5,
+        267.5,
+        272.5,
+        277.5,
+        282.5,
+        287.5,
+        292.5,
+        297.5,
+        302.5,
+        307.5,
+        312.5,
+        317.5,
+        322.5,
+        327.5,
+        332.5
+      ],
+      "target_acceleration_mm_s2": 10000000.0,
+      "tone_displacement_cap_mm": 0.001,
+      "seed": 4301,
+      "repeats": 1
+    },
+    {
+      "campaign": "plan_b_20260825",
+      "measurement_family": "plan_b2_z_line_source",
+      "condition": "particle1",
+      "drive_amplitude_scale": 1.0,
+      "response_gate": "go",
+      "requires_operator_context": [
+        "particle_id",
+        "particle_description"
+      ],
+      "operator_checkpoint": "load and identify the requested particle before capture",
+      "name": "30_particle1_static_30s",
+      "kind": "static",
+      "axis": "z",
+      "duration_sec": 30.0,
+      "repeats": 1
+    },
+    {
+      "campaign": "plan_b_20260825",
+      "measurement_family": "plan_b2_z_line_source",
+      "condition": "particle1",
+      "drive_amplitude_scale": 1.0,
+      "response_gate": "go",
+      "requires_operator_context": [
+        "particle_id",
+        "particle_description"
+      ],
+      "operator_checkpoint": "load and identify the requested particle before capture",
+      "name": "31_particle1_z_staircase_ringdown",
+      "kind": "staircase",
+      "axis": "z",
+      "hold_sec": 1.0,
+      "initial_hold_sec": 2.0,
+      "final_hold_sec": 1.0,
+      "amplitudes_mm": [
+        0.25
+      ],
+      "directions": [
+        1,
+        -1
+      ],
+      "repeats_within_run": 2,
+      "order_seed": 4201,
+      "repeats": 1
+    },
+    {
+      "campaign": "plan_b_20260825",
+      "measurement_family": "plan_b2_z_line_source",
+      "condition": "particle2",
+      "drive_amplitude_scale": 1.0,
+      "response_gate": "go",
+      "requires_operator_context": [
+        "particle_id",
+        "particle_description"
+      ],
+      "operator_checkpoint": "load and identify the requested particle before capture",
+      "name": "30_particle2_static_30s",
+      "kind": "static",
+      "axis": "z",
+      "duration_sec": 30.0,
+      "repeats": 1
+    },
+    {
+      "campaign": "plan_b_20260825",
+      "measurement_family": "plan_b2_z_line_source",
+      "condition": "particle2",
+      "drive_amplitude_scale": 1.0,
+      "response_gate": "go",
+      "requires_operator_context": [
+        "particle_id",
+        "particle_description"
+      ],
+      "operator_checkpoint": "load and identify the requested particle before capture",
+      "name": "31_particle2_z_staircase_ringdown",
+      "kind": "staircase",
+      "axis": "z",
+      "hold_sec": 1.0,
+      "initial_hold_sec": 2.0,
+      "final_hold_sec": 1.0,
+      "amplitudes_mm": [
+        0.25
+      ],
+      "directions": [
+        1,
+        -1
+      ],
+      "repeats_within_run": 2,
+      "order_seed": 4202,
+      "repeats": 1
+    },
+    {
+      "campaign": "plan_b_20260825",
+      "measurement_family": "plan_b2_z_line_source",
+      "condition": "particle3",
+      "drive_amplitude_scale": 1.0,
+      "response_gate": "go",
+      "requires_operator_context": [
+        "particle_id",
+        "particle_description"
+      ],
+      "operator_checkpoint": "load and identify the requested particle before capture",
+      "name": "30_particle3_static_30s",
+      "kind": "static",
+      "axis": "z",
+      "duration_sec": 30.0,
+      "repeats": 1
+    },
+    {
+      "campaign": "plan_b_20260825",
+      "measurement_family": "plan_b2_z_line_source",
+      "condition": "particle3",
+      "drive_amplitude_scale": 1.0,
+      "response_gate": "go",
+      "requires_operator_context": [
+        "particle_id",
+        "particle_description"
+      ],
+      "operator_checkpoint": "load and identify the requested particle before capture",
+      "name": "31_particle3_z_staircase_ringdown",
+      "kind": "staircase",
+      "axis": "z",
+      "hold_sec": 1.0,
+      "initial_hold_sec": 2.0,
+      "final_hold_sec": 1.0,
+      "amplitudes_mm": [
+        0.25
+      ],
+      "directions": [
+        1,
+        -1
+      ],
+      "repeats_within_run": 2,
+      "order_seed": 4203,
+      "repeats": 1
+    }
+  ]
+}

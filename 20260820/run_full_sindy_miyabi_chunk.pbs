@@ -1,0 +1,25 @@
+#!/bin/bash
+#PBS -q regular-c
+#PBS -l select=1
+#PBS -l walltime=48:00:00
+#PBS -W group_list=xg25g006
+#PBS -j oe
+#PBS -N full_sindy_chunk
+
+set -eu
+cd "${PBS_O_WORKDIR}"
+
+export PYTHONPATH="${HOME}/.local/lib/python3.12/site-packages:${PYTHONPATH:-}"
+export OMP_NUM_THREADS=1
+export OPENBLAS_NUM_THREADS=1
+export MKL_NUM_THREADS=1
+export NUMEXPR_NUM_THREADS=1
+
+RUN_DIR="${RUN_DIR:?RUN_DIR is required (-v RUN_DIR=...)}"
+START_IDX="${START_IDX:?START_IDX is required (-v START_IDX=...)}"
+END_IDX="${END_IDX:?END_IDX is required (-v END_IDX=...)}"
+
+for idx in $(seq "${START_IDX}" "${END_IDX}"); do
+    echo "=== chunk task ${idx} ($(date)) ==="
+    python3 sindy_stereo3d_full_tune.py run-task --run-dir "${RUN_DIR}" --task-index "${idx}"
+done

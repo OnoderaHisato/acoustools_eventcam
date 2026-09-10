@@ -1,0 +1,93 @@
+{
+  "extends_config": "stereo_3axis_stage_accuracy_records/far_001/session_config.json",
+  "name": "stereo_3axis_cuboid_extent_d410",
+  "description": "Three-dimensional cuboid vertex validation at nominal D0=410 mm for half-extents 20, 25, and 30 mm.",
+  "safety_acknowledgements": {
+    "full_motion_envelope_and_cables_confirmed": false
+  },
+  "stages": {
+    "axes": {
+      "x": {
+        "hardware_min_mm": 70.0,
+        "hardware_max_mm": 130.0
+      },
+      "z": {
+        "hardware_min_mm": 120.0,
+        "hardware_max_mm": 180.0
+      }
+    }
+  },
+  "experiment": {
+    "moving_body": "target",
+    "reference_global_mm": [0.0, 0.0, 0.0],
+    "approach_offset_mm": 2.0,
+    "diagonal_approach_axis": "y",
+    "orientation_reference_global_mm": [0.0, 100.0, 0.0],
+    "orientation_points_global_mm": [
+      [-5.0, 100.0, 0.0],
+      [5.0, 100.0, 0.0],
+      [0.0, 95.0, 0.0],
+      [0.0, 105.0, 0.0],
+      [0.0, 100.0, -5.0],
+      [0.0, 100.0, 5.0]
+    ],
+    "validation_sweeps": [
+      {
+        "name": "axis_control_y100",
+        "group": "axis",
+        "reference_global_mm": [0.0, 100.0, 0.0],
+        "points_global_mm": [
+          [-15.0, 100.0, 0.0],
+          [15.0, 100.0, 0.0],
+          [0.0, 100.0, -15.0],
+          [0.0, 100.0, 15.0]
+        ]
+      },
+      {
+        "name": "depth_control_y000",
+        "group": "depth",
+        "reference_global_mm": [0.0, 0.0, 0.0],
+        "points_global_mm": [
+          [0.0, 20.0, 0.0],
+          [0.0, 165.0, 0.0]
+        ]
+      },
+      {
+        "name": "cuboid_y052",
+        "group": "diagonal",
+        "geometry": "cuboid_surface_grid",
+        "reference_global_mm": [0.0, 52.0, 0.0],
+        "approach_axis": "y",
+        "cuboid_half_extents_mm": [20.0, 25.0, 30.0]
+      },
+      {
+        "name": "cuboid_y079",
+        "group": "diagonal",
+        "geometry": "cuboid_surface_grid",
+        "reference_global_mm": [0.0, 79.0, 0.0],
+        "approach_axis": "y",
+        "cuboid_half_extents_mm": [20.0, 25.0, 30.0]
+      },
+      {
+        "name": "cuboid_y106",
+        "group": "diagonal",
+        "geometry": "cuboid_surface_grid",
+        "reference_global_mm": [0.0, 106.0, 0.0],
+        "approach_axis": "y",
+        "cuboid_half_extents_mm": [20.0, 25.0, 30.0]
+      },
+      {
+        "name": "cuboid_y133",
+        "group": "diagonal",
+        "geometry": "cuboid_surface_grid",
+        "reference_global_mm": [0.0, 133.0, 0.0],
+        "approach_axis": "y",
+        "cuboid_half_extents_mm": [20.0, 25.0, 30.0]
+      }
+    ],
+    "repeats": 3,
+    "forward_reverse": true,
+    "center_before_after_each_pass": true,
+    "registration_center_before_after": true
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "purpose": "Higher-risk Tier-D trap-jump staircase responses extending beyond the estimated force-maximum offset while remaining below the estimated escape boundary.",
+  "defaults": {
+    "sample_hz": 10000,
+    "duration_sec": 10.0,
+    "ramp_sec": 0.0,
+    "safety_limits": {
+      "max_offset_mm": 1.25,
+      "max_step_mm": 1.25,
+      "max_speed_mm_s": 100.0,
+      "max_acceleration_mm_s2": 28000.0
+    }
+  },
+  "escalation_note": "Do not record Tier D until every Tier-C jump has retained the particle in both cameras. Tier D includes 1.15 and 1.25 mm commands beyond the estimated force maximum near 1.072 mm. Record exactly one exported run per hardware session, inspect it, and only then select the next run.",
+  "experiments": [
+    {
+      "name": "D0_x_staircase_challenge",
+      "kind": "staircase",
+      "tier": "D",
+      "axis": "x",
+      "hold_sec": 0.3,
+      "initial_hold_sec": 2.0,
+      "final_hold_sec": 0.3,
+      "amplitudes_mm": [0.7, 0.95, 1.15, 1.25],
+      "directions": [1, -1],
+      "repeats_within_run": 2,
+      "order_seed": 3104,
+      "repeats": 2,
+      "enabled": true
+    },
+    {
+      "name": "D1_y_staircase_challenge",
+      "kind": "staircase",
+      "tier": "D",
+      "axis": "y",
+      "hold_sec": 0.3,
+      "initial_hold_sec": 2.0,
+      "final_hold_sec": 0.3,
+      "amplitudes_mm": [0.7, 0.95, 1.15, 1.25],
+      "directions": [1, -1],
+      "repeats_within_run": 2,
+      "order_seed": 3204,
+      "repeats": 2,
+      "enabled": true
+    },
+    {
+      "name": "D2_z_staircase_challenge",
+      "kind": "staircase",
+      "tier": "D",
+      "axis": "z",
+      "hold_sec": 0.3,
+      "initial_hold_sec": 2.0,
+      "final_hold_sec": 0.3,
+      "amplitudes_mm": [0.7, 0.95, 1.15, 1.25],
+      "directions": [1, -1],
+      "repeats_within_run": 2,
+      "order_seed": 3304,
+      "repeats": 2,
+      "enabled": true
+    }
+  ]
+}

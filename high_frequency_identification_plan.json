@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "purpose": "Identify command-to-particle dynamics around the unexplained 70-110 Hz band before open-loop feedforward design.",
+  "defaults": {
+    "sample_hz": 10000,
+    "duration_sec": 10.0,
+    "ramp_sec": 0.5,
+    "safety_limits": {
+      "max_offset_mm": 0.15,
+      "max_speed_mm_s": 100.0,
+      "max_acceleration_mm_s2": 28000.0
+    }
+  },
+  "experiments": [
+    {
+      "name": "00_static_baseline",
+      "kind": "static",
+      "axis": "x",
+      "duration_sec": 5.0,
+      "repeats": 2,
+      "enabled": true
+    },
+    {
+      "name": "10_x_chirp_40_130hz",
+      "kind": "chirp",
+      "axis": "x",
+      "f_start_hz": 40.0,
+      "f_end_hz": 130.0,
+      "displacement_cap_mm": 0.12,
+      "target_acceleration_mm_s2": 20000.0,
+      "repeats": 2,
+      "enabled": true
+    },
+    {
+      "name": "11_y_chirp_40_130hz",
+      "kind": "chirp",
+      "axis": "y",
+      "f_start_hz": 40.0,
+      "f_end_hz": 130.0,
+      "displacement_cap_mm": 0.12,
+      "target_acceleration_mm_s2": 20000.0,
+      "repeats": 2,
+      "enabled": true
+    },
+    {
+      "name": "20_x_multisine_50_130hz",
+      "kind": "multisine",
+      "axis": "x",
+      "frequencies_hz": [50, 60, 70, 80, 90, 100, 110, 120, 130],
+      "target_acceleration_mm_s2": 18000.0,
+      "tone_displacement_cap_mm": 0.05,
+      "seed": 8101,
+      "repeats": 3,
+      "enabled": true
+    },
+    {
+      "name": "21_y_multisine_50_130hz",
+      "kind": "multisine",
+      "axis": "y",
+      "frequencies_hz": [50, 60, 70, 80, 90, 100, 110, 120, 130],
+      "target_acceleration_mm_s2": 18000.0,
+      "tone_displacement_cap_mm": 0.05,
+      "seed": 8201,
+      "repeats": 3,
+      "enabled": true
+    },
+    {
+      "name": "90_z_chirp_220_350hz_diagnostic",
+      "kind": "chirp",
+      "axis": "z",
+      "f_start_hz": 220.0,
+      "f_end_hz": 350.0,
+      "displacement_cap_mm": 0.01,
+      "target_acceleration_mm_s2": 15000.0,
+      "repeats": 2,
+      "enabled": false,
+      "disabled_reason": "Expected command displacement is only several micrometres; enable after confirming stereo noise floor and PAT retention."
+    }
+  ]
+}

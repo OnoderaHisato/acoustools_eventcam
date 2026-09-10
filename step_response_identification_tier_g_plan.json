@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "purpose": "Tier-G direction-resolved probes immediately below the estimated escape boundary.",
+  "defaults": {
+    "sample_hz": 10000,
+    "duration_sec": 8.0,
+    "ramp_sec": 0.0,
+    "safety_limits": {
+      "max_offset_mm": 2.1,
+      "max_step_mm": 2.1,
+      "max_speed_mm_s": 100.0,
+      "max_acceleration_mm_s2": 28000.0
+    }
+  },
+  "escalation_note": "Record only after all Tier-F axes retain the particle. Each run isolates one axis and sign and increases monotonically through 2.00, 2.05, and 2.10 mm. Stop after any ejection or loss of stereo visibility.",
+  "experiments": [
+    {
+      "name": "G0_x_positive_staircase_escape_edge",
+      "kind": "staircase", "tier": "G", "axis": "x",
+      "hold_sec": 1.0, "initial_hold_sec": 2.0, "final_hold_sec": 1.0,
+      "amplitudes_mm": [2.0, 2.05, 2.1], "directions": [1],
+      "repeats_within_run": 1, "repeats": 1, "enabled": true
+    },
+    {
+      "name": "G1_x_negative_staircase_escape_edge",
+      "kind": "staircase", "tier": "G", "axis": "x",
+      "hold_sec": 1.0, "initial_hold_sec": 2.0, "final_hold_sec": 1.0,
+      "amplitudes_mm": [2.0, 2.05, 2.1], "directions": [-1],
+      "repeats_within_run": 1, "repeats": 1, "enabled": true
+    },
+    {
+      "name": "G2_y_positive_staircase_escape_edge",
+      "kind": "staircase", "tier": "G", "axis": "y",
+      "hold_sec": 1.0, "initial_hold_sec": 2.0, "final_hold_sec": 1.0,
+      "amplitudes_mm": [2.0, 2.05, 2.1], "directions": [1],
+      "repeats_within_run": 1, "repeats": 1, "enabled": true
+    },
+    {
+      "name": "G3_y_negative_staircase_escape_edge",
+      "kind": "staircase", "tier": "G", "axis": "y",
+      "hold_sec": 1.0, "initial_hold_sec": 2.0, "final_hold_sec": 1.0,
+      "amplitudes_mm": [2.0, 2.05, 2.1], "directions": [-1],
+      "repeats_within_run": 1, "repeats": 1, "enabled": true
+    },
+    {
+      "name": "G4_z_positive_staircase_escape_edge",
+      "kind": "staircase", "tier": "G", "axis": "z",
+      "hold_sec": 1.0, "initial_hold_sec": 2.0, "final_hold_sec": 1.0,
+      "amplitudes_mm": [2.0, 2.05, 2.1], "directions": [1],
+      "repeats_within_run": 1, "repeats": 1, "enabled": true
+    },
+    {
+      "name": "G5_z_negative_staircase_escape_edge",
+      "kind": "staircase", "tier": "G", "axis": "z",
+      "hold_sec": 1.0, "initial_hold_sec": 2.0, "final_hold_sec": 1.0,
+      "amplitudes_mm": [2.0, 2.05, 2.1], "directions": [-1],
+      "repeats_within_run": 1, "repeats": 1, "enabled": true
+    }
+  ]
+}

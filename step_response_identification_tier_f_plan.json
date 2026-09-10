@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "purpose": "Tier-F near-escape staircase probes after all Tier-E runs retain the particle.",
+  "defaults": {
+    "sample_hz": 10000,
+    "duration_sec": 10.0,
+    "ramp_sec": 0.0,
+    "safety_limits": {
+      "max_offset_mm": 1.9,
+      "max_step_mm": 1.9,
+      "max_speed_mm_s": 100.0,
+      "max_acceleration_mm_s2": 28000.0
+    }
+  },
+  "escalation_note": "Record only after all Tier-E runs retain the particle in both cameras. Targets are ordered from 1.80 to 1.90 mm without randomization. Stop after any ejection or loss of stereo visibility.",
+  "experiments": [
+    {
+      "name": "F0_x_staircase_near_escape",
+      "kind": "staircase",
+      "tier": "F",
+      "axis": "x",
+      "hold_sec": 1.0,
+      "initial_hold_sec": 2.0,
+      "final_hold_sec": 1.0,
+      "amplitudes_mm": [1.8, 1.9],
+      "directions": [1, -1],
+      "repeats_within_run": 1,
+      "repeats": 1,
+      "enabled": true
+    },
+    {
+      "name": "F1_y_staircase_near_escape",
+      "kind": "staircase",
+      "tier": "F",
+      "axis": "y",
+      "hold_sec": 1.0,
+      "initial_hold_sec": 2.0,
+      "final_hold_sec": 1.0,
+      "amplitudes_mm": [1.8, 1.9],
+      "directions": [1, -1],
+      "repeats_within_run": 1,
+      "repeats": 1,
+      "enabled": true
+    },
+    {
+      "name": "F2_z_staircase_near_escape",
+      "kind": "staircase",
+      "tier": "F",
+      "axis": "z",
+      "hold_sec": 1.0,
+      "initial_hold_sec": 2.0,
+      "final_hold_sec": 1.0,
+      "amplitudes_mm": [1.8, 1.9],
+      "directions": [1, -1],
+      "repeats_within_run": 1,
+      "repeats": 1,
+      "enabled": true
+    }
+  ]
+}

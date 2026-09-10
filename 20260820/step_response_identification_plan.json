@@ -1,0 +1,146 @@
+{
+  "schema_version": 1,
+  "purpose": "Trap-jump (staircase) step responses so Stage A of sindy_stereo3d_free_response.py can fit e_ddot = f(e, e_dot) on segments where u_dot = u_ddot = 0 exactly. Physically the trap, not the particle, is displaced: e = x - u jumps by the step size and then decays freely.",
+  "defaults": {
+    "sample_hz": 10000,
+    "duration_sec": 10.0,
+    "ramp_sec": 0.0,
+    "safety_limits": {
+      "max_offset_mm": 1.25,
+      "max_step_mm": 1.25,
+      "max_speed_mm_s": 100.0,
+      "max_acceleration_mm_s2": 28000.0
+    }
+  },
+  "escalation_note": "Run tier A first and confirm the particle survives every jump before enabling tier B, then tier C. AUTO_TRANSFER_STEP_MM=0.25 is already proven safe in the existing transfer code; 0.5 mm is a modest extrapolation and 1.0 mm approaches the sin(2k*e) force peak at 1.072 mm. The escape boundary is 2.144 mm.",
+  "experiments": [
+    {
+      "name": "A0_x_staircase_small",
+      "kind": "staircase",
+      "axis": "x",
+      "hold_sec": 0.3,
+      "initial_hold_sec": 2.0,
+      "final_hold_sec": 0.3,
+      "amplitudes_mm": [0.25, 0.4],
+      "directions": [1, -1],
+      "repeats_within_run": 2,
+      "order_seed": 3101,
+      "repeats": 1,
+      "enabled": true
+    },
+    {
+      "name": "A1_y_staircase_small",
+      "kind": "staircase",
+      "axis": "y",
+      "hold_sec": 0.3,
+      "initial_hold_sec": 2.0,
+      "final_hold_sec": 0.3,
+      "amplitudes_mm": [0.25, 0.4],
+      "directions": [1, -1],
+      "repeats_within_run": 2,
+      "order_seed": 3201,
+      "repeats": 1,
+      "enabled": true
+    },
+    {
+      "name": "A2_z_staircase_small",
+      "kind": "staircase",
+      "axis": "z",
+      "hold_sec": 0.3,
+      "initial_hold_sec": 2.0,
+      "final_hold_sec": 0.3,
+      "amplitudes_mm": [0.25, 0.4],
+      "directions": [1, -1],
+      "repeats_within_run": 2,
+      "order_seed": 3301,
+      "repeats": 1,
+      "enabled": true
+    },
+
+    {
+      "name": "B0_x_staircase_ladder",
+      "kind": "staircase",
+      "axis": "x",
+      "hold_sec": 0.3,
+      "initial_hold_sec": 2.0,
+      "final_hold_sec": 0.3,
+      "amplitudes_mm": [0.25, 0.5, 0.7],
+      "directions": [1, -1],
+      "repeats_within_run": 2,
+      "order_seed": 3102,
+      "repeats": 2,
+      "enabled": false
+    },
+    {
+      "name": "B1_y_staircase_ladder",
+      "kind": "staircase",
+      "axis": "y",
+      "hold_sec": 0.3,
+      "initial_hold_sec": 2.0,
+      "final_hold_sec": 0.3,
+      "amplitudes_mm": [0.25, 0.5, 0.7],
+      "directions": [1, -1],
+      "repeats_within_run": 2,
+      "order_seed": 3202,
+      "repeats": 2,
+      "enabled": false
+    },
+    {
+      "name": "B2_z_staircase_ladder",
+      "kind": "staircase",
+      "axis": "z",
+      "hold_sec": 0.3,
+      "initial_hold_sec": 2.0,
+      "final_hold_sec": 0.3,
+      "amplitudes_mm": [0.25, 0.5, 0.7],
+      "directions": [1, -1],
+      "repeats_within_run": 2,
+      "order_seed": 3302,
+      "repeats": 2,
+      "enabled": false
+    },
+
+    {
+      "name": "C0_x_staircase_nonlinear",
+      "kind": "staircase",
+      "axis": "x",
+      "hold_sec": 0.3,
+      "initial_hold_sec": 2.0,
+      "final_hold_sec": 0.3,
+      "amplitudes_mm": [0.3, 0.6, 0.85, 1.05],
+      "directions": [1, -1],
+      "repeats_within_run": 2,
+      "order_seed": 3103,
+      "repeats": 2,
+      "enabled": false
+    },
+    {
+      "name": "C1_y_staircase_nonlinear",
+      "kind": "staircase",
+      "axis": "y",
+      "hold_sec": 0.3,
+      "initial_hold_sec": 2.0,
+      "final_hold_sec": 0.3,
+      "amplitudes_mm": [0.3, 0.6, 0.85, 1.05],
+      "directions": [1, -1],
+      "repeats_within_run": 2,
+      "order_seed": 3203,
+      "repeats": 2,
+      "enabled": false
+    },
+    {
+      "name": "C2_z_staircase_nonlinear",
+      "kind": "staircase",
+      "axis": "z",
+      "hold_sec": 0.3,
+      "initial_hold_sec": 2.0,
+      "final_hold_sec": 0.3,
+      "amplitudes_mm": [0.3, 0.6, 0.85, 1.05],
+      "directions": [1, -1],
+      "repeats_within_run": 2,
+      "order_seed": 3303,
+      "repeats": 2,
+      "enabled": false
+    }
+  ]
+}

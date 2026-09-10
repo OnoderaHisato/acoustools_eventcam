@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "purpose": "Tier-C-only nonlinear trap-jump staircase responses, enabled after all Tier-B jumps retained the particle in both stereo cameras.",
+  "defaults": {
+    "sample_hz": 10000,
+    "duration_sec": 10.0,
+    "ramp_sec": 0.0,
+    "safety_limits": {
+      "max_offset_mm": 1.25,
+      "max_step_mm": 1.25,
+      "max_speed_mm_s": 100.0,
+      "max_acceleration_mm_s2": 28000.0
+    }
+  },
+  "escalation_note": "Tier B was inspected on 2026-08-21 and all 144 jumps retained the particle in both cameras. Tier C may be selected as one six-run session; staircase preview and Enter confirmation remain mandatory before every run. Do not use Tier D until all Tier-C jumps have been inspected.",
+  "experiments": [
+    {
+      "name": "C0_x_staircase_nonlinear",
+      "kind": "staircase",
+      "tier": "C",
+      "axis": "x",
+      "hold_sec": 0.3,
+      "initial_hold_sec": 2.0,
+      "final_hold_sec": 0.3,
+      "amplitudes_mm": [0.3, 0.6, 0.85, 1.05],
+      "directions": [1, -1],
+      "repeats_within_run": 2,
+      "order_seed": 3103,
+      "repeats": 2,
+      "enabled": true
+    },
+    {
+      "name": "C1_y_staircase_nonlinear",
+      "kind": "staircase",
+      "tier": "C",
+      "axis": "y",
+      "hold_sec": 0.3,
+      "initial_hold_sec": 2.0,
+      "final_hold_sec": 0.3,
+      "amplitudes_mm": [0.3, 0.6, 0.85, 1.05],
+      "directions": [1, -1],
+      "repeats_within_run": 2,
+      "order_seed": 3203,
+      "repeats": 2,
+      "enabled": true
+    },
+    {
+      "name": "C2_z_staircase_nonlinear",
+      "kind": "staircase",
+      "tier": "C",
+      "axis": "z",
+      "hold_sec": 0.3,
+      "initial_hold_sec": 2.0,
+      "final_hold_sec": 0.3,
+      "amplitudes_mm": [0.3, 0.6, 0.85, 1.05],
+      "directions": [1, -1],
+      "repeats_within_run": 2,
+      "order_seed": 3303,
+      "repeats": 2,
+      "enabled": true
+    }
+  ]
+}

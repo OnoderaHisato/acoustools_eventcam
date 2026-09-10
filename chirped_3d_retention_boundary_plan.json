@@ -1,0 +1,86 @@
+[
+  {
+    "shape": "Chirped_3D",
+    "role": "diagnostic",
+    "risk_level": "retention_boundary",
+    "params": {
+      "label": "boundary01_xyz_10_100hz_amp1p5",
+      "duration_sec": 6,
+      "x_amp_mm": 1.5,
+      "y_amp_mm": 1.5,
+      "z_amp_mm": 1.5,
+      "x_f_start_hz": 10,
+      "x_f_end_hz": 80,
+      "y_f_start_hz": 12,
+      "y_f_end_hz": 90,
+      "z_f_start_hz": 15,
+      "z_f_end_hz": 100,
+      "max_speed_mm_s": 1500,
+      "max_accel_mm_s2": 1000000
+    }
+  },
+  {
+    "shape": "Chirped_3D",
+    "role": "diagnostic",
+    "risk_level": "retention_boundary",
+    "params": {
+      "label": "boundary02_xyz_10_130hz_amp2",
+      "duration_sec": 5,
+      "x_amp_mm": 2.0,
+      "y_amp_mm": 2.0,
+      "z_amp_mm": 2.0,
+      "x_f_start_hz": 10,
+      "x_f_end_hz": 110,
+      "y_f_start_hz": 15,
+      "y_f_end_hz": 120,
+      "z_f_start_hz": 20,
+      "z_f_end_hz": 130,
+      "max_speed_mm_s": 3000,
+      "max_accel_mm_s2": 2000000
+    }
+  },
+  {
+    "shape": "Chirped_3D",
+    "role": "diagnostic",
+    "risk_level": "retention_boundary",
+    "params": {
+      "label": "boundary03_counter_15_150hz_amp2p5",
+      "duration_sec": 5,
+      "x_amp_mm": 2.5,
+      "y_amp_mm": 2.5,
+      "z_amp_mm": 2.5,
+      "x_f_start_hz": 15,
+      "x_f_end_hz": 130,
+      "y_f_start_hz": 130,
+      "y_f_end_hz": 15,
+      "z_f_start_hz": 20,
+      "z_f_end_hz": 150,
+      "max_speed_mm_s": 4000,
+      "max_accel_mm_s2": 3000000
+    }
+  },
+  {
+    "shape": "Chirped_3D",
+    "role": "diagnostic",
+    "risk_level": "retention_boundary",
+    "params": {
+      "label": "boundary04_abrupt_15_180hz_amp3",
+      "duration_sec": 4,
+      "x_amp_mm": 3.0,
+      "y_amp_mm": 3.0,
+      "z_amp_mm": 3.0,
+      "x_f_start_hz": 15,
+      "x_f_end_hz": 150,
+      "y_f_start_hz": 150,
+      "y_f_end_hz": 15,
+      "z_f_start_hz": 20,
+      "z_f_end_hz": 180,
+      "x_phase_deg": 0,
+      "y_phase_deg": 90,
+      "z_phase_deg": 210,
+      "envelope": "constant",
+      "max_speed_mm_s": 5000,
+      "max_accel_mm_s2": 5000000
+    }
+  }
+]

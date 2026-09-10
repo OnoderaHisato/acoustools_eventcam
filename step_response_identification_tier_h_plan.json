@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "purpose": "Tier-H destructive direction-resolved probes that intentionally cross the estimated 2.144 mm escape boundary.",
+  "defaults": {
+    "sample_hz": 10000,
+    "duration_sec": 8.0,
+    "ramp_sec": 0.0,
+    "safety_limits": {
+      "max_offset_mm": 2.3,
+      "max_step_mm": 2.3,
+      "max_speed_mm_s": 100.0,
+      "max_acceleration_mm_s2": 28000.0
+    }
+  },
+  "escalation_note": "Destructive diagnostic: use only after every Tier-G direction survives. Select exactly one run per hardware session. The commands 2.15, 2.20, and 2.30 mm cross the estimated 2.144 mm escape boundary and may eject the particle or transfer it to a neighbouring node.",
+  "experiments": [
+    {
+      "name": "H0_x_positive_staircase_escape_crossing",
+      "kind": "staircase", "tier": "H", "axis": "x",
+      "allow_escape_boundary_probe": true,
+      "hold_sec": 1.0, "initial_hold_sec": 2.0, "final_hold_sec": 1.0,
+      "amplitudes_mm": [2.15, 2.2, 2.3], "directions": [1],
+      "repeats_within_run": 1, "repeats": 1, "enabled": true
+    },
+    {
+      "name": "H1_x_negative_staircase_escape_crossing",
+      "kind": "staircase", "tier": "H", "axis": "x",
+      "allow_escape_boundary_probe": true,
+      "hold_sec": 1.0, "initial_hold_sec": 2.0, "final_hold_sec": 1.0,
+      "amplitudes_mm": [2.15, 2.2, 2.3], "directions": [-1],
+      "repeats_within_run": 1, "repeats": 1, "enabled": true
+    },
+    {
+      "name": "H2_y_positive_staircase_escape_crossing",
+      "kind": "staircase", "tier": "H", "axis": "y",
+      "allow_escape_boundary_probe": true,
+      "hold_sec": 1.0, "initial_hold_sec": 2.0, "final_hold_sec": 1.0,
+      "amplitudes_mm": [2.15, 2.2, 2.3], "directions": [1],
+      "repeats_within_run": 1, "repeats": 1, "enabled": true
+    },
+    {
+      "name": "H3_y_negative_staircase_escape_crossing",
+      "kind": "staircase", "tier": "H", "axis": "y",
+      "allow_escape_boundary_probe": true,
+      "hold_sec": 1.0, "initial_hold_sec": 2.0, "final_hold_sec": 1.0,
+      "amplitudes_mm": [2.15, 2.2, 2.3], "directions": [-1],
+      "repeats_within_run": 1, "repeats": 1, "enabled": true
+    },
+    {
+      "name": "H4_z_positive_staircase_escape_crossing",
+      "kind": "staircase", "tier": "H", "axis": "z",
+      "allow_escape_boundary_probe": true,
+      "hold_sec": 1.0, "initial_hold_sec": 2.0, "final_hold_sec": 1.0,
+      "amplitudes_mm": [2.15, 2.2, 2.3], "directions": [1],
+      "repeats_within_run": 1, "repeats": 1, "enabled": true
+    },
+    {
+      "name": "H5_z_negative_staircase_escape_crossing",
+      "kind": "staircase", "tier": "H", "axis": "z",
+      "allow_escape_boundary_probe": true,
+      "hold_sec": 1.0, "initial_hold_sec": 2.0, "final_hold_sec": 1.0,
+      "amplitudes_mm": [2.15, 2.2, 2.3], "directions": [-1],
+      "repeats_within_run": 1, "repeats": 1, "enabled": true
+    }
+  ]
+}

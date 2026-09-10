@@ -1,0 +1,162 @@
+[
+  {
+    "shape": "Long_Random_3D",
+    "params": {
+      "label": "balanced_xyz_8s_seed2101_scale85",
+      "seed": 2101,
+      "duration_sec": 8,
+      "sample_hz": 10000,
+      "x_limit_mm": 18.7,
+      "y_limit_mm": 18.7,
+      "z_limit_mm": 18.7,
+      "f_min_hz": 0.25,
+      "f_max_hz": 10,
+      "components": 9,
+      "chirps": 3,
+      "waypoints": 9,
+      "drift_weight": 0.35,
+      "max_speed_mm_s": 765,
+      "max_accel_mm_s2": 25500
+    }
+  },
+  {
+    "shape": "Long_Random_3D",
+    "params": {
+      "label": "wide_xyz_10s_seed2202_scale85",
+      "seed": 2202,
+      "duration_sec": 10,
+      "sample_hz": 10000,
+      "x_limit_mm": 23.8,
+      "y_limit_mm": 20.4,
+      "z_limit_mm": 20.4,
+      "f_min_hz": 0.2,
+      "f_max_hz": 8,
+      "components": 10,
+      "chirps": 2,
+      "waypoints": 10,
+      "drift_weight": 0.45,
+      "max_speed_mm_s": 722.5,
+      "max_accel_mm_s2": 22100
+    }
+  },
+  {
+    "shape": "Long_Random_3D",
+    "params": {
+      "label": "depth_rich_10s_seed2303_scale85",
+      "seed": 2303,
+      "duration_sec": 10,
+      "sample_hz": 10000,
+      "x_limit_mm": 15.3,
+      "y_limit_mm": 23.8,
+      "z_limit_mm": 20.4,
+      "f_min_hz": 0.15,
+      "f_max_hz": 9,
+      "components": 9,
+      "chirps": 4,
+      "waypoints": 11,
+      "drift_weight": 0.4,
+      "max_speed_mm_s": 722.5,
+      "max_accel_mm_s2": 23800
+    }
+  },
+  {
+    "shape": "Long_Random_3D",
+    "params": {
+      "label": "vertical_rich_10s_seed2404_scale85",
+      "seed": 2404,
+      "duration_sec": 10,
+      "sample_hz": 10000,
+      "x_limit_mm": 15.3,
+      "y_limit_mm": 15.3,
+      "z_limit_mm": 23.8,
+      "f_min_hz": 0.15,
+      "f_max_hz": 9,
+      "components": 9,
+      "chirps": 4,
+      "waypoints": 11,
+      "drift_weight": 0.4,
+      "max_speed_mm_s": 722.5,
+      "max_accel_mm_s2": 23800
+    }
+  },
+  {
+    "shape": "Long_Random_3D",
+    "params": {
+      "label": "high_frequency_xyz_8s_seed2505_scale85",
+      "seed": 2505,
+      "duration_sec": 8,
+      "sample_hz": 10000,
+      "x_limit_mm": 15.3,
+      "y_limit_mm": 15.3,
+      "z_limit_mm": 15.3,
+      "f_min_hz": 0.5,
+      "f_max_hz": 16,
+      "components": 12,
+      "chirps": 5,
+      "waypoints": 7,
+      "drift_weight": 0.2,
+      "max_speed_mm_s": 807.5,
+      "max_accel_mm_s2": 35700
+    }
+  },
+  {
+    "shape": "Long_Random_3D",
+    "params": {
+      "label": "slow_drift_xyz_15s_seed2606_scale85",
+      "seed": 2606,
+      "duration_sec": 15,
+      "sample_hz": 10000,
+      "x_limit_mm": 22.1,
+      "y_limit_mm": 22.1,
+      "z_limit_mm": 22.1,
+      "f_min_hz": 0.08,
+      "f_max_hz": 5,
+      "components": 8,
+      "chirps": 1,
+      "waypoints": 14,
+      "drift_weight": 0.65,
+      "max_speed_mm_s": 595,
+      "max_accel_mm_s2": 17000
+    }
+  },
+  {
+    "shape": "Long_Random_3D",
+    "params": {
+      "label": "chirp_dense_xyz_12s_seed2707_scale85",
+      "seed": 2707,
+      "duration_sec": 12,
+      "sample_hz": 10000,
+      "x_limit_mm": 20.4,
+      "y_limit_mm": 20.4,
+      "z_limit_mm": 20.4,
+      "f_min_hz": 0.2,
+      "f_max_hz": 14,
+      "components": 7,
+      "chirps": 7,
+      "waypoints": 8,
+      "drift_weight": 0.25,
+      "max_speed_mm_s": 765,
+      "max_accel_mm_s2": 46750
+    }
+  },
+  {
+    "shape": "Long_Random_3D",
+    "params": {
+      "label": "full_range_xyz_10s_seed2808_scale85",
+      "seed": 2808,
+      "duration_sec": 10,
+      "sample_hz": 10000,
+      "x_limit_mm": 25.5,
+      "y_limit_mm": 25.5,
+      "z_limit_mm": 25.5,
+      "f_min_hz": 0.15,
+      "f_max_hz": 9,
+      "components": 11,
+      "chirps": 4,
+      "waypoints": 11,
+      "drift_weight": 0.35,
+      "max_speed_mm_s": 722.5,
+      "max_accel_mm_s2": 23800
+    }
+  }
+]

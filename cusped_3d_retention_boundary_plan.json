@@ -1,0 +1,79 @@
+[
+  {
+    "shape": "Cusped_3D",
+    "role": "diagnostic",
+    "risk_level": "retention_boundary",
+    "params": {
+      "label": "cusp_boundary01_cardioid_f8_amp4",
+      "curve": "cardioid",
+      "plane": "xz",
+      "u_amp_mm": 4.0,
+      "v_amp_mm": 4.0,
+      "out_of_plane_amp_mm": 1.0,
+      "rounding": 0.0,
+      "steps_per_cycle": 1000,
+      "frequency_hz": 8,
+      "loops": 6,
+      "max_speed_mm_s": 2000,
+      "max_accel_mm_s2": 1000000
+    }
+  },
+  {
+    "shape": "Cusped_3D",
+    "role": "diagnostic",
+    "risk_level": "retention_boundary",
+    "params": {
+      "label": "cusp_boundary02_nephroid_f10_amp4",
+      "curve": "nephroid",
+      "plane": "xy",
+      "u_amp_mm": 4.0,
+      "v_amp_mm": 4.0,
+      "out_of_plane_amp_mm": 1.2,
+      "rounding": 0.0,
+      "steps_per_cycle": 1000,
+      "frequency_hz": 10,
+      "loops": 5,
+      "max_speed_mm_s": 3000,
+      "max_accel_mm_s2": 2000000
+    }
+  },
+  {
+    "shape": "Cusped_3D",
+    "role": "diagnostic",
+    "risk_level": "retention_boundary",
+    "params": {
+      "label": "cusp_boundary03_astroid_f20_amp4",
+      "curve": "astroid",
+      "plane": "yz",
+      "u_amp_mm": 4.0,
+      "v_amp_mm": 4.0,
+      "out_of_plane_amp_mm": 1.5,
+      "rounding": 0.0,
+      "steps_per_cycle": 1000,
+      "frequency_hz": 20,
+      "loops": 4,
+      "max_speed_mm_s": 4000,
+      "max_accel_mm_s2": 3500000
+    }
+  },
+  {
+    "shape": "Cusped_3D",
+    "role": "diagnostic",
+    "risk_level": "retention_boundary",
+    "params": {
+      "label": "cusp_boundary04_hypocycloid10_f25_amp4",
+      "curve": "hypocycloid",
+      "plane": "xz",
+      "cusp_count": 10,
+      "u_amp_mm": 4.0,
+      "v_amp_mm": 4.0,
+      "out_of_plane_amp_mm": 2.5,
+      "rounding": 0.0,
+      "steps_per_cycle": 800,
+      "frequency_hz": 25,
+      "loops": 3,
+      "max_speed_mm_s": 7000,
+      "max_accel_mm_s2": 10000000
+    }
+  }
+]

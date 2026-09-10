@@ -1,0 +1,76 @@
+{
+  "name": "pat_camera_registration_grid_27",
+  "description": "Operational camera-to-PAT registration using a static particle at a non-coplanar 3D grid.",
+  "stage_reference": {
+    "axis": "y",
+    "nominal_hardware_mm": 200.0,
+    "readback_tolerance_mm": 0.5,
+    "meaning": "Ossila absolute position at the nearest camera-to-PAT registration station"
+  },
+  "pat": {
+    "controller_ids": [101, 3],
+    "center_mm": [0.0, 0.0, 0.0],
+    "acoustools_zero_in_pat_mm": [0.0, 0.0, 0.0],
+    "x_offsets_mm": [-10.0, 0.0, 10.0],
+    "y_offsets_mm": [-5.0, 0.0, 5.0],
+    "z_offsets_mm": [-10.0, 0.0, 10.0],
+    "transfer_step_mm": 0.25,
+    "transfer_dwell_sec": 0.04,
+    "settle_sec": 0.8,
+    "return_to_center": true
+  },
+  "camera": {
+    "left_serial": "00000508",
+    "right_serial": "00000509",
+    "expected_square_mm": 7.12,
+    "stereo_calibration": "stereo_checkerboard_calib_on_stage_20260728/stereo_calibration_square7p12_final.npz",
+    "record_sec": 0.3,
+    "delta_t_us": 1000,
+    "start_delay_sec": 1.0,
+    "hw_sync": "left-master",
+    "hw_sync_timeout_sec": 10.0,
+    "npz_compression": "none",
+    "max_events": 0,
+    "sensor_width": 1280,
+    "sensor_height": 720,
+    "camera_reopen_wait_sec": 1.0,
+    "max_capture_attempts": 2,
+    "minimum_events_per_camera": 1000,
+    "preview": {
+      "enabled": true,
+      "delta_t_us": 5000,
+      "scale": 0.5,
+      "point_size": 1
+    }
+  },
+  "tracking": {
+    "window_us": 500,
+    "hop_us": 500,
+    "dt_us": 500,
+    "roi": "0,0,1280,720",
+    "tracking_method": "event_weighted",
+    "threshold_count": 1,
+    "min_events": 20,
+    "min_area": 5,
+    "min_mass": 30,
+    "polarity": "all",
+    "right_time_offset_sec": null,
+    "max_time_gap_sec": 0.001
+  },
+  "registration": {
+    "trim_start_sec": 0.05,
+    "trim_end_sec": 0.05,
+    "sample_outlier_floor_mm": 0.5,
+    "sample_outlier_mad_factor": 6.0,
+    "point_outlier_threshold_mm": 2.0,
+    "validation_every": 4,
+    "acceptance": {
+      "minimum_usable_points": 20,
+      "minimum_inlier_fraction": 0.8,
+      "maximum_fit_rms_mm": 1.0,
+      "maximum_fit_max_mm": 2.0,
+      "maximum_validation_rms_mm": 1.5,
+      "maximum_similarity_scale_error": 0.03
+    }
+  }
+}

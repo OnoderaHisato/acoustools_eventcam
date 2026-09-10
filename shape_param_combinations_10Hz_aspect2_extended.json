@@ -1,0 +1,58 @@
+[
+  {
+    "shape": "Diagonal_Line",
+    "params": {
+      "major_axis_mm": 5,
+      "minor_axis_mm": 3
+    }
+  },
+  {
+    "shape": "Diagonal_Line",
+    "params": {
+      "major_axis_mm": 5,
+      "minor_axis_mm": 4
+    }
+  },
+  {
+    "shape": "Diagonal_Line",
+    "params": {
+      "major_axis_mm": 8,
+      "minor_axis_mm": 9
+    }
+  },
+    {
+    "shape": "Diagonal_One_Line",
+    "params": {
+      "major_axis_mm": 3,
+      "minor_axis_mm": 4
+    }
+  },
+  {
+    "shape": "Diagonal_One_Line",
+    "params": {
+      "major_axis_mm": 7,
+      "minor_axis_mm": 7
+    }
+  },
+  {
+    "shape": "Ellipse",
+    "params": {
+      "major_axis_mm": 2,
+      "minor_axis_mm": 2
+    }
+  },
+  {
+    "shape": "Ellipse",
+    "params": {
+      "major_axis_mm": 6,
+      "minor_axis_mm": 3
+    }
+  },
+  {
+    "shape": "Rectangle",
+    "params": {
+      "x_mm": 2,
+      "z_mm": 4
+    }
+  }
+]

@@ -1,0 +1,72 @@
+{
+  "runs": {
+    "30_particle1_static_30s": {
+      "particle_id": "particle1",
+      "particle_description": "Record diameter, asymmetry, and surface appearance here"
+    },
+    "31_particle1_z_staircase_ringdown": {
+      "particle_id": "particle1",
+      "particle_description": "Use the same description and physical particle as the static run"
+    },
+    "40_shield_off_warm00_static_60s": {
+      "actual_warmup_minutes": 0,
+      "shield_state": "off",
+      "hvac_state": "on",
+      "room_temperature_c": null,
+      "array_surface_temperature_c": null,
+      "temperature_unavailable_reason": "Replace with a reason only when temperatures cannot be measured",
+      "particle_id": "YYYYMMDD_P01",
+      "operator_note": "First capture after active PAT output; the program records measured elapsed time"
+    },
+    "41_shield_off_warm05_static_60s": {
+      "actual_warmup_minutes": 5,
+      "shield_state": "off",
+      "hvac_state": "on",
+      "room_temperature_c": null,
+      "array_surface_temperature_c": null,
+      "temperature_unavailable_reason": "Replace with a reason only when temperatures cannot be measured",
+      "particle_id": "YYYYMMDD_P01",
+      "operator_note": "No enclosure; normal HVAC"
+    },
+    "42_shield_off_warm10_static_60s": {
+      "actual_warmup_minutes": 10,
+      "shield_state": "off",
+      "hvac_state": "on",
+      "room_temperature_c": null,
+      "array_surface_temperature_c": null,
+      "temperature_unavailable_reason": "Replace with a reason only when temperatures cannot be measured",
+      "particle_id": "YYYYMMDD_P01",
+      "operator_note": "No enclosure; normal HVAC"
+    },
+    "43_shield_on_warm05_static_60s": {
+      "actual_warmup_minutes": 5,
+      "shield_state": "on",
+      "hvac_state": "on",
+      "room_temperature_c": null,
+      "array_surface_temperature_c": null,
+      "temperature_unavailable_reason": "Replace with a reason only when temperatures cannot be measured",
+      "particle_id": "YYYYMMDD_P01",
+      "operator_note": "Acrylic enclosure; normal HVAC"
+    },
+    "44_shield_on_hvac_off_warm05_static_60s": {
+      "actual_warmup_minutes": 5,
+      "shield_state": "on",
+      "hvac_state": "off",
+      "room_temperature_c": null,
+      "array_surface_temperature_c": null,
+      "temperature_unavailable_reason": "Replace with a reason only when temperatures cannot be measured",
+      "particle_id": "YYYYMMDD_P01",
+      "operator_note": "Acrylic enclosure; HVAC and nearby fans off"
+    },
+    "45_shield_off_hvac_off_warm05_static_60s": {
+      "actual_warmup_minutes": 5,
+      "shield_state": "off",
+      "hvac_state": "off",
+      "room_temperature_c": null,
+      "array_surface_temperature_c": null,
+      "temperature_unavailable_reason": "Replace with a reason only when temperatures cannot be measured",
+      "particle_id": "YYYYMMDD_P01",
+      "operator_note": "No enclosure; HVAC and nearby fans off"
+    }
+  }
+}
