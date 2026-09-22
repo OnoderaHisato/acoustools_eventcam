@@ -1,0 +1,5 @@
+# Offline NPZ processing and OpenCV checkerboard calibration.
+# OpenEB/HAL and camera drivers require separate installation; see SETUP_OPENEB_JP.md.
+numpy==1.26.4
+opencv-python==4.10.0.84
+matplotlib>=3.8,<4

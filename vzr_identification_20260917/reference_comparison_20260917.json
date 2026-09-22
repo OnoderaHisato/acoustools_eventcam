@@ -1,0 +1,353 @@
+{
+  "compared_at": "2026-09-17T21:01:49",
+  "reference_dir": "G:\\マイドライブ\\Experiment\\20260917\\measurement_plan",
+  "export_manifest": "C:\\Users\\digit\\Documents\\scripts\\python\\eventcam_control\\vzr_identification_20260917\\export_vzr_identification\\export_manifest.json",
+  "source_plan_sha256": "d612dfcdc43f13ef7d736a7c36e1556882789d704410de0b26bdaa6806efb26d",
+  "tolerance_mm": 1e-12,
+  "all_within_tolerance": true,
+  "worst_max_abs_position_diff_mm": 3.3306690738754696e-16,
+  "runs": [
+    {
+      "name": "vzr_L1x_x0.4_57Hz_only",
+      "reference_npz": "G:\\マイドライブ\\Experiment\\20260917\\measurement_plan\\vzr_L1x_x0.4_57Hz_only.npz",
+      "reference_sha256": "d3575be7edb307dcd79210594e237dee51e0ce71b4088ba6ce58951f90b6d953",
+      "export_npz_sha256": "8842b4b2b9e10f48bc4512ab78ddba6e01ddecd2a9f1f7bd710eea10fc6a99d9",
+      "samples": 40000,
+      "sample_hz": 10000.0,
+      "reference_sample_hz": 10000.0,
+      "shape_match": true,
+      "max_abs_position_diff_mm": 1.6653345369377348e-16,
+      "max_abs_time_diff_sec": 0.0,
+      "reference_components": [
+        [
+          "x",
+          0.4,
+          57.0,
+          0.0
+        ]
+      ],
+      "export_metrics": {
+        "max_abs_offset_mm": 0.4,
+        "max_speed_mm_s": 143.22600219267875,
+        "max_acceleration_mm_s2": 51284.2192599186
+      },
+      "safety_limit_fractions": {
+        "max_offset_mm": 0.5333333333333333,
+        "max_speed_mm_s": 0.3580650054816969,
+        "max_acceleration_mm_s2": 0.12821054814979652
+      }
+    },
+    {
+      "name": "vzr_L1z_z0.15_187Hz_only",
+      "reference_npz": "G:\\マイドライブ\\Experiment\\20260917\\measurement_plan\\vzr_L1z_z0.15_187Hz_only.npz",
+      "reference_sha256": "e9fc3be985b1b048a7fe35b8ad1c7f4a148875d3e6ce1c5223ad3aed19f917f3",
+      "export_npz_sha256": "61c875fa5ad3a8db8c671964d8135a09bb52d9ef3f70fc2fbdf64adf93ddae54",
+      "samples": 40000,
+      "sample_hz": 10000.0,
+      "reference_sample_hz": 10000.0,
+      "shape_match": true,
+      "max_abs_position_diff_mm": 5.551115123125783e-17,
+      "max_abs_time_diff_sec": 0.0,
+      "reference_components": [
+        [
+          "z",
+          0.15,
+          187.0,
+          0.0
+        ]
+      ],
+      "export_metrics": {
+        "max_abs_offset_mm": 0.15,
+        "max_speed_mm_s": 175.8381150092045,
+        "max_acceleration_mm_s2": 206126.95126580802
+      },
+      "safety_limit_fractions": {
+        "max_offset_mm": 0.19999999999999998,
+        "max_speed_mm_s": 0.43959528752301125,
+        "max_acceleration_mm_s2": 0.5153173781645201
+      }
+    },
+    {
+      "name": "vzr_L1_x0.4_57Hz_z0.15_187Hz",
+      "reference_npz": "G:\\マイドライブ\\Experiment\\20260917\\measurement_plan\\vzr_L1_x0.4_57Hz_z0.15_187Hz.npz",
+      "reference_sha256": "732a47dab77e1093cc6fa6d32a0993ef12fb1fbac876aa7c6473ef80ea990d0f",
+      "export_npz_sha256": "a8459c319243c6d19daa378cc03ad2d585f26562aff0e98e44e680a2ac4fd2a7",
+      "samples": 80000,
+      "sample_hz": 10000.0,
+      "reference_sample_hz": 10000.0,
+      "shape_match": true,
+      "max_abs_position_diff_mm": 1.6653345369377348e-16,
+      "max_abs_time_diff_sec": 0.0,
+      "reference_components": [
+        [
+          "x",
+          0.4,
+          57.0,
+          0.0
+        ],
+        [
+          "z",
+          0.15,
+          187.0,
+          0.7
+        ]
+      ],
+      "export_metrics": {
+        "max_abs_offset_mm": 0.4271844710360481,
+        "max_speed_mm_s": 226.7721570636162,
+        "max_acceleration_mm_s2": 212391.2925614679
+      },
+      "safety_limit_fractions": {
+        "max_offset_mm": 0.5695792947147308,
+        "max_speed_mm_s": 0.5669303926590404,
+        "max_acceleration_mm_s2": 0.5309782314036697
+      }
+    },
+    {
+      "name": "vzr_L2_x0.5_57Hz_z0.20_187Hz",
+      "reference_npz": "G:\\マイドライブ\\Experiment\\20260917\\measurement_plan\\vzr_L2_x0.5_57Hz_z0.20_187Hz.npz",
+      "reference_sha256": "cd131654bc1d1c1f773bd689936ba4643d817862f025d5d3ed9ab4b0a310d72e",
+      "export_npz_sha256": "dc935d90aa29e4443971b2d37abe241ddfb3afbfc6542c97dc187bf69c8fc0cc",
+      "samples": 80000,
+      "sample_hz": 10000.0,
+      "reference_sample_hz": 10000.0,
+      "shape_match": true,
+      "max_abs_position_diff_mm": 1.6653345369377348e-16,
+      "max_abs_time_diff_sec": 0.0,
+      "reference_components": [
+        [
+          "x",
+          0.5,
+          57.0,
+          0.0
+        ],
+        [
+          "z",
+          0.2,
+          187.0,
+          0.7
+        ]
+      ],
+      "export_metrics": {
+        "max_abs_offset_mm": 0.5384961342625344,
+        "max_speed_mm_s": 294.97019981588096,
+        "max_acceleration_mm_s2": 282186.9957895139
+      },
+      "safety_limit_fractions": {
+        "max_offset_mm": 0.7179948456833792,
+        "max_speed_mm_s": 0.7374254995397024,
+        "max_acceleration_mm_s2": 0.7054674894737848
+      }
+    },
+    {
+      "name": "vzr_L3_x0.6_57Hz_z0.20_187Hz",
+      "reference_npz": "G:\\マイドライブ\\Experiment\\20260917\\measurement_plan\\vzr_L3_x0.6_57Hz_z0.20_187Hz.npz",
+      "reference_sha256": "238afcc0d13d5a2d47eaaa997eb7a1d6162ea3c19ab5761b1ff4f58bab798456",
+      "export_npz_sha256": "9721d358dfb67bdd3d0e898fbbf2c1204dc4f1e3cdce8abef096ded1e3dc195a",
+      "samples": 80000,
+      "sample_hz": 10000.0,
+      "reference_sample_hz": 10000.0,
+      "shape_match": true,
+      "max_abs_position_diff_mm": 2.220446049250313e-16,
+      "max_abs_time_diff_sec": 0.0,
+      "reference_components": [
+        [
+          "x",
+          0.6,
+          57.0,
+          0.0
+        ],
+        [
+          "z",
+          0.2,
+          187.0,
+          0.7
+        ]
+      ],
+      "export_metrics": {
+        "max_abs_offset_mm": 0.6324332639518916,
+        "max_speed_mm_s": 317.977636543405,
+        "max_acceleration_mm_s2": 285372.68915258604
+      },
+      "safety_limit_fractions": {
+        "max_offset_mm": 0.8432443519358555,
+        "max_speed_mm_s": 0.7949440913585125,
+        "max_acceleration_mm_s2": 0.7134317228814651
+      }
+    },
+    {
+      "name": "vzr_L4_x0.6_57Hz_z0.25_187Hz",
+      "reference_npz": "G:\\マイドライブ\\Experiment\\20260917\\measurement_plan\\vzr_L4_x0.6_57Hz_z0.25_187Hz.npz",
+      "reference_sha256": "4c09e625482fae3812f86e9595846d09ff66bde5bc311e66f63ca9ede0701a1f",
+      "export_npz_sha256": "f5a64b8525189f131c14f25ae70b5bfe95b8d0e5d2814f9d42064b6b46e92fe1",
+      "samples": 80000,
+      "sample_hz": 10000.0,
+      "reference_sample_hz": 10000.0,
+      "shape_match": true,
+      "max_abs_position_diff_mm": 2.220446049250313e-16,
+      "max_abs_time_diff_sec": 0.0,
+      "reference_components": [
+        [
+          "x",
+          0.6,
+          57.0,
+          0.0
+        ],
+        [
+          "z",
+          0.25,
+          187.0,
+          0.7
+        ]
+      ],
+      "export_metrics": {
+        "max_abs_offset_mm": 0.6499750005209788,
+        "max_speed_mm_s": 363.3495108237225,
+        "max_acceleration_mm_s2": 352019.47565281764
+      },
+      "safety_limit_fractions": {
+        "max_offset_mm": 0.8666333340279717,
+        "max_speed_mm_s": 0.9083737770593062,
+        "max_acceleration_mm_s2": 0.880048689132044
+      }
+    },
+    {
+      "name": "vzr_Y1y_y0.5_55Hz_only",
+      "reference_npz": "G:\\マイドライブ\\Experiment\\20260917\\measurement_plan\\vzr_Y1y_y0.5_55Hz_only.npz",
+      "reference_sha256": "c3fd20ec2de86026a5e770c6bb8b82e01c6fcfae0fe3eb3720033fb9ac02d6d1",
+      "export_npz_sha256": "cc9e4ec108214e00cca136e5dc7d2ffaeb930c9af8bf08184f7d1fec9a895d1a",
+      "samples": 40000,
+      "sample_hz": 10000.0,
+      "reference_sample_hz": 10000.0,
+      "shape_match": true,
+      "max_abs_position_diff_mm": 1.6653345369377348e-16,
+      "max_abs_time_diff_sec": 0.0,
+      "reference_components": [
+        [
+          "y",
+          0.5,
+          55.0,
+          0.0
+        ]
+      ],
+      "export_metrics": {
+        "max_abs_offset_mm": 0.5,
+        "max_speed_mm_s": 172.75320687266128,
+        "max_acceleration_mm_s2": 59687.34096938183
+      },
+      "safety_limit_fractions": {
+        "max_offset_mm": 0.6666666666666666,
+        "max_speed_mm_s": 0.43188301718165323,
+        "max_acceleration_mm_s2": 0.14921835242345458
+      }
+    },
+    {
+      "name": "vzr_Y1_y0.5_55Hz_z0.20_187Hz",
+      "reference_npz": "G:\\マイドライブ\\Experiment\\20260917\\measurement_plan\\vzr_Y1_y0.5_55Hz_z0.20_187Hz.npz",
+      "reference_sha256": "5a45603e0dc3812ed0faf2e2f81e5d2a149e7681eaa93fc8253574cc2d4f7727",
+      "export_npz_sha256": "05cfa949c6fbf718a43ce6a26b4664f4f22ee97c48cc4b4ad68fe91be011f855",
+      "samples": 80000,
+      "sample_hz": 10000.0,
+      "reference_sample_hz": 10000.0,
+      "shape_match": true,
+      "max_abs_position_diff_mm": 1.6653345369377348e-16,
+      "max_abs_time_diff_sec": 0.0,
+      "reference_components": [
+        [
+          "y",
+          0.5,
+          55.0,
+          0.0
+        ],
+        [
+          "z",
+          0.2,
+          187.0,
+          0.7
+        ]
+      ],
+      "export_metrics": {
+        "max_abs_offset_mm": 0.5384486934490488,
+        "max_speed_mm_s": 291.19939240394035,
+        "max_acceleration_mm_s2": 281238.20285708614
+      },
+      "safety_limit_fractions": {
+        "max_offset_mm": 0.7179315912653984,
+        "max_speed_mm_s": 0.7279984810098509,
+        "max_acceleration_mm_s2": 0.7030955071427154
+      }
+    },
+    {
+      "name": "vzr_Y2_y0.6_55Hz_z0.20_187Hz",
+      "reference_npz": "G:\\マイドライブ\\Experiment\\20260917\\measurement_plan\\vzr_Y2_y0.6_55Hz_z0.20_187Hz.npz",
+      "reference_sha256": "04884a1686b79c4199bcb1918ccb0a01ac5dd093a186db84022ab71f1ab0b89c",
+      "export_npz_sha256": "e8e509dc3357c069e4d68b06e3b3dc9e8b6b48cdb2dc32f1b0b645032093b874",
+      "samples": 80000,
+      "sample_hz": 10000.0,
+      "reference_sample_hz": 10000.0,
+      "shape_match": true,
+      "max_abs_position_diff_mm": 2.220446049250313e-16,
+      "max_abs_time_diff_sec": 0.0,
+      "reference_components": [
+        [
+          "y",
+          0.6,
+          55.0,
+          0.0
+        ],
+        [
+          "z",
+          0.2,
+          187.0,
+          0.7
+        ]
+      ],
+      "export_metrics": {
+        "max_abs_offset_mm": 0.6323840809884209,
+        "max_speed_mm_s": 312.92752532490067,
+        "max_acceleration_mm_s2": 284010.0410333898
+      },
+      "safety_limit_fractions": {
+        "max_offset_mm": 0.8431787746512279,
+        "max_speed_mm_s": 0.7823188133122517,
+        "max_acceleration_mm_s2": 0.7100251025834745
+      }
+    },
+    {
+      "name": "vzr_ALT_x0.7_50Hz_z0.20_187Hz",
+      "reference_npz": "G:\\マイドライブ\\Experiment\\20260917\\measurement_plan\\vzr_ALT_x0.7_50Hz_z0.20_187Hz.npz",
+      "reference_sha256": "206d5d0df09cd918eadecf2554355da0f344fc5ce9ef20b2d17f527cfc9f4c4d",
+      "export_npz_sha256": "8e964c2dcb703e6df608f0d8ce5e9b10eed8d3f72886b0ed598a2413492c8d04",
+      "samples": 80000,
+      "sample_hz": 10000.0,
+      "reference_sample_hz": 10000.0,
+      "shape_match": true,
+      "max_abs_position_diff_mm": 3.3306690738754696e-16,
+      "max_abs_time_diff_sec": 0.0,
+      "reference_components": [
+        [
+          "x",
+          0.7,
+          50.0,
+          0.0
+        ],
+        [
+          "z",
+          0.2,
+          187.0,
+          0.7
+        ]
+      ],
+      "export_metrics": {
+        "max_abs_offset_mm": 0.7279970013145303,
+        "max_speed_mm_s": 321.4156745259056,
+        "max_acceleration_mm_s2": 283344.90120908193
+      },
+      "safety_limit_fractions": {
+        "max_offset_mm": 0.9706626684193737,
+        "max_speed_mm_s": 0.8035391863147641,
+        "max_acceleration_mm_s2": 0.7083622530227048
+      }
+    }
+  ]
+}

@@ -1,5 +1,12 @@
 from __future__ import annotations
 
+import queue
+from pathlib import Path
+from tempfile import TemporaryDirectory
+import threading
+import time
+from types import SimpleNamespace
+from unittest import mock
 import unittest
 
 import numpy as np
@@ -43,6 +50,166 @@ class FakeSyncFacility:
         if self.unreadable_mode:
             raise TypeError("unregistered SyncMode enum")
         return FakeMode((self.reported_mode or self.requested_mode).upper())
+
+
+class RecordedValue:
+    """Stand-in for a multiprocessing.Value that remembers every assignment."""
+
+    def __init__(self, initial: int = 0) -> None:
+        self.history: list[int] = []
+        self._value = int(initial)
+
+    @property
+    def value(self) -> int:
+        return self._value
+
+    @value.setter
+    def value(self, new_value: int) -> None:
+        self._value = int(new_value)
+        self.history.append(int(new_value))
+
+
+class StreamStallWatchdogTests(unittest.TestCase):
+    SECOND = 1_000_000_000
+
+    def test_only_a_silent_capturing_worker_counts_as_stalled(self) -> None:
+        now = 100 * self.SECOND
+        progress = {
+            "left": (recorder.CAPTURE_PHASE_CAPTURING, now - 5 * self.SECOND),
+            "right": (recorder.CAPTURE_PHASE_CAPTURING, now - self.SECOND // 100),
+        }
+        stalled = recorder.stalled_capture_sides(progress, now, 3.0)
+        self.assertEqual(list(stalled), ["left"])
+        self.assertAlmostEqual(stalled["left"], 5.0, places=6)
+
+    def test_start_up_and_saving_phases_are_never_reported(self) -> None:
+        now = 100 * self.SECOND
+        long_ago = now - 60 * self.SECOND
+        progress = {
+            "waiting_for_sync": (recorder.CAPTURE_PHASE_STARTING, long_ago),
+            "no_slice_yet": (recorder.CAPTURE_PHASE_CAPTURING, 0),
+            "writing_npz": (recorder.CAPTURE_PHASE_SAVING, long_ago),
+        }
+        self.assertEqual(recorder.stalled_capture_sides(progress, now, 3.0), {})
+
+    def test_zero_timeout_disables_the_watchdog(self) -> None:
+        now = 100 * self.SECOND
+        progress = {"left": (recorder.CAPTURE_PHASE_CAPTURING, now - 60 * self.SECOND)}
+        self.assertEqual(recorder.stalled_capture_sides(progress, now, 0.0), {})
+
+    def _progress(self, left_phase: int, left_age_sec: float, right_phase: int, right_age_sec: float):
+        now = time.perf_counter_ns()
+        return {
+            "left": (SimpleNamespace(value=left_phase), SimpleNamespace(value=now - int(left_age_sec * self.SECOND))),
+            "right": (SimpleNamespace(value=right_phase), SimpleNamespace(value=now - int(right_age_sec * self.SECOND))),
+        }
+
+    def test_collection_stops_within_seconds_when_one_stream_stalls(self) -> None:
+        results_queue: queue.Queue = queue.Queue()
+        abort_event = threading.Event()
+        started = time.monotonic()
+        results, stalled = recorder.collect_worker_results(
+            results_queue,
+            expected_sides=["right", "left"],
+            progress=self._progress(recorder.CAPTURE_PHASE_CAPTURING, 10.0, recorder.CAPTURE_PHASE_CAPTURING, 0.0),
+            abort_event=abort_event,
+            deadline_monotonic=time.monotonic() + 30.0,
+            stall_timeout_sec=3.0,
+            poll_sec=0.01,
+        )
+        self.assertLess(time.monotonic() - started, 2.0)
+        self.assertEqual(results, [])
+        self.assertEqual(list(stalled), ["left"])
+        self.assertTrue(abort_event.is_set())
+
+    def test_collection_returns_both_results_when_the_streams_are_healthy(self) -> None:
+        results_queue: queue.Queue = queue.Queue()
+        results_queue.put({"side": "right", "ok": True})
+        results_queue.put({"side": "left", "ok": True})
+        abort_event = threading.Event()
+        results, stalled = recorder.collect_worker_results(
+            results_queue,
+            expected_sides=["right", "left"],
+            progress=self._progress(recorder.CAPTURE_PHASE_SAVING, 10.0, recorder.CAPTURE_PHASE_SAVING, 10.0),
+            abort_event=abort_event,
+            deadline_monotonic=time.monotonic() + 30.0,
+            stall_timeout_sec=3.0,
+            poll_sec=0.01,
+        )
+        self.assertEqual([result["side"] for result in results], ["right", "left"])
+        self.assertEqual(stalled, {})
+        self.assertFalse(abort_event.is_set())
+
+    def test_a_finished_side_is_not_watched_while_the_other_is_still_capturing(self) -> None:
+        results_queue: queue.Queue = queue.Queue()
+        results_queue.put({"side": "left", "ok": True})
+        abort_event = threading.Event()
+        # The left value is stale on purpose: its result has already arrived.
+        results, stalled = recorder.collect_worker_results(
+            results_queue,
+            expected_sides=["right", "left"],
+            progress=self._progress(recorder.CAPTURE_PHASE_CAPTURING, 10.0, recorder.CAPTURE_PHASE_CAPTURING, 0.0),
+            abort_event=abort_event,
+            deadline_monotonic=time.monotonic() + 0.2,
+            stall_timeout_sec=3.0,
+            poll_sec=0.01,
+        )
+        self.assertEqual([result["side"] for result in results], ["left"])
+        self.assertEqual(stalled, {})
+        self.assertFalse(abort_event.is_set())
+
+    def test_worker_reports_capturing_then_saving_and_a_heartbeat_per_slice(self) -> None:
+        class FakeIterator:
+            def __init__(self) -> None:
+                self.current = 0
+
+            def __iter__(self):
+                for index in range(400):
+                    time.sleep(0.001)
+                    self.current = index * 1000
+                    events = np.zeros(3, dtype=recorder.EVENT_DTYPE)
+                    events["t"] = self.current + np.arange(3)
+                    yield events
+
+            def get_current_time(self) -> int:
+                return self.current
+
+        iterator = FakeIterator()
+        fake_events_iterator = SimpleNamespace(from_device=lambda **_kwargs: iterator)
+        device = SimpleNamespace(get_i_camera_synchronization=lambda: None)
+        phase = RecordedValue(recorder.CAPTURE_PHASE_STARTING)
+        heartbeat = RecordedValue(0)
+        results_queue: queue.Queue = queue.Queue()
+        with TemporaryDirectory() as temporary:
+            with (
+                mock.patch.object(recorder, "import_metavision", return_value=(fake_events_iterator, None, None)),
+                mock.patch.object(recorder.scale_capture, "open_event_camera", return_value=device),
+                mock.patch.object(recorder, "get_sensor_size", return_value=(1280, 720)),
+            ):
+                recorder.record_worker(
+                    side="left",
+                    serial="test",
+                    output_dir=str(Path(temporary) / "left"),
+                    start_perf_ns=time.perf_counter_ns(),
+                    start_delay_sec=0.0,
+                    duration_sec=0.02,
+                    delta_t_us=1000,
+                    sensor_width=1280,
+                    sensor_height=720,
+                    max_events=0,
+                    result_queue=results_queue,
+                    sync_role="standalone",
+                    capture_phase=phase,
+                    last_slice_perf_ns=heartbeat,
+                )
+            result = results_queue.get_nowait()
+            self.assertTrue(result["ok"], result["meta"].get("error"))
+            self.assertEqual(
+                phase.history, [recorder.CAPTURE_PHASE_CAPTURING, recorder.CAPTURE_PHASE_SAVING]
+            )
+            self.assertEqual(len(heartbeat.history), result["meta"]["total_slices"])
+            self.assertEqual(heartbeat.history, sorted(heartbeat.history))
+            self.assertGreater(heartbeat.value, 0)
 
 
 class StereoSyncTimingTests(unittest.TestCase):

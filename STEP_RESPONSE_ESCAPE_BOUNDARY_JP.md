@@ -11,6 +11,8 @@ Tier Eの最大1.70 mmより先で、粒子が保持されなくなる指令ジ�
 Tier Eの全6 runで粒子生存と左右可視性を確認するまでTier Fを開始しないでください。粒子が
 飛んだ、隣のノードへ移った、中心へ戻らない、片眼で見えない場合は次のrunへ進みません。
 
+前Tierの生存確認フラグ（`--acknowledge-step-response-tier-*-survived`）は2026-09-16に廃止しました。F/Gは`--acknowledge-step-response-risk`だけで実行でき、Hは加えて`--acknowledge-step-response-escape-boundary-probe`が必要です。前Tierの生存確認は各run直前のプレビュー・Enter確認で行ってください。
+
 ## 段階
 
 | Tier | 指令振幅 | 境界比 | run構成 | 意図 |
@@ -47,8 +49,7 @@ E全runの生存確認後、まずXだけを実行します。
   --hf-export-dir .\step_response_identification_tier_f_export `
   --output-dir .\stereo_acoustools_3d_records_step_response `
   --label F0_x_staircase_near_escape `
-  --acknowledge-step-response-risk `
-  --acknowledge-step-response-tier-e-survived
+  --acknowledge-step-response-risk
 ```
 
 Xの全8ジャンプで生存を確認後、Y/Zは次で選択できます。各run前のプレビュー・Enter確認は
@@ -60,8 +61,7 @@ Xの全8ジャンプで生存を確認後、Y/Zは次で選択できます。各
   --output-dir .\stereo_acoustools_3d_records_step_response `
   --label F1_y_staircase_near_escape `
   --label F2_z_staircase_near_escape `
-  --acknowledge-step-response-risk `
-  --acknowledge-step-response-tier-e-survived
+  --acknowledge-step-response-risk
 ```
 
 ## Tier G
@@ -84,8 +84,7 @@ G5_z_negative_staircase_escape_edge
   --hf-export-dir .\step_response_identification_tier_g_export `
   --output-dir .\stereo_acoustools_3d_records_step_response `
   --label G0_x_positive_staircase_escape_edge `
-  --acknowledge-step-response-risk `
-  --acknowledge-step-response-tier-f-survived
+  --acknowledge-step-response-risk
 ```
 
 各run内は`2.00 → center → 2.05 → center → 2.10 → center mm`です。負方向runでは符号だけが
@@ -113,7 +112,6 @@ H5_z_negative_staircase_escape_crossing
   --output-dir .\stereo_acoustools_3d_records_step_response `
   --label H0_x_positive_staircase_escape_crossing `
   --acknowledge-step-response-risk `
-  --acknowledge-step-response-tier-g-survived `
   --acknowledge-step-response-escape-boundary-probe
 ```
 

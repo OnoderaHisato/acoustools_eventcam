@@ -5,9 +5,11 @@ from __future__ import annotations
 
 import argparse
 import copy
+import dataclasses
 import datetime as dt
 import json
 import math
+import time
 from pathlib import Path
 from typing import Any
 
@@ -25,6 +27,8 @@ from stereo_acoustools_3d_common import PROCESSING_CONFIG_FIELDS, atomic_write_j
 from stereo_acoustools_3d_hf_common import (
     hf_run_selections,
     hf_automation_metadata,
+    is_feedforward_validation_metadata,
+    is_vzr_metadata,
     load_hf_export_runs,
     prepare_hf_trajectory,
     resolve_hf_run_requests,
@@ -35,8 +39,60 @@ from stereo_acoustools_3d_recording_core import (
     open_recording_hardware_session,
     precompute_hologram_playback,
     run_recording,
+    safe_run_dir_base,
     shutdown_recording_hardware_session,
 )
+
+
+DEFAULT_AUTOMATIC_CAPTURE_RETRIES = 2
+MAX_AUTOMATIC_CAPTURE_RETRIES = 10
+SCHEDULE_STATUS_INTERVAL_SEC = 30.0
+
+
+def voltage_tag(volts: float) -> str:
+    """Directory-safe voltage tag: 15 -> 'V15', 13.5 -> 'V13p5'."""
+    text = f"{float(volts):g}".replace(".", "p").replace("-", "m")
+    return f"V{text}"
+
+
+def tag_trajectory_label(trajectory: Any, tag: str) -> Any:
+    """Append the voltage tag to the run label that names the run directory."""
+    if not tag:
+        return trajectory
+    return dataclasses.replace(trajectory, run_label=f"{trajectory.run_label}_{tag}")
+
+
+def scheduled_group_offset_sec(
+    run_index: int, group_size: int, interval_sec: float
+) -> float | None:
+    """Offset after sound-on at which this run's group may start, or None when it need not wait.
+
+    Only the first run of each group waits; group 0 starts right after the checkpoint.
+    """
+    if run_index % group_size != 0:
+        return None
+    group = run_index // group_size
+    if group == 0:
+        return None
+    return group * float(interval_sec)
+
+
+def wait_until_wall_time(target_wall_sec: float, description: str) -> None:
+    """Hold (PAT keeps the particle at centre) until the wall clock reaches the target."""
+    last_status = 0.0
+    while True:
+        remaining = target_wall_sec - time.time()
+        if remaining <= 0.0:
+            return
+        now = time.monotonic()
+        if now - last_status >= SCHEDULE_STATUS_INTERVAL_SEC or last_status == 0.0:
+            print(
+                f"[AUTO][SCHEDULE] {description}: starting in {remaining:.0f} s "
+                "(particle held at centre, PAT on).",
+                flush=True,
+            )
+            last_status = now
+        time.sleep(min(1.0, remaining))
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
@@ -49,8 +105,12 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--hf-export-dir",
         type=Path,
+        action="append",
         default=None,
-        help="Record pre-exported high-frequency identification commands instead of --json.",
+        help=(
+            "Record pre-exported high-frequency identification commands instead of --json. "
+            "Repeatable: runs are recorded in the given directory order, then manifest order."
+        ),
     )
     parser.add_argument(
         "--hf-command-scale",
@@ -104,6 +164,26 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         help="Required for B1 runs marked HOLD after lower ranks retained the particle.",
     )
     parser.add_argument(
+        "--acknowledge-vzr-protocol",
+        action="store_true",
+        help=(
+            "Required for vzr identification hardware runs (simultaneous x/y + z sines) "
+            "after reading VZR_IDENTIFICATION_MEASUREMENT_JP.md: single-axis hold checks "
+            "first, then the L1 -> L4 / Y1 -> Y2 escalation in export order with a stereo "
+            "preview and Enter confirmation before every run."
+        ),
+    )
+    parser.add_argument(
+        "--acknowledge-ff-validation-protocol",
+        action="store_true",
+        help=(
+            "Required for imported feedforward-validation commands (FF heart) after "
+            "reading FF_HEART_VALIDATION_MEASUREMENT_JP.md and inspecting the exported "
+            "previews: the command is played exactly as imported, with no acquisition-side "
+            "feedforward, clipping, or rescaling."
+        ),
+    )
+    parser.add_argument(
         "--acknowledge-step-response-risk",
         action="store_true",
         help=(
@@ -112,46 +192,74 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         ),
     )
     parser.add_argument(
-        "--acknowledge-step-response-tier-a-survived",
-        action="store_true",
-        help="Required before recording tier-B staircase runs.",
-    )
-    parser.add_argument(
-        "--acknowledge-step-response-tier-b-survived",
-        action="store_true",
-        help="Required before recording tier-C staircase runs.",
-    )
-    parser.add_argument(
-        "--acknowledge-step-response-tier-c-survived",
-        action="store_true",
-        help="Required before recording the higher-risk tier-D staircase runs.",
-    )
-    parser.add_argument(
-        "--acknowledge-step-response-tier-d-survived",
-        action="store_true",
-        help="Required before recording the near-boundary tier-E staircase runs.",
-    )
-    parser.add_argument(
-        "--acknowledge-step-response-tier-e-survived",
-        action="store_true",
-        help="Required before recording tier-F staircase runs near the escape boundary.",
-    )
-    parser.add_argument(
-        "--acknowledge-step-response-tier-f-survived",
-        action="store_true",
-        help="Required before recording tier-G staircase runs immediately below escape.",
-    )
-    parser.add_argument(
-        "--acknowledge-step-response-tier-g-survived",
-        action="store_true",
-        help="Required before recording tier-H escape-boundary crossing probes.",
-    )
-    parser.add_argument(
         "--acknowledge-step-response-escape-boundary-probe",
         action="store_true",
         help=(
             "Required for tier-H commands at or above the estimated escape boundary; "
             "particle ejection and re-levitation are expected outcomes."
+        ),
+    )
+    parser.add_argument(
+        "--unattended-after-first-checkpoint",
+        action="store_true",
+        help=(
+            "Step-response staircase and imported feedforward-validation runs only "
+            "(they may be mixed): keep the stereo preview and Enter "
+            "confirmation before the first run, then record all remaining selected runs "
+            "without operator checkpoints. The first run's holograms are computed before "
+            "PAT output starts. Particle loss is NOT detected automatically."
+        ),
+    )
+    parser.add_argument(
+        "--prompt-on-capture-failure",
+        action="store_true",
+        help=(
+            "With --unattended-after-first-checkpoint: when a capture fails "
+            "(camera start, recorder, PAT send, LED detection), ask whether to "
+            "re-record it instead of retrying automatically. Cannot be combined "
+            "with --automatic-capture-retries."
+        ),
+    )
+    parser.add_argument(
+        "--supply-voltage-v",
+        type=float,
+        default=None,
+        metavar="V",
+        help=(
+            "Export runs only: the PAT supply voltage used for this session. It is "
+            "recorded in every run and appended to the run directory name "
+            "(for example 15 -> ..._scale100_V15_<time>) so that runs at different "
+            "voltages are never mixed. The voltage itself is set on the power supply."
+        ),
+    )
+    parser.add_argument(
+        "--schedule-interval-sec",
+        type=float,
+        default=None,
+        metavar="S",
+        help=(
+            "With --unattended-after-first-checkpoint: start run group g (g >= 1) no "
+            "earlier than g*S seconds after PAT output started (sound on). Group 0 "
+            "starts after the first-run checkpoint. Between groups the particle is held "
+            "at centre with PAT on. Used for the thermal hold test (kcheck every 5 min)."
+        ),
+    )
+    parser.add_argument(
+        "--schedule-group-size",
+        type=int,
+        default=1,
+        metavar="N",
+        help="Number of consecutive runs per scheduled group (default 1).",
+    )
+    parser.add_argument(
+        "--automatic-capture-retries",
+        type=int,
+        default=None,
+        metavar="N",
+        help=(
+            "With --unattended-after-first-checkpoint: re-record a failed capture "
+            f"(camera start, recorder, PAT send, LED detection) up to N times "
+            f"before stopping the session (default {DEFAULT_AUTOMATIC_CAPTURE_RETRIES})."
         ),
     )
     parser.add_argument(
@@ -284,6 +392,49 @@ def _print_hf_run_list(conditions: list[Any]) -> None:
                 "of estimated escape boundary)"
             )
             continue
+        if str(metadata.get("kind", "")).lower() == "multitone":
+            parts = []
+            for component in metadata["generation_detail"]["components"]:
+                if component.get("chirp"):
+                    frequency = f"{component['f_start_hz']:g}->{component['f_end_hz']:g}Hz"
+                else:
+                    frequency = f"{component['frequency_hz']:g}Hz"
+                parts.append(
+                    f"{component['axis']}={component['amplitude_mm'] * command_scale:g}mm@{frequency}"
+                )
+            prefix = "[VZR]" if is_vzr_metadata(metadata) else "[HF][MULTITONE]"
+            print(
+                f"{prefix} Export #{condition.export_index:03d} {condition.name}: "
+                f"axes={metadata['axis']}, {' + '.join(parts)}, "
+                f"duration={metadata['duration_sec']:g}s, sample={metadata['sample_hz']:g}Hz, "
+                f"ramp={metadata['ramp_sec']:g}s, "
+                f"offset={metrics['max_abs_offset_mm']['vector'] * command_scale:.3f}mm, "
+                f"speed={metrics['max_speed_mm_s']['vector'] * command_scale:.1f}mm/s, "
+                f"accel={metrics['max_acceleration_mm_s2']['vector'] * command_scale:.0f}mm/s^2 "
+                f"({100.0 * metrics['max_acceleration_mm_s2']['vector'] * command_scale / float(metadata['safety_limits']['max_acceleration_mm_s2']):.0f}% of limit)"
+            )
+            continue
+        if str(metadata.get("kind", "")).lower() == "imported":
+            detail = metadata["generation_detail"]
+            design = metadata.get("feedforward_design", {})
+            distance = detail.get("max_command_reference_distance_mm")
+            distance_text = (
+                "" if distance is None
+                else f"max|u-r|={float(distance) * command_scale:.3f}mm, "
+            )
+            prefix = "[FF]" if is_feedforward_validation_metadata(metadata) else "[HF][IMPORTED]"
+            print(
+                f"{prefix} Export #{condition.export_index:03d} {condition.name}: "
+                f"design={design.get('design', '-') if isinstance(design, dict) else '-'}, "
+                f"axes={metadata['axis']}, source={detail['source_file']}, "
+                f"duration={metadata['duration_sec']:g}s, sample={metadata['sample_hz']:g}Hz, "
+                f"scale={command_scale:g}, "
+                f"offset={metrics['max_abs_offset_mm']['vector'] * command_scale:.3f}mm, "
+                f"{distance_text}"
+                f"speed={metrics['max_speed_mm_s']['vector'] * command_scale:.1f}mm/s, "
+                f"accel={metrics['max_acceleration_mm_s2']['vector'] * command_scale:.0f}mm/s^2"
+            )
+            continue
         print(
             f"[HF] Export #{condition.export_index:03d} {condition.name}: "
             f"kind={metadata['kind']}, axis={metadata['axis']}, "
@@ -299,6 +450,22 @@ def _plan_b_family(condition: Any) -> str:
     if str(metadata.get("campaign", "")) != "plan_b_20260825":
         return ""
     return str(metadata.get("measurement_family", "")).strip()
+
+
+def _vzr_condition(condition: Any) -> bool:
+    return is_vzr_metadata(getattr(condition, "metadata", {}))
+
+
+def _ff_condition(condition: Any) -> bool:
+    return is_feedforward_validation_metadata(getattr(condition, "metadata", {}))
+
+
+def _step_response_condition(condition: Any) -> bool:
+    metadata = getattr(condition, "metadata", {})
+    return (
+        str(metadata.get("kind", "")).lower() == "staircase"
+        and str(metadata.get("measurement_family", "")) == "step_response_identification"
+    )
 
 
 def _load_plan_b_context(path: Path | None) -> dict[str, dict[str, Any]]:
@@ -380,7 +547,8 @@ def _condition_args(base_args: argparse.Namespace, processing_config: dict[str, 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     try:
-        hf_mode = args.hf_export_dir is not None
+        hf_export_dirs = list(args.hf_export_dir or [])
+        hf_mode = bool(hf_export_dirs)
         if (args.plan_b_rank is not None or args.plan_b_condition) and not hf_mode:
             raise ValueError("Plan B selectors require --hf-export-dir")
         plan_b_contexts = _load_plan_b_context(args.plan_b_context_json)
@@ -388,8 +556,38 @@ def main(argv: list[str] | None = None) -> int:
             raise ValueError("--hf-run requires --hf-export-dir")
         if hf_mode and args.role:
             raise ValueError("--role is available only with JSON trajectory mode")
+        source_paths: list[Path] = []
         if hf_mode:
-            source_path, all_conditions = load_hf_export_runs(args.hf_export_dir)
+            if len(hf_export_dirs) > 1 and (
+                args.hf_run
+                or int(args.start_index) != 0
+                or int(args.limit) != 0
+                or args.plan_b_rank is not None
+                or args.plan_b_condition
+            ):
+                raise ValueError(
+                    "Multiple --hf-export-dir values can be combined only with --label "
+                    "selections (not --hf-run, --start-index, --limit, or Plan B selectors)."
+                )
+            all_conditions = []
+            run_owner: dict[str, Path] = {}
+            for export_dir in hf_export_dirs:
+                manifest_path, export_runs = load_hf_export_runs(export_dir)
+                if manifest_path in source_paths:
+                    raise ValueError(
+                        f"--hf-export-dir was given more than once: {manifest_path.parent}"
+                    )
+                source_paths.append(manifest_path)
+                for run in export_runs:
+                    key = run.name.lower()
+                    if key in run_owner:
+                        raise ValueError(
+                            f"Run name {run.name} exists in both {run_owner[key]} and "
+                            f"{manifest_path.parent}; labels must be unique across exports."
+                        )
+                    run_owner[key] = manifest_path.parent
+                all_conditions.extend(export_runs)
+            source_path = source_paths[0]
             if args.hf_run:
                 if args.label or int(args.start_index) != 0 or int(args.limit) != 0:
                     raise ValueError(
@@ -446,6 +644,116 @@ def main(argv: list[str] | None = None) -> int:
             condition for condition in conditions if hf_mode and _plan_b_family(condition)
         ]
         plan_b_selected = bool(plan_b_conditions)
+        vzr_conditions = [
+            condition for condition in conditions if hf_mode and _vzr_condition(condition)
+        ]
+        vzr_selected = bool(vzr_conditions)
+        ff_conditions = [
+            condition for condition in conditions if hf_mode and _ff_condition(condition)
+        ]
+        ff_selected = bool(ff_conditions)
+
+        unattended = bool(args.unattended_after_first_checkpoint)
+        prompt_on_capture_failure = bool(args.prompt_on_capture_failure)
+        automatic_capture_retries: int | None = None
+        if args.automatic_capture_retries is not None and not unattended:
+            raise ValueError(
+                "--automatic-capture-retries requires --unattended-after-first-checkpoint"
+            )
+        if prompt_on_capture_failure and not unattended:
+            raise ValueError(
+                "--prompt-on-capture-failure requires --unattended-after-first-checkpoint"
+            )
+        if prompt_on_capture_failure and args.automatic_capture_retries is not None:
+            raise ValueError(
+                "--prompt-on-capture-failure cannot be combined with "
+                "--automatic-capture-retries"
+            )
+        if unattended:
+            if len(step_response_conditions) + len(ff_conditions) != len(conditions):
+                raise ValueError(
+                    "--unattended-after-first-checkpoint is available only when every "
+                    "selected run is a step-response staircase export or an imported "
+                    "feedforward-validation command."
+                )
+            if any(
+                str(condition.metadata.get("step_response_tier", "")).upper() == "H"
+                for condition in step_response_conditions
+            ):
+                raise ValueError(
+                    "Tier-H escape-boundary probes cannot be recorded with "
+                    "--unattended-after-first-checkpoint."
+                )
+            if args.confirm_each_run or args.preview_each_run:
+                raise ValueError(
+                    "--unattended-after-first-checkpoint cannot be combined with "
+                    "--confirm-each-run or --preview-each-run."
+                )
+            # None keeps the interactive "re-record? (Y/n)" prompt of the recording core.
+            automatic_capture_retries = (
+                None
+                if prompt_on_capture_failure
+                else DEFAULT_AUTOMATIC_CAPTURE_RETRIES
+                if args.automatic_capture_retries is None
+                else int(args.automatic_capture_retries)
+            )
+            if automatic_capture_retries is not None and not (
+                0 <= automatic_capture_retries <= MAX_AUTOMATIC_CAPTURE_RETRIES
+            ):
+                raise ValueError(
+                    "--automatic-capture-retries must be from 0 through "
+                    f"{MAX_AUTOMATIC_CAPTURE_RETRIES}"
+                )
+            total_motion_sec = sum(
+                float(condition.metadata.get("duration_sec", 0.0)) for condition in conditions
+            )
+            print(
+                f"[AUTO][UNATTENDED] {len(conditions)} run(s) in the order listed above; "
+                f"PAT motion {total_motion_sec:.1f} s in total plus hologram preparation per run. "
+                "Only the first run has a stereo preview and Enter checkpoint. "
+                + (
+                    "A failed capture asks whether to re-record it. "
+                    if automatic_capture_retries is None
+                    else f"Failed captures are re-recorded up to {automatic_capture_retries} "
+                    "time(s), then the session stops. "
+                )
+                + "Particle loss is not detected automatically."
+            )
+
+        supply_voltage: float | None = None
+        run_tag = ""
+        if args.supply_voltage_v is not None:
+            if not hf_mode:
+                raise ValueError("--supply-voltage-v is available only with --hf-export-dir")
+            supply_voltage = float(args.supply_voltage_v)
+            if not (math.isfinite(supply_voltage) and 0.0 < supply_voltage <= 30.0):
+                raise ValueError("--supply-voltage-v must be in (0, 30]")
+            run_tag = voltage_tag(supply_voltage)
+            print(
+                f"[AUTO] Supply voltage {supply_voltage:g} V: run directories end in "
+                f"'_{run_tag}_<time>'. Set the voltage on the power supply yourself."
+            )
+        schedule_interval_sec: float | None = None
+        schedule_group_size = int(args.schedule_group_size)
+        if args.schedule_interval_sec is not None:
+            if not unattended:
+                raise ValueError(
+                    "--schedule-interval-sec requires --unattended-after-first-checkpoint"
+                )
+            schedule_interval_sec = float(args.schedule_interval_sec)
+            if not (math.isfinite(schedule_interval_sec) and schedule_interval_sec > 0.0):
+                raise ValueError("--schedule-interval-sec must be positive")
+            if schedule_group_size < 1:
+                raise ValueError("--schedule-group-size must be at least 1")
+            group_count = math.ceil(len(conditions) / schedule_group_size)
+            print(
+                f"[AUTO][SCHEDULE] {group_count} group(s) of {schedule_group_size} run(s). "
+                f"Group g starts {schedule_interval_sec:g} s x g after PAT output starts "
+                f"(sound on); the last group at {(group_count - 1) * schedule_interval_sec / 60.0:.1f} "
+                "min. Group 0 starts right after the first-run checkpoint."
+            )
+        elif schedule_group_size != 1:
+            raise ValueError("--schedule-group-size requires --schedule-interval-sec")
 
         if args.preview_only:
             if hf_mode:
@@ -458,21 +766,62 @@ def main(argv: list[str] | None = None) -> int:
             return 0
 
         # This also validates trajectory physics and the exact 40 kHz PAT divider.
+        shortened_run_dirs: dict[str, str] = {}
         for condition in conditions:
             if hf_mode:
-                prepare_hf_trajectory(
-                    condition.run,
-                    center_m=(0.0, 0.0, 0.0),
-                    command_scale=float(condition.command_scale),
+                validated = tag_trajectory_label(
+                    prepare_hf_trajectory(
+                        condition.run,
+                        center_m=(0.0, 0.0, 0.0),
+                        command_scale=float(condition.command_scale),
+                    ),
+                    run_tag,
                 )
+                # Tools often find runs by the label in the directory name. Report, before
+                # any hardware is opened, when the Windows path budget will replace the end
+                # of that name with a hash (the full label stays in pipeline_manifest.json).
+                placeholder_stamp = "00000000_000000"
+                try:
+                    run_dir_base = safe_run_dir_base(
+                        Path(args.output_dir),
+                        validated.shape_name,
+                        validated.run_label,
+                        placeholder_stamp,
+                    )
+                except RuntimeError as exc:
+                    raise ValueError(str(exc)) from exc
+                full_base = f"{validated.shape_name}_{validated.run_label}_{placeholder_stamp}"
+                if run_dir_base != full_base:
+                    shortened_run_dirs[validated.run_label] = run_dir_base[
+                        : -len(placeholder_stamp) - 1
+                    ]
+                del validated
             else:
                 prepare_auto_trajectory(condition)
+        if run_tag and shortened_run_dirs:
+            raise ValueError(
+                f"The voltage tag '_{run_tag}' would be cut from the run directory name of "
+                f"{', '.join(sorted(shortened_run_dirs))} by the Windows path budget. Use a "
+                f"shorter --output-dir (for example stereo_acoustools_3d_records_{run_tag})."
+            )
+        for run_label, shortened in shortened_run_dirs.items():
+            print(
+                f"[AUTO][WARN] {run_label}: the run directory will be named "
+                f"'{shortened}_<timestamp>' because the full name does not fit the Windows "
+                "path budget under --output-dir. The full label is kept in "
+                "pipeline_manifest.json; use a shorter --output-dir or run name if tools "
+                "match on directory names."
+            )
         if args.dry_run:
             mode_label = (
-                "step-response identification"
+                "feedforward validation"
+                if ff_selected
+                else "step-response identification"
                 if step_response_selected
                 else "Plan B identification"
                 if plan_b_selected
+                else "vzr identification"
+                if vzr_selected
                 else "HF identification" if hf_mode else "JSON trajectory"
             )
             print(f"[AUTO] {mode_label} dry run complete; no hardware was opened.")
@@ -533,12 +882,53 @@ def main(argv: list[str] | None = None) -> int:
             for condition in plan_b_conditions:
                 context = plan_b_contexts.get(condition.label, {})
                 _validate_plan_b_context(condition, context)
+        if vzr_selected:
+            if len(vzr_conditions) != len(conditions):
+                raise ValueError(
+                    "vzr identification exports cannot share a hardware session with other exports"
+                )
+            if args.keep_going:
+                raise ValueError(
+                    "--keep-going is disabled for vzr identification; a lost particle, "
+                    "declined checkpoint, or failed capture must stop the session."
+                )
+            if not args.acknowledge_vzr_protocol:
+                raise ValueError(
+                    "vzr identification hardware runs require --acknowledge-vzr-protocol after "
+                    "reading VZR_IDENTIFICATION_MEASUREMENT_JP.md: record the single-axis hold "
+                    "checks first, escalate L1 -> L4 (and Y1 -> Y2) in export order, and confirm "
+                    "the particle at every forced stereo preview/Enter checkpoint."
+                )
+        if ff_selected:
+            if any(
+                not _ff_condition(condition) and not _step_response_condition(condition)
+                for condition in conditions
+            ):
+                raise ValueError(
+                    "A feedforward-validation session may contain only imported "
+                    "feedforward-validation commands and step-response stiffness checks."
+                )
+            if args.keep_going:
+                raise ValueError(
+                    "--keep-going is disabled for feedforward validation; a lost particle, "
+                    "declined checkpoint, or failed capture must stop the session."
+                )
+            if not args.acknowledge_ff_validation_protocol:
+                raise ValueError(
+                    "Imported feedforward-validation commands require "
+                    "--acknowledge-ff-validation-protocol after reading "
+                    "FF_HEART_VALIDATION_MEASUREMENT_JP.md and inspecting the exported previews. "
+                    "The command is played exactly as imported; no acquisition-side "
+                    "feedforward, clipping, or rescaling is applied."
+                )
         if (
             hf_mode
             and any(
                 float(condition.command_scale) > 0.5
                 and str(condition.metadata.get("kind", "")).lower()
                 not in {"static", "staircase"}
+                and not _vzr_condition(condition)
+                and not _ff_condition(condition)
                 for condition in conditions
             )
             and not args.acknowledge_hf_retention_and_visibility
@@ -557,52 +947,17 @@ def main(argv: list[str] | None = None) -> int:
                 raise ValueError(
                     "Staircase trap jumps require --acknowledge-step-response-risk after "
                     "inspecting the exact exported previews. A stereo preview and Enter "
-                    "confirmation will still be forced before every run."
+                    "confirmation will still be forced before every run (only before the "
+                    "first run with --unattended-after-first-checkpoint)."
                 )
             selected_tiers = {
                 str(condition.metadata["step_response_tier"]).upper()
                 for condition in step_response_conditions
             }
-            if "B" in selected_tiers and not args.acknowledge_step_response_tier_a_survived:
-                raise ValueError(
-                    "Tier-B staircase recording requires "
-                    "--acknowledge-step-response-tier-a-survived."
-                )
-            if "C" in selected_tiers and not args.acknowledge_step_response_tier_b_survived:
-                raise ValueError(
-                    "Tier-C staircase recording requires "
-                    "--acknowledge-step-response-tier-b-survived."
-                )
-            if "D" in selected_tiers:
-                if not args.acknowledge_step_response_tier_c_survived:
-                    raise ValueError(
-                        "Tier-D staircase recording requires "
-                        "--acknowledge-step-response-tier-c-survived."
-                    )
-            if "E" in selected_tiers:
-                if not args.acknowledge_step_response_tier_d_survived:
-                    raise ValueError(
-                        "Tier-E staircase recording requires "
-                        "--acknowledge-step-response-tier-d-survived."
-                    )
-            if "F" in selected_tiers:
-                if not args.acknowledge_step_response_tier_e_survived:
-                    raise ValueError(
-                        "Tier-F staircase recording requires "
-                        "--acknowledge-step-response-tier-e-survived."
-                    )
-            if "G" in selected_tiers:
-                if not args.acknowledge_step_response_tier_f_survived:
-                    raise ValueError(
-                        "Tier-G staircase recording requires "
-                        "--acknowledge-step-response-tier-f-survived."
-                    )
+            # Per-tier "previous tier survived" acknowledgements were removed on
+            # 2026-09-16. Survival is still checked by the operator at the forced
+            # per-run stereo preview/Enter checkpoint below.
             if "H" in selected_tiers:
-                if not args.acknowledge_step_response_tier_g_survived:
-                    raise ValueError(
-                        "Tier-H staircase recording requires "
-                        "--acknowledge-step-response-tier-g-survived."
-                    )
                 if not args.acknowledge_step_response_escape_boundary_probe:
                     raise ValueError(
                         "Tier-H staircase recording crosses the estimated escape boundary "
@@ -683,6 +1038,28 @@ def main(argv: list[str] | None = None) -> int:
                     precompute_hologram_playback(trajectory),
                 )
 
+        precomputed_first_run: tuple[Any, Any] | None = None
+        if unattended:
+            # The operator confirms the particle once. Preparing the first run's
+            # holograms before PAT output keeps that confirmation immediately
+            # followed by the capture instead of a multi-minute wait.
+            print(
+                "[AUTO][UNATTENDED] Precomputing the first run's holograms before "
+                "starting PAT output...",
+                flush=True,
+            )
+            first_condition = conditions[0]
+            first_trajectory = prepare_hf_trajectory(
+                first_condition.run,
+                center_m=(0.0, 0.0, 0.0),
+                command_scale=float(first_condition.command_scale),
+            )
+            precomputed_first_run = (
+                first_trajectory,
+                precompute_hologram_playback(first_trajectory),
+            )
+            del first_trajectory
+
         output_root = Path(args.output_dir).resolve()
         output_root.mkdir(parents=True, exist_ok=True)
         session_stamp = dt.datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -695,6 +1072,8 @@ def main(argv: list[str] | None = None) -> int:
                 "step_response_identification"
                 if step_response_selected and len(step_response_conditions) == len(conditions)
                 else "plan_b_identification" if plan_b_selected
+                else "vzr_identification" if vzr_selected
+                else "feedforward_validation" if ff_selected
                 else "high_frequency_identification" if hf_mode else "json_3d"
             ),
             "output_dir": str(output_root),
@@ -703,7 +1082,26 @@ def main(argv: list[str] | None = None) -> int:
             "runs": [],
         }
         if hf_mode:
-            session["source_export_manifest"] = str(source_path)
+            session["source_export_manifest"] = (
+                str(source_path)
+                if len(source_paths) == 1
+                else "multiple; see source_export_manifests"
+            )
+            session["source_export_manifests"] = [str(path) for path in source_paths]
+            session["unattended_after_first_checkpoint"] = unattended
+            session["automatic_capture_retry_limit"] = automatic_capture_retries
+            session["prompt_on_capture_failure"] = prompt_on_capture_failure
+            session["supply_voltage_V"] = supply_voltage
+            session["run_label_tag"] = run_tag
+            session["schedule"] = (
+                None
+                if schedule_interval_sec is None
+                else {
+                    "interval_sec": schedule_interval_sec,
+                    "group_size": schedule_group_size,
+                    "anchor": "PAT output start (sound on, active_output_started_wall_ns)",
+                }
+            )
             session["hf_run_requests"] = [
                 {"label": condition.label, "command_scale": float(condition.command_scale)}
                 for condition in conditions
@@ -753,13 +1151,44 @@ def main(argv: list[str] | None = None) -> int:
         try:
             overall_code = 0
             preview_completed = False
+            first_checkpoint_pending = True
+            unattended_run_number = 0
+            run_index = -1
+            sound_on_wall_ns = getattr(hardware_session, "active_output_started_wall_ns", None)
             for condition in conditions:
                 for repeat_index in range(condition.repeat):
+                    run_index += 1
+                    scheduled_offset = (
+                        None
+                        if schedule_interval_sec is None
+                        else scheduled_group_offset_sec(
+                            run_index, schedule_group_size, schedule_interval_sec
+                        )
+                    )
+                    if scheduled_offset is not None and sound_on_wall_ns is not None:
+                        try:
+                            wait_until_wall_time(
+                                sound_on_wall_ns / 1e9 + scheduled_offset,
+                                f"group {run_index // schedule_group_size} "
+                                f"(t = {scheduled_offset / 60.0:.1f} min after sound on)",
+                            )
+                        except KeyboardInterrupt:
+                            session["status"] = "interrupted"
+                            session["finished_at"] = dt.datetime.now().isoformat(
+                                timespec="milliseconds"
+                            )
+                            atomic_write_json(session_path, session)
+                            print("[AUTO] Interrupted while waiting for the next group.")
+                            return 130
+                    run_started_wall = time.time()
                     if hf_mode:
                         if condition.label in precomputed_b3:
                             trajectory, prepared_playback = precomputed_b3[
                                 condition.label
                             ]
+                        elif precomputed_first_run is not None:
+                            trajectory, prepared_playback = precomputed_first_run
+                            precomputed_first_run = None
                         else:
                             trajectory = prepare_hf_trajectory(
                                 condition.run,
@@ -767,12 +1196,33 @@ def main(argv: list[str] | None = None) -> int:
                                 command_scale=float(condition.command_scale),
                             )
                             prepared_playback = None
+                        # Each run records the manifest of the export directory it came from.
                         run_automation_metadata = hf_automation_metadata(
-                            condition.run, source_path, float(condition.command_scale)
+                            condition.run,
+                            condition.run.directory.parent / "export_manifest.json",
+                            float(condition.command_scale),
                         )
                         if _plan_b_family(condition):
                             run_automation_metadata["operator_context"] = dict(
                                 plan_b_contexts.get(condition.label, {})
+                            )
+                        trajectory = tag_trajectory_label(trajectory, run_tag)
+                        if supply_voltage is not None:
+                            run_automation_metadata["supply_voltage_V"] = supply_voltage
+                            run_automation_metadata["run_label_tag"] = run_tag
+                        if sound_on_wall_ns is not None:
+                            run_automation_metadata["sound_on_since"] = dt.datetime.fromtimestamp(
+                                sound_on_wall_ns / 1e9
+                            ).isoformat(timespec="seconds")
+                            run_automation_metadata["seconds_since_sound_on_at_run_start"] = round(
+                                run_started_wall - sound_on_wall_ns / 1e9, 1
+                            )
+                        if schedule_interval_sec is not None:
+                            run_automation_metadata["schedule_group"] = (
+                                run_index // schedule_group_size
+                            )
+                            run_automation_metadata["scheduled_group_offset_sec"] = (
+                                (run_index // schedule_group_size) * schedule_interval_sec
                             )
                     else:
                         # Every automatic condition returns to the PAT origin,
@@ -792,23 +1242,71 @@ def main(argv: list[str] | None = None) -> int:
                         == "step_response_identification"
                     )
                     plan_b_checkpoint = bool(hf_mode and _plan_b_family(condition))
+                    vzr_checkpoint = bool(hf_mode and _vzr_condition(condition))
+                    ff_checkpoint = bool(hf_mode and _ff_condition(condition))
                     retention_checkpoint = bool(
                         not hf_mode and condition.risk_level == "retention_boundary"
                     )
+                    operator_checkpoint = bool(
+                        retention_checkpoint
+                        or step_checkpoint
+                        or plan_b_checkpoint
+                        or vzr_checkpoint
+                        or ff_checkpoint
+                    )
+                    if unattended:
+                        # Only the very first run keeps the forced preview/Enter checkpoint.
+                        operator_checkpoint = first_checkpoint_pending
+                        unattended_run_number += 1
+                        run_automation_metadata["unattended_after_first_checkpoint"] = True
+                        run_automation_metadata["automatic_capture_retry_limit"] = (
+                            automatic_capture_retries
+                        )
+                        run_automation_metadata["unattended_run_number"] = unattended_run_number
+                        run_automation_metadata["unattended_run_count"] = len(conditions)
+                    run_automation_metadata["operator_checkpoint_before_capture"] = (
+                        operator_checkpoint
+                    )
                     # The core opens the camera preview only after PAT is holding the particle at centre.
-                    run_args.no_preview = (
-                        False if (retention_checkpoint or step_checkpoint or plan_b_checkpoint) else bool(
+                    if operator_checkpoint:
+                        run_args.no_preview = False
+                    elif unattended:
+                        run_args.no_preview = True
+                    else:
+                        run_args.no_preview = bool(
                             args.no_preview
                             or (preview_completed and not args.preview_each_run)
                         )
-                    )
                     source_label = (
                         "step-response export"
                         if step_checkpoint
                         else "Plan B export" if plan_b_checkpoint
+                        else "vzr export" if vzr_checkpoint
+                        else "feedforward-validation export" if ff_checkpoint
                         else "HF export" if hf_mode else "JSON"
                     )
-                    if step_checkpoint:
+                    if unattended and operator_checkpoint:
+                        print(
+                            "\n[AUTO][STEP CHECKPOINT] First run of an unattended series: "
+                            "confirm in the stereo preview and press Enter. After this run "
+                            f"the remaining {len(conditions) - 1} run(s) proceed without "
+                            "checkpoints. Abort now if the particle is not stable at centre "
+                            "or not visible in both cameras."
+                        )
+                    elif unattended:
+                        print(
+                            f"\n[AUTO][UNATTENDED] Run {unattended_run_number}/{len(conditions)}: "
+                            "no preview or Enter checkpoint."
+                        )
+                    elif ff_checkpoint:
+                        print(
+                            "\n[AUTO][FF CHECKPOINT] Imported feedforward-validation command "
+                            f"(design {condition.metadata.get('feedforward_design', {}).get('design', '-')}). "
+                            "Confirm that the particle survived the previous run, is stable at "
+                            "centre, and is visible in both cameras before pressing Enter. "
+                            "Abort with Ctrl+C if it was lost."
+                        )
+                    elif step_checkpoint:
                         print(
                             "\n[AUTO][STEP CHECKPOINT] Stereo preview and explicit Enter "
                             "confirmation are mandatory. Abort if the particle was lost, is "
@@ -826,6 +1324,13 @@ def main(argv: list[str] | None = None) -> int:
                             "scale, particle/environment context, particle retention, and "
                             "visibility in both cameras before pressing Enter."
                         )
+                    if vzr_checkpoint:
+                        print(
+                            "\n[AUTO][VZR CHECKPOINT] Confirm that the particle survived the "
+                            "previous run, is stable at centre, and is visible in both cameras "
+                            "before pressing Enter. Abort with Ctrl+C if it was lost; the "
+                            "session then stops and PAT output is turned off."
+                        )
                     print(
                         f"\n[AUTO] Recording {source_label} #{condition.json_index:03d} "
                         f"{condition.label} ({repeat_index + 1}/{condition.repeat})"
@@ -835,10 +1340,7 @@ def main(argv: list[str] | None = None) -> int:
                             run_args,
                             prepared_trajectory=trajectory,
                             prompt_before_capture=bool(
-                                args.confirm_each_run
-                                or retention_checkpoint
-                                or step_checkpoint
-                                or plan_b_checkpoint
+                                args.confirm_each_run or operator_checkpoint
                             ),
                             return_to_centre=True,
                             automation_metadata=run_automation_metadata,
@@ -854,6 +1356,7 @@ def main(argv: list[str] | None = None) -> int:
                                 == "plan_b3_drift_source"
                                 else None
                             ),
+                            automatic_capture_retries=automatic_capture_retries,
                         )
                         error = ""
                     except KeyboardInterrupt:
@@ -867,6 +1370,11 @@ def main(argv: list[str] | None = None) -> int:
                         print(f"[AUTO][ERROR] {condition.label}: {exc}")
                     if not run_args.no_preview:
                         preview_completed = True
+                    # Release this run's holograms before the next run computes its own.
+                    trajectory = None
+                    prepared_playback = None
+                    if code == 0:
+                        first_checkpoint_pending = False
                     session["runs"].append(
                         {
                             **run_automation_metadata,
@@ -876,6 +1384,13 @@ def main(argv: list[str] | None = None) -> int:
                             "active_warmup": dict(
                                 getattr(hardware_session, "last_active_warmup", {})
                             ),
+                            # Failed attempts are deleted, so their reasons are kept here.
+                            "capture_report": {
+                                key: list(value)
+                                for key, value in dict(
+                                    getattr(hardware_session, "last_capture_report", {}) or {}
+                                ).items()
+                            },
                             "finished_at": dt.datetime.now().isoformat(timespec="milliseconds"),
                         }
                     )

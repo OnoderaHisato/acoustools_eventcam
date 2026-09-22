@@ -148,8 +148,7 @@ Tier BはX/Y/Z各2 run、合計6 runです。各runは9.2秒、中心静止2.0�
   --hf-export-dir .\step_response_identification_tier_b_export `
   --output-dir .\stereo_acoustools_3d_records_step_response `
   --label B0_x_staircase_ladder_r01 `
-  --acknowledge-step-response-risk `
-  --acknowledge-step-response-tier-a-survived
+  --acknowledge-step-response-risk
 ```
 
 このrunの全ジャンプで生存・両眼可視を確認した後だけ、残り5 runを実行します。
@@ -163,8 +162,7 @@ Tier BはX/Y/Z各2 run、合計6 runです。各runは9.2秒、中心静止2.0�
   --label B1_y_staircase_ladder_r02 `
   --label B2_z_staircase_ladder_r01 `
   --label B2_z_staircase_ladder_r02 `
-  --acknowledge-step-response-risk `
-  --acknowledge-step-response-tier-a-survived
+  --acknowledge-step-response-risk
 ```
 
 実機前の全6 run dry-runは次です。ハードウェアを開きません。
@@ -176,11 +174,7 @@ Tier BはX/Y/Z各2 run、合計6 runです。各runは9.2秒、中心静止2.0�
   --dry-run
 ```
 
-Tier Bの実機入口では次の追加確認が必要です。
-
-```text
---acknowledge-step-response-tier-a-survived
-```
+Tier B以降も実機入口で必要なのは`--acknowledge-step-response-risk`だけです（前Tier生存確認フラグは2026-09-16に廃止）。
 
 Tier Bの6 runは2026-08-21に計測され、全144ジャンプ後に左右両眼で粒子が見えていることを
 確認しました。6 runとも左右同期、LED検出、記録区間、保存状態は正常です。したがってTier Cへ
@@ -207,8 +201,7 @@ Tier CはX/Y/Z各2 run、合計6 runです。各runは11.6秒、32ジャンプ�
 .\venv\Scripts\python.exe .\acoustools_stereo_eventcam_3d_recording_auto.py `
   --hf-export-dir .\step_response_identification_tier_c_export `
   --output-dir .\stereo_acoustools_3d_records_step_response `
-  --acknowledge-step-response-risk `
-  --acknowledge-step-response-tier-b-survived
+  --acknowledge-step-response-risk
 ```
 
 1コマンドですが、各run直前のステレオプレビューとEnter確認は強制されます。直前runで粒子が
@@ -229,11 +222,7 @@ Tier Dは`±0.70, ±0.95, ±1.15, ±1.25 mm`です。1.15/1.25 mmは推定力最
 推定脱出境界2.144 mmの58.3%に制限しています。これは保持を保証する値ではありません。
 
 Tier Cの全192ジャンプ（32ジャンプ×6 run）で生存・両眼可視を確認するまでは実測しないで
-ください。実機入口には次が必要です。
-
-```text
---acknowledge-step-response-tier-c-survived
-```
+ください。前Tierの生存確認はコードでは強制されないため、運用で守ってください。
 
 全6条件のhardware-free dry-runは可能です。
 
@@ -251,8 +240,7 @@ Tier C確認後に、最初のD0/X r01だけを実測するコマンド:
   --hf-export-dir .\step_response_identification_tier_d_export `
   --output-dir .\stereo_acoustools_3d_records_step_response `
   --label D0_x_staircase_challenge_r01 `
-  --acknowledge-step-response-risk `
-  --acknowledge-step-response-tier-c-survived
+  --acknowledge-step-response-risk
 ```
 
 D0/X r01は2026-08-21に計測済みで、全32ジャンプ後の左右粒子像、同期、LED、記録完走を
@@ -267,8 +255,7 @@ D0/X r01は2026-08-21に計測済みで、全32ジャンプ後の左右粒子像
   --label D1_y_staircase_challenge_r02 `
   --label D2_z_staircase_challenge_r01 `
   --label D2_z_staircase_challenge_r02 `
-  --acknowledge-step-response-risk `
-  --acknowledge-step-response-tier-c-survived
+  --acknowledge-step-response-risk
 ```
 
 PAT/OpenMPD接続は5 runの間維持されますが、各runの前にはステレオプレビューとEnter確認が
@@ -298,11 +285,6 @@ Tier Eは`±1.25, ±1.40, ±1.55, ±1.70 mm`で、全振幅が推定力最大点
 
 Tier Dの全192ジャンプ（32ジャンプ×6 run）と、Tier Eの最初のE0/X r01全16ジャンプで
 生存・両眼可視を確認済みです。Tier Eの複数runを同じhardware sessionで連続計測できます。
-実機入口には次が必要です。
-
-```text
---acknowledge-step-response-tier-d-survived
-```
 
 全6条件のhardware-free dry-run:
 
@@ -320,8 +302,7 @@ Tier D確認後に、最初のE0/X r01だけを実測するコマンド:
   --hf-export-dir .\step_response_identification_tier_e_export `
   --output-dir .\stereo_acoustools_3d_records_step_response `
   --label E0_x_staircase_boundary_long_hold_r01 `
-  --acknowledge-step-response-risk `
-  --acknowledge-step-response-tier-d-survived
+  --acknowledge-step-response-risk
 ```
 
 E0/X r01は2026-08-21に計測済みで、全16ジャンプの直後5--35 msと保持後半850--900 msに
@@ -337,33 +318,23 @@ E0/X r01は2026-08-21に計測済みで、全16ジャンプの直後5--35 msと�
   --label E1_y_staircase_boundary_long_hold_r02 `
   --label E2_z_staircase_boundary_long_hold_r01 `
   --label E2_z_staircase_boundary_long_hold_r02 `
-  --acknowledge-step-response-risk `
-  --acknowledge-step-response-tier-d-survived
+  --acknowledge-step-response-risk
 ```
 
 各run直前のステレオプレビューとEnter確認は強制されます。前runで粒子が逸脱した、中心に
 戻っていない、または片眼で見えない場合はEnterを押さずに中断してください。`--keep-going`は
 禁止のままで、拒否・記録失敗・Ctrl+Cでは後続runを実行せず、共通終了処理でPATを停止します。
 
-Tier CにはTier B生存確認として次が必要です。
+## 確認フラグ（2026-09-16改訂）
+
+前Tierの生存確認フラグ`--acknowledge-step-response-tier-a-survived`〜`--acknowledge-step-response-tier-g-survived`は廃止しました。現在は指定するとargparseのエラーになります。staircase実機計測で必要なのは次だけです。
 
 ```text
---acknowledge-step-response-tier-b-survived
+--acknowledge-step-response-risk                    # 全Tier共通
+--acknowledge-step-response-escape-boundary-probe   # Tier Hのみ追加
 ```
 
-Tier DにはTier C生存確認として次が必要です。
-
-```text
---acknowledge-step-response-tier-c-survived
-```
-
-Tier EにはTier D生存確認として次が必要です。
-
-```text
---acknowledge-step-response-tier-d-survived
-```
-
-確認前に次Tierを実測したり、異なるTierを同じexportへ混在させたりしないでください。
+前Tierの生存確認は、各run直前に強制されるステレオプレビューとEnter確認で行ってください。確認前に次Tierを実測したり、異なるTierを同じexportへ混在させたりしないでください。
 
 ## Tier F/G/H（保持限界の探索）
 

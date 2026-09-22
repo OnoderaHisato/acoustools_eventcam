@@ -516,49 +516,71 @@ class HighFrequencyIdentificationTests(unittest.TestCase):
                 "step_response_identification",
             )
 
-    def test_tier_b_requires_tier_a_survival_ack(self) -> None:
-        with TemporaryDirectory() as temporary:
-            export_dir = self._export_step_plan(Path(temporary), tier="B")
-            with mock.patch.object(auto_record, "open_recording_hardware_session") as open_hw:
-                result = auto_record.main(
-                    [
-                        "--hf-export-dir",
-                        str(export_dir),
-                        "--acknowledge-step-response-risk",
-                    ]
-                )
-            self.assertEqual(result, 2)
-            open_hw.assert_not_called()
+    def test_tiers_b_to_g_need_only_step_response_risk_ack(self) -> None:
+        for tier in "BCDEFG":
+            with self.subTest(tier=tier), TemporaryDirectory() as temporary:
+                root = Path(temporary)
+                export_dir = self._export_step_plan(root, tier=tier)
+                output_root = root / "records"
+                hardware_session = SimpleNamespace(current_pos=(0.0, 0.0, 0.0))
+                with (
+                    mock.patch.object(
+                        auto_record,
+                        "open_recording_hardware_session",
+                        return_value=hardware_session,
+                    ) as open_hw,
+                    mock.patch.object(auto_record, "shutdown_recording_hardware_session"),
+                    mock.patch.object(
+                        auto_record,
+                        "run_recording",
+                        return_value=(0, output_root / f"{tier.lower()}_r01"),
+                    ) as record,
+                ):
+                    result = auto_record.main(
+                        [
+                            "--hf-export-dir",
+                            str(export_dir),
+                            "--output-dir",
+                            str(output_root),
+                            "--acknowledge-step-response-risk",
+                            "--no-preview",
+                        ]
+                    )
+                self.assertEqual(result, 0)
+                open_hw.assert_called_once()
+                record.assert_called_once()
+                self.assertFalse(record.call_args.args[0].no_preview)
+                self.assertTrue(record.call_args.kwargs["prompt_before_capture"])
 
-    def test_tier_c_requires_tier_b_survival_ack(self) -> None:
-        with TemporaryDirectory() as temporary:
-            export_dir = self._export_step_plan(Path(temporary), tier="C")
-            with mock.patch.object(auto_record, "open_recording_hardware_session") as open_hw:
-                result = auto_record.main(
-                    [
-                        "--hf-export-dir",
-                        str(export_dir),
-                        "--acknowledge-step-response-risk",
-                    ]
-                )
-            self.assertEqual(result, 2)
-            open_hw.assert_not_called()
+    def test_upper_tiers_still_require_step_response_risk_ack(self) -> None:
+        for tier in "EH":
+            with self.subTest(tier=tier), TemporaryDirectory() as temporary:
+                export_dir = self._export_step_plan(Path(temporary), tier=tier)
+                with mock.patch.object(
+                    auto_record, "open_recording_hardware_session"
+                ) as open_hw:
+                    result = auto_record.main(
+                        [
+                            "--hf-export-dir",
+                            str(export_dir),
+                            "--acknowledge-step-response-escape-boundary-probe",
+                        ]
+                    )
+                self.assertEqual(result, 2)
+                open_hw.assert_not_called()
 
-    def test_tier_d_requires_tier_c_survival_ack(self) -> None:
-        with TemporaryDirectory() as temporary:
-            export_dir = self._export_step_plan(Path(temporary), tier="D")
-            with mock.patch.object(auto_record, "open_recording_hardware_session") as open_hw:
-                result = auto_record.main(
-                    [
-                        "--hf-export-dir",
-                        str(export_dir),
-                        "--acknowledge-step-response-risk",
-                    ]
-                )
-            self.assertEqual(result, 2)
-            open_hw.assert_not_called()
+    def test_removed_tier_survival_flags_are_rejected(self) -> None:
+        for tier in "abcdefg":
+            with self.subTest(tier=tier):
+                with (
+                    mock.patch("sys.stderr"),
+                    self.assertRaises(SystemExit),
+                ):
+                    auto_record.parse_args(
+                        [f"--acknowledge-step-response-tier-{tier}-survived"]
+                    )
 
-    def test_tier_d_allows_multiple_runs_after_tier_c_ack(self) -> None:
+    def test_tier_d_allows_multiple_runs(self) -> None:
         with TemporaryDirectory() as temporary:
             root = Path(temporary)
             export_dir = self._export_step_plan(
@@ -589,7 +611,6 @@ class HighFrequencyIdentificationTests(unittest.TestCase):
                         "--output-dir",
                         str(output_root),
                         "--acknowledge-step-response-risk",
-                        "--acknowledge-step-response-tier-c-survived",
                         "--no-preview",
                     ]
                 )
@@ -601,7 +622,7 @@ class HighFrequencyIdentificationTests(unittest.TestCase):
                 self.assertFalse(call.args[0].no_preview)
                 self.assertTrue(call.kwargs["prompt_before_capture"])
 
-    def test_tier_c_allows_multiple_runs_after_tier_b_ack(self) -> None:
+    def test_tier_c_allows_multiple_runs(self) -> None:
         with TemporaryDirectory() as temporary:
             root = Path(temporary)
             export_dir = self._export_step_plan(root, tier="C", repeats=2)
@@ -630,14 +651,13 @@ class HighFrequencyIdentificationTests(unittest.TestCase):
                         "--output-dir",
                         str(output_root),
                         "--acknowledge-step-response-risk",
-                        "--acknowledge-step-response-tier-b-survived",
                         "--no-preview",
                     ]
                 )
             self.assertEqual(result, 0)
             self.assertEqual(record.call_count, 2)
 
-    def test_tier_d_single_run_proceeds_after_tier_c_ack(self) -> None:
+    def test_tier_d_single_run_proceeds(self) -> None:
         with TemporaryDirectory() as temporary:
             root = Path(temporary)
             export_dir = self._export_step_plan(root, tier="D")
@@ -663,28 +683,13 @@ class HighFrequencyIdentificationTests(unittest.TestCase):
                         "--output-dir",
                         str(output_root),
                         "--acknowledge-step-response-risk",
-                        "--acknowledge-step-response-tier-c-survived",
                         "--no-preview",
                     ]
                 )
             self.assertEqual(result, 0)
             record.assert_called_once()
 
-    def test_tier_e_requires_tier_d_survival_ack(self) -> None:
-        with TemporaryDirectory() as temporary:
-            export_dir = self._export_step_plan(Path(temporary), tier="E")
-            with mock.patch.object(auto_record, "open_recording_hardware_session") as open_hw:
-                result = auto_record.main(
-                    [
-                        "--hf-export-dir",
-                        str(export_dir),
-                        "--acknowledge-step-response-risk",
-                    ]
-                )
-            self.assertEqual(result, 2)
-            open_hw.assert_not_called()
-
-    def test_tier_e_allows_multiple_runs_after_tier_d_ack(self) -> None:
+    def test_tier_e_allows_multiple_runs(self) -> None:
         with TemporaryDirectory() as temporary:
             root = Path(temporary)
             export_dir = self._export_step_plan(
@@ -717,7 +722,6 @@ class HighFrequencyIdentificationTests(unittest.TestCase):
                         "--output-dir",
                         str(output_root),
                         "--acknowledge-step-response-risk",
-                        "--acknowledge-step-response-tier-d-survived",
                         "--no-preview",
                     ]
                 )
@@ -729,7 +733,7 @@ class HighFrequencyIdentificationTests(unittest.TestCase):
                 self.assertFalse(call.args[0].no_preview)
                 self.assertTrue(call.kwargs["prompt_before_capture"])
 
-    def test_tier_e_single_run_proceeds_after_tier_d_ack(self) -> None:
+    def test_tier_e_single_run_proceeds(self) -> None:
         with TemporaryDirectory() as temporary:
             root = Path(temporary)
             export_dir = self._export_step_plan(root, tier="E")
@@ -755,40 +759,11 @@ class HighFrequencyIdentificationTests(unittest.TestCase):
                         "--output-dir",
                         str(output_root),
                         "--acknowledge-step-response-risk",
-                        "--acknowledge-step-response-tier-d-survived",
                         "--no-preview",
                     ]
                 )
             self.assertEqual(result, 0)
             record.assert_called_once()
-
-    def test_tier_f_requires_tier_e_survival_ack(self) -> None:
-        with TemporaryDirectory() as temporary:
-            export_dir = self._export_step_plan(Path(temporary), tier="F")
-            with mock.patch.object(auto_record, "open_recording_hardware_session") as open_hw:
-                result = auto_record.main(
-                    [
-                        "--hf-export-dir",
-                        str(export_dir),
-                        "--acknowledge-step-response-risk",
-                    ]
-                )
-            self.assertEqual(result, 2)
-            open_hw.assert_not_called()
-
-    def test_tier_g_requires_tier_f_survival_ack(self) -> None:
-        with TemporaryDirectory() as temporary:
-            export_dir = self._export_step_plan(Path(temporary), tier="G")
-            with mock.patch.object(auto_record, "open_recording_hardware_session") as open_hw:
-                result = auto_record.main(
-                    [
-                        "--hf-export-dir",
-                        str(export_dir),
-                        "--acknowledge-step-response-risk",
-                    ]
-                )
-            self.assertEqual(result, 2)
-            open_hw.assert_not_called()
 
     def test_tier_h_requires_dedicated_escape_ack_and_one_run(self) -> None:
         with TemporaryDirectory() as temporary:
@@ -800,7 +775,6 @@ class HighFrequencyIdentificationTests(unittest.TestCase):
                         "--hf-export-dir",
                         str(one_export),
                         "--acknowledge-step-response-risk",
-                        "--acknowledge-step-response-tier-g-survived",
                     ]
                 )
             self.assertEqual(result, 2)
@@ -813,14 +787,13 @@ class HighFrequencyIdentificationTests(unittest.TestCase):
                         "--hf-export-dir",
                         str(two_export),
                         "--acknowledge-step-response-risk",
-                        "--acknowledge-step-response-tier-g-survived",
                         "--acknowledge-step-response-escape-boundary-probe",
                     ]
                 )
             self.assertEqual(result, 2)
             open_hw.assert_not_called()
 
-    def test_single_tier_h_run_proceeds_after_all_boundary_acks(self) -> None:
+    def test_single_tier_h_run_proceeds_after_escape_ack(self) -> None:
         with TemporaryDirectory() as temporary:
             root = Path(temporary)
             export_dir = self._export_step_plan(root, tier="H")
@@ -846,7 +819,6 @@ class HighFrequencyIdentificationTests(unittest.TestCase):
                         "--output-dir",
                         str(output_root),
                         "--acknowledge-step-response-risk",
-                        "--acknowledge-step-response-tier-g-survived",
                         "--acknowledge-step-response-escape-boundary-probe",
                         "--no-preview",
                     ]
@@ -855,6 +827,244 @@ class HighFrequencyIdentificationTests(unittest.TestCase):
             record.assert_called_once()
             self.assertFalse(record.call_args.args[0].no_preview)
             self.assertTrue(record.call_args.kwargs["prompt_before_capture"])
+
+    def _run_auto_with_mock_hardware(
+        self,
+        argv: list[str],
+        *,
+        record_results: list[tuple[int, Path | None]] | None = None,
+    ) -> tuple[int, mock.Mock, mock.Mock, mock.Mock]:
+        """Run the auto entry point with PAT, cameras and holograms mocked."""
+        events = mock.Mock()
+        hardware_session = SimpleNamespace(current_pos=(0.0, 0.0, 0.0))
+        playback = SimpleNamespace(name="first-run-playback")
+        events.open_hw.return_value = hardware_session
+        events.precompute.return_value = playback
+        if record_results is None:
+            events.record.side_effect = lambda *_a, **_k: (0, None)
+        else:
+            events.record.side_effect = list(record_results)
+        with (
+            mock.patch.object(
+                auto_record, "open_recording_hardware_session", events.open_hw
+            ),
+            mock.patch.object(
+                auto_record, "shutdown_recording_hardware_session", events.close_hw
+            ),
+            mock.patch.object(
+                auto_record, "precompute_hologram_playback", events.precompute
+            ),
+            mock.patch.object(auto_record, "run_recording", events.record),
+        ):
+            result = auto_record.main(argv)
+        return result, events, hardware_session, playback
+
+    def test_multiple_export_dirs_record_in_given_order(self) -> None:
+        with TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            first = self._export_step_plan(root / "first", tier="A")
+            second = self._export_step_plan(root / "second", tier="B")
+            output_root = root / "records"
+            result, events, _session, _playback = self._run_auto_with_mock_hardware(
+                [
+                    "--hf-export-dir", str(second),
+                    "--hf-export-dir", str(first),
+                    "--output-dir", str(output_root),
+                    "--acknowledge-step-response-risk",
+                ]
+            )
+            self.assertEqual(result, 0)
+            events.open_hw.assert_called_once()
+            labels = [
+                call.kwargs["automation_metadata"]["label"]
+                for call in events.record.call_args_list
+            ]
+            self.assertEqual(labels, ["B0_x_staircase_test", "A0_x_staircase_test"])
+            manifests = [
+                Path(call.kwargs["automation_metadata"]["export_manifest"])
+                for call in events.record.call_args_list
+            ]
+            self.assertEqual(
+                manifests,
+                [
+                    (second / "export_manifest.json").resolve(),
+                    (first / "export_manifest.json").resolve(),
+                ],
+            )
+            session_json = json.loads(
+                next(output_root.glob("auto_recording_session_*.json")).read_text(
+                    encoding="utf-8"
+                )
+            )
+            self.assertEqual(len(session_json["source_export_manifests"]), 2)
+            self.assertFalse(session_json["unattended_after_first_checkpoint"])
+            for call in events.record.call_args_list:
+                self.assertIsNone(call.kwargs["automatic_capture_retries"])
+                self.assertTrue(call.kwargs["prompt_before_capture"])
+
+    def test_multiple_export_dirs_reject_duplicate_names_and_index_selectors(self) -> None:
+        with TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            first = self._export_step_plan(root / "first", tier="A")
+            duplicate = self._export_step_plan(root / "duplicate", tier="A")
+            other = self._export_step_plan(root / "other", tier="B")
+            for argv in (
+                ["--hf-export-dir", str(first), "--hf-export-dir", str(duplicate)],
+                ["--hf-export-dir", str(first), "--hf-export-dir", str(first)],
+                ["--hf-export-dir", str(first), "--hf-export-dir", str(other), "--limit", "1"],
+            ):
+                with self.subTest(argv=argv):
+                    result, events, _session, _playback = self._run_auto_with_mock_hardware(
+                        argv + ["--acknowledge-step-response-risk"]
+                    )
+                    self.assertEqual(result, 2)
+                    events.open_hw.assert_not_called()
+
+    def test_unattended_series_checks_only_the_first_run(self) -> None:
+        with TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            first = self._export_step_plan(root / "first", tier="A", repeats=2)
+            second = self._export_step_plan(root / "second", tier="E")
+            output_root = root / "records"
+            result, events, session, playback = self._run_auto_with_mock_hardware(
+                [
+                    "--hf-export-dir", str(first),
+                    "--hf-export-dir", str(second),
+                    "--output-dir", str(output_root),
+                    "--acknowledge-step-response-risk",
+                    "--unattended-after-first-checkpoint",
+                ]
+            )
+            self.assertEqual(result, 0)
+            # First-run holograms are ready before PAT output starts.
+            call_names = [name for name, _args, _kwargs in events.mock_calls]
+            self.assertLess(call_names.index("precompute"), call_names.index("open_hw"))
+            events.precompute.assert_called_once()
+            events.open_hw.assert_called_once_with()
+            events.close_hw.assert_called_once_with(session)
+            calls = events.record.call_args_list
+            self.assertEqual(len(calls), 3)
+            self.assertEqual(
+                [call.kwargs["automation_metadata"]["label"] for call in calls],
+                [
+                    "A0_x_staircase_test_r01",
+                    "A0_x_staircase_test_r02",
+                    "E0_x_staircase_test",
+                ],
+            )
+            first_call, *later_calls = calls
+            self.assertFalse(first_call.args[0].no_preview)
+            self.assertTrue(first_call.kwargs["prompt_before_capture"])
+            self.assertIs(first_call.kwargs["precomputed_playback"], playback)
+            self.assertTrue(
+                first_call.kwargs["automation_metadata"]["operator_checkpoint_before_capture"]
+            )
+            for call in later_calls:
+                self.assertTrue(call.args[0].no_preview)
+                self.assertFalse(call.kwargs["prompt_before_capture"])
+                self.assertIsNone(call.kwargs["precomputed_playback"])
+                self.assertFalse(
+                    call.kwargs["automation_metadata"]["operator_checkpoint_before_capture"]
+                )
+            for call in calls:
+                self.assertEqual(call.kwargs["automatic_capture_retries"], 2)
+                self.assertTrue(
+                    call.kwargs["automation_metadata"]["unattended_after_first_checkpoint"]
+                )
+            session_json = json.loads(
+                next(output_root.glob("auto_recording_session_*.json")).read_text(
+                    encoding="utf-8"
+                )
+            )
+            self.assertEqual(session_json["status"], "complete")
+            self.assertTrue(session_json["unattended_after_first_checkpoint"])
+            self.assertEqual(session_json["automatic_capture_retry_limit"], 2)
+
+    def test_unattended_series_stops_when_a_run_fails(self) -> None:
+        with TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            export_dir = self._export_step_plan(root, tier="C", repeats=3)
+            output_root = root / "records"
+            result, events, session, _playback = self._run_auto_with_mock_hardware(
+                [
+                    "--hf-export-dir", str(export_dir),
+                    "--output-dir", str(output_root),
+                    "--acknowledge-step-response-risk",
+                    "--unattended-after-first-checkpoint",
+                    "--automatic-capture-retries", "0",
+                ],
+                record_results=[(0, output_root / "c_r01"), (2, None)],
+            )
+            self.assertEqual(result, 2)
+            self.assertEqual(events.record.call_count, 2)
+            for call in events.record.call_args_list:
+                self.assertEqual(call.kwargs["automatic_capture_retries"], 0)
+            events.close_hw.assert_called_once_with(session)
+            session_json = json.loads(
+                next(output_root.glob("auto_recording_session_*.json")).read_text(
+                    encoding="utf-8"
+                )
+            )
+            self.assertEqual(session_json["status"], "failed")
+
+    def test_unattended_series_rejects_unsupported_selections(self) -> None:
+        with TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            step_export = self._export_step_plan(root / "step", tier="A")
+            tier_h_export = self._export_step_plan(root / "tier_h", tier="H")
+            (root / "hf").mkdir()
+            hf_export = self._export_small_plan(root / "hf")
+            unattended = ["--unattended-after-first-checkpoint"]
+            risk = ["--acknowledge-step-response-risk"]
+            cases = {
+                "non-step export": ["--hf-export-dir", str(hf_export)] + unattended,
+                "mixed step and non-step": [
+                    "--hf-export-dir", str(step_export),
+                    "--hf-export-dir", str(hf_export),
+                ] + unattended + risk,
+                "tier H": [
+                    "--hf-export-dir", str(tier_h_export),
+                    "--acknowledge-step-response-escape-boundary-probe",
+                ] + unattended + risk,
+                "confirm each run": ["--hf-export-dir", str(step_export), "--confirm-each-run"]
+                + unattended + risk,
+                "preview each run": ["--hf-export-dir", str(step_export), "--preview-each-run"]
+                + unattended + risk,
+                "retries without unattended": [
+                    "--hf-export-dir", str(step_export), "--automatic-capture-retries", "1",
+                ] + risk,
+                "retries out of range": [
+                    "--hf-export-dir", str(step_export), "--automatic-capture-retries", "11",
+                ] + unattended + risk,
+                "missing risk ack": ["--hf-export-dir", str(step_export)] + unattended,
+                "keep going": ["--hf-export-dir", str(step_export), "--keep-going"]
+                + unattended + risk,
+            }
+            for name, argv in cases.items():
+                with self.subTest(case=name):
+                    result, events, _session, _playback = self._run_auto_with_mock_hardware(argv)
+                    self.assertEqual(result, 2)
+                    events.open_hw.assert_not_called()
+                    events.precompute.assert_not_called()
+                    events.record.assert_not_called()
+
+    def test_unattended_dry_run_never_opens_hardware_or_precomputes(self) -> None:
+        with TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            first = self._export_step_plan(root / "first", tier="A")
+            second = self._export_step_plan(root / "second", tier="E")
+            result, events, _session, _playback = self._run_auto_with_mock_hardware(
+                [
+                    "--hf-export-dir", str(first),
+                    "--hf-export-dir", str(second),
+                    "--unattended-after-first-checkpoint",
+                    "--dry-run",
+                ]
+            )
+            self.assertEqual(result, 0)
+            events.open_hw.assert_not_called()
+            events.precompute.assert_not_called()
+            events.record.assert_not_called()
 
     def test_two_scales_of_same_export_run_in_one_auto_session(self) -> None:
         with TemporaryDirectory() as temporary:

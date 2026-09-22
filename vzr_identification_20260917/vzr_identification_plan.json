@@ -1,0 +1,243 @@
+{
+  "schema_version": 1,
+  "campaign": "vzr_identification_20260917",
+  "measurement_family": "vzr_identification",
+  "purpose": "Simultaneous horizontal (x or y) and vertical (z) sine excitation at 0.5-0.75 of each resonance with a non-integer frequency ratio, so that the OptiTrap coupling parameter vzr in F_z = az*sin(vz*dz)*cos(vzr*d_r) appears in the recorded response. Reference: G:/マイドライブ/Experiment/20260917/measurement_plan/VZR_MEASUREMENT_PLAN.md (copied to vzr_identification_20260917/REFERENCE_VZR_MEASUREMENT_PLAN.md).",
+  "escalation_note": "Every run is a continuous command with a 0.5 s raised-cosine ramp at both ends, 10 kHz, exactly reproducing the plan's reference NPZ files (make_vzr_trajectory.py, phases x/y 0.0 rad and z 0.7 rad). Record the single-axis hold checks (*_only, 4 s) before the first combined run of each series, then escalate L1 -> L2 -> L3 -> L4 in this order; the simulation escaped at x 0.8 mm @ 57 Hz and x 0.7 mm @ 57 Hz keeps only a thin margin. The y+z series (Y1y -> Y1 -> Y2) checks the axisymmetric assumption. ALT is an optional fallback with more physical margin (x 0.7 mm @ 50 Hz). safety_limits are the Plan B values |v| <= 400 mm/s and |a| <= 400,000 mm/s^2; a multitone command above them is rejected at generation instead of being rescaled. Delay feedforward is OFF; the identification treats the trap as u(t - tau) and fits tau per run.",
+  "defaults": {
+    "sample_hz": 10000,
+    "duration_sec": 8.0,
+    "ramp_sec": 0.5,
+    "safety_limits": {
+      "max_offset_mm": 0.75,
+      "max_speed_mm_s": 400.0,
+      "max_acceleration_mm_s2": 400000.0
+    }
+  },
+  "experiments": [
+    {
+      "name": "vzr_L1x_x0.4_57Hz_only",
+      "kind": "multitone",
+      "duration_sec": 4.0,
+      "components": [
+        {"axis": "x", "amplitude_mm": 0.4, "frequency_hz": 57.0, "phase_rad": 0.0}
+      ],
+      "campaign": "vzr_identification_20260917",
+      "measurement_family": "vzr_identification",
+      "condition": "L1x_hold_check",
+      "note": "Single-axis retention check before L1: x 0.4 mm @ 57 Hz only, 4 s.",
+      "operator_checkpoint": "confirm the particle is stable at centre and visible in both cameras; this run only checks x-axis retention",
+      "reference": {"stage": "L1x", "role": "single_axis_hold_check", "series": "x+z"},
+      "enabled": true
+    },
+    {
+      "name": "vzr_L1z_z0.15_187Hz_only",
+      "kind": "multitone",
+      "duration_sec": 4.0,
+      "components": [
+        {"axis": "z", "amplitude_mm": 0.15, "frequency_hz": 187.0, "phase_rad": 0.0}
+      ],
+      "campaign": "vzr_identification_20260917",
+      "measurement_family": "vzr_identification",
+      "condition": "L1z_hold_check",
+      "note": "Single-axis retention check before L1: z 0.15 mm @ 187 Hz only, 4 s.",
+      "operator_checkpoint": "confirm the particle survived the x-only run and is visible in both cameras; this run only checks z-axis retention",
+      "reference": {"stage": "L1z", "role": "single_axis_hold_check", "series": "x+z"},
+      "enabled": true
+    },
+    {
+      "name": "vzr_L1_x0.4_57Hz_z0.15_187Hz",
+      "kind": "multitone",
+      "components": [
+        {"axis": "x", "amplitude_mm": 0.4, "frequency_hz": 57.0, "phase_rad": 0.0},
+        {"axis": "z", "amplitude_mm": 0.15, "frequency_hz": 187.0, "phase_rad": 0.7}
+      ],
+      "campaign": "vzr_identification_20260917",
+      "measurement_family": "vzr_identification",
+      "condition": "L1",
+      "note": "Stage L1: x 0.4 mm @ 57 Hz + z 0.15 mm @ 187 Hz, 8 s. Weakest combined excitation; start here.",
+      "operator_checkpoint": "confirm retention after both single-axis checks before the first combined run",
+      "reference": {
+        "stage": "L1",
+        "role": "combined_excitation",
+        "series": "x+z",
+        "physical_dr_mm": 0.32,
+        "physical_dz_mm": 0.12,
+        "plan_max_speed_mm_s": 227,
+        "plan_max_acceleration_mm_s2": 212000,
+        "se_vzr_2s_percent": 7.6,
+        "se_vzr_8s_percent": 4.0
+      },
+      "enabled": true
+    },
+    {
+      "name": "vzr_L2_x0.5_57Hz_z0.20_187Hz",
+      "kind": "multitone",
+      "components": [
+        {"axis": "x", "amplitude_mm": 0.5, "frequency_hz": 57.0, "phase_rad": 0.0},
+        {"axis": "z", "amplitude_mm": 0.2, "frequency_hz": 187.0, "phase_rad": 0.7}
+      ],
+      "campaign": "vzr_identification_20260917",
+      "measurement_family": "vzr_identification",
+      "condition": "L2",
+      "note": "Stage L2: x 0.5 mm @ 57 Hz + z 0.20 mm @ 187 Hz, 8 s.",
+      "operator_checkpoint": "confirm retention after L1 before escalating",
+      "reference": {
+        "stage": "L2",
+        "role": "combined_excitation",
+        "series": "x+z",
+        "physical_dr_mm": 0.42,
+        "physical_dz_mm": 0.17,
+        "plan_max_speed_mm_s": 295,
+        "plan_max_acceleration_mm_s2": 282000,
+        "se_vzr_2s_percent": 3.4,
+        "se_vzr_8s_percent": 1.8
+      },
+      "enabled": true
+    },
+    {
+      "name": "vzr_L3_x0.6_57Hz_z0.20_187Hz",
+      "kind": "multitone",
+      "components": [
+        {"axis": "x", "amplitude_mm": 0.6, "frequency_hz": 57.0, "phase_rad": 0.0},
+        {"axis": "z", "amplitude_mm": 0.2, "frequency_hz": 187.0, "phase_rad": 0.7}
+      ],
+      "campaign": "vzr_identification_20260917",
+      "measurement_family": "vzr_identification",
+      "condition": "L3",
+      "note": "Stage L3 (recommended): x 0.6 mm @ 57 Hz + z 0.20 mm @ 187 Hz, 8 s. Simulation retained the particle; x 0.8 mm @ 57 Hz escaped.",
+      "operator_checkpoint": "confirm retention after L2 before escalating",
+      "reference": {
+        "stage": "L3",
+        "role": "combined_excitation",
+        "series": "x+z",
+        "recommended": true,
+        "physical_dr_mm": 0.53,
+        "physical_dz_mm": 0.18,
+        "plan_max_speed_mm_s": 318,
+        "plan_max_acceleration_mm_s2": 285000,
+        "se_vzr_2s_percent": 2.1,
+        "se_vzr_8s_percent": 1.1
+      },
+      "enabled": true
+    },
+    {
+      "name": "vzr_L4_x0.6_57Hz_z0.25_187Hz",
+      "kind": "multitone",
+      "components": [
+        {"axis": "x", "amplitude_mm": 0.6, "frequency_hz": 57.0, "phase_rad": 0.0},
+        {"axis": "z", "amplitude_mm": 0.25, "frequency_hz": 187.0, "phase_rad": 0.7}
+      ],
+      "campaign": "vzr_identification_20260917",
+      "measurement_family": "vzr_identification",
+      "condition": "L4",
+      "note": "Stage L4: x 0.6 mm @ 57 Hz + z 0.25 mm @ 187 Hz, 8 s. Strongest z excitation of the x+z series.",
+      "operator_checkpoint": "confirm retention after L3 before escalating",
+      "reference": {
+        "stage": "L4",
+        "role": "combined_excitation",
+        "series": "x+z",
+        "physical_dr_mm": 0.53,
+        "physical_dz_mm": 0.22,
+        "plan_max_speed_mm_s": 363,
+        "plan_max_acceleration_mm_s2": 352000,
+        "se_vzr_2s_percent": 1.6,
+        "se_vzr_8s_percent": 0.8
+      },
+      "enabled": true
+    },
+    {
+      "name": "vzr_Y1y_y0.5_55Hz_only",
+      "kind": "multitone",
+      "duration_sec": 4.0,
+      "components": [
+        {"axis": "y", "amplitude_mm": 0.5, "frequency_hz": 55.0, "phase_rad": 0.0}
+      ],
+      "campaign": "vzr_identification_20260917",
+      "measurement_family": "vzr_identification",
+      "condition": "Y1y_hold_check",
+      "note": "Single-axis retention check before Y1: y 0.5 mm @ 55 Hz only, 4 s. y is the depth axis (about 3x the observation noise of x).",
+      "operator_checkpoint": "confirm retention after the x+z series; this run only checks y-axis retention",
+      "reference": {"stage": "Y1y", "role": "single_axis_hold_check", "series": "y+z"},
+      "enabled": true
+    },
+    {
+      "name": "vzr_Y1_y0.5_55Hz_z0.20_187Hz",
+      "kind": "multitone",
+      "components": [
+        {"axis": "y", "amplitude_mm": 0.5, "frequency_hz": 55.0, "phase_rad": 0.0},
+        {"axis": "z", "amplitude_mm": 0.2, "frequency_hz": 187.0, "phase_rad": 0.7}
+      ],
+      "campaign": "vzr_identification_20260917",
+      "measurement_family": "vzr_identification",
+      "condition": "Y1",
+      "note": "Stage Y1 (recommended): y 0.5 mm @ 55 Hz + z 0.20 mm @ 187 Hz, 8 s. Axisymmetry check: vzr from y+z should agree with vzr from x+z within about 10%.",
+      "operator_checkpoint": "confirm retention after the y-only check before the first y+z run",
+      "reference": {
+        "stage": "Y1",
+        "role": "combined_excitation",
+        "series": "y+z",
+        "recommended": true,
+        "physical_dr_mm": 0.45,
+        "physical_dz_mm": 0.18,
+        "particle_y_excursion_mm": 0.95,
+        "plan_max_speed_mm_s": 291,
+        "plan_max_acceleration_mm_s2": 281000,
+        "se_vzr_1p5s_percent": 3.0,
+        "se_vzr_8s_percent": 1.3
+      },
+      "enabled": true
+    },
+    {
+      "name": "vzr_Y2_y0.6_55Hz_z0.20_187Hz",
+      "kind": "multitone",
+      "components": [
+        {"axis": "y", "amplitude_mm": 0.6, "frequency_hz": 55.0, "phase_rad": 0.0},
+        {"axis": "z", "amplitude_mm": 0.2, "frequency_hz": 187.0, "phase_rad": 0.7}
+      ],
+      "campaign": "vzr_identification_20260917",
+      "measurement_family": "vzr_identification",
+      "condition": "Y2",
+      "note": "Stage Y2 (only if Y1 kept a comfortable margin): y 0.6 mm @ 55 Hz + z 0.20 mm @ 187 Hz, 8 s.",
+      "operator_checkpoint": "confirm retention after Y1 before escalating",
+      "reference": {
+        "stage": "Y2",
+        "role": "combined_excitation",
+        "series": "y+z",
+        "physical_dr_mm": 0.56,
+        "physical_dz_mm": 0.19,
+        "particle_y_excursion_mm": 1.16,
+        "plan_max_speed_mm_s": 313,
+        "plan_max_acceleration_mm_s2": 284000,
+        "se_vzr_1p5s_percent": 2.0,
+        "se_vzr_8s_percent": 0.9
+      },
+      "enabled": true
+    },
+    {
+      "name": "vzr_ALT_x0.7_50Hz_z0.20_187Hz",
+      "kind": "multitone",
+      "components": [
+        {"axis": "x", "amplitude_mm": 0.7, "frequency_hz": 50.0, "phase_rad": 0.0},
+        {"axis": "z", "amplitude_mm": 0.2, "frequency_hz": 187.0, "phase_rad": 0.7}
+      ],
+      "campaign": "vzr_identification_20260917",
+      "measurement_family": "vzr_identification",
+      "condition": "ALT",
+      "note": "Optional fallback ALT (margin-oriented): x 0.7 mm @ 50 Hz + z 0.20 mm @ 187 Hz, 8 s. Larger command but smaller physical d_r (0.37 mm) than L3 because 50 Hz is further from the x resonance; select explicitly with --label when L3/L4 are not usable.",
+      "operator_checkpoint": "optional run; confirm retention before starting",
+      "reference": {
+        "stage": "ALT",
+        "role": "optional_fallback",
+        "series": "x+z",
+        "physical_dr_mm": 0.37,
+        "physical_dz_mm": 0.21,
+        "plan_max_speed_mm_s": 321,
+        "plan_max_acceleration_mm_s2": 283000,
+        "se_vzr_2s_percent": 4.3,
+        "se_vzr_8s_percent": 2.2
+      },
+      "enabled": true
+    }
+  ]
+}

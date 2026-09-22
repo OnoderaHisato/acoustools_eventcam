@@ -1,0 +1,32 @@
+{
+ "f_cmd_hz": 10.0,
+ "tau0_ms": 0.8,
+ "eps_ppm": 182.0,
+ "K": {
+  "x": 0.3,
+  "y": 0.28,
+  "z": 3.1
+ },
+ "GAM": {
+  "x": 0.04,
+  "y": 0.036,
+  "z": 0.024
+ },
+ "metrics": {
+  "OFF": {
+   "max_abs_u_minus_r_mm": 0.0,
+   "max_speed_mm_s": 744.9847540587659,
+   "max_accel_mm_s2": 93401.36847490458
+  },
+  "A_delay": {
+   "max_abs_u_minus_r_mm": 0.5958407136040828,
+   "max_speed_mm_s": 744.9847540587702,
+   "max_accel_mm_s2": 93401.36847490458
+  },
+  "C_delay_inverse": {
+   "max_abs_u_minus_r_mm": 0.7130457321582635,
+   "max_speed_mm_s": 719.832583633088,
+   "max_accel_mm_s2": 92505.58817224512
+  }
+ }
+}

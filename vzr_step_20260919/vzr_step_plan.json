@@ -1,0 +1,261 @@
+{
+  "schema_version": 1,
+  "campaign": "vzr_step_20260919",
+  "measurement_family": "step_response_identification",
+  "purpose": "Step-type vzr identification (OptiTrap F_z = az sin(vz dz) cos(vzr d_r)): one horizontal axis and z jump in the same record, so single-axis jumps fix ar, vxr, gam / az, vz, gamz and simultaneous jumps fix vzr in the same thermal state. Reference: G:/マイドライブ/Experiment/20260918/measurement_plan/vzr_step/VZR_STEP_PLAN.md (copied to vzr_step_20260919/REFERENCE_VZR_STEP_PLAN.md).",
+  "generation_note": "Generated natively by kind=staircase with level_sequence_mm (explicit [x, y, z] holds, several axes may change in one sample). The export is numerically identical to the analysis-side commands/vzrstep_*.npz (see reference_comparison_20260919.json). Staircase safety is amplitude-only: vector norm of the offset, vector norm of the single-sample change, and the 2.144 mm escape boundary. safety_limits are pinned per run just above the designed jump so a generation error producing a larger jump is rejected.",
+  "protocol_note": "Rest the trap for at least 10 minutes, then XS1 once (retention check by eye), XS2 two or three times at a constant interval, optionally XS3 once and YS2 once. Tier C for S1/S2 (largest change <= 1.05 mm, the amplitude already recorded with the particle retained) and tier D for S3 (1.166 mm). Use run_vzr_step_all.ps1 or --hf-run LABEL=SCALE to repeat labels in order.",
+  "defaults": {
+    "sample_hz": 10000,
+    "duration_sec": 9.7,
+    "ramp_sec": 0.0,
+    "safety_limits": {
+      "max_offset_mm": 1.17,
+      "max_step_mm": 1.17,
+      "max_speed_mm_s": 100.0,
+      "max_acceleration_mm_s2": 28000.0
+    }
+  },
+  "experiments": [
+    {
+      "name": "vzrstep_XS1",
+      "kind": "staircase",
+      "tier": "C",
+      "hold_sec": 0.3,
+      "initial_hold_sec": 0.5,
+      "final_hold_sec": 0.5,
+      "level_sequence_mm": [
+        [0.6, 0.0, 0.0],
+        [0.6, 0.0, 0.4],
+        [0.0, 0.0, 0.0],
+        [-0.6, 0.0, -0.4],
+        [-0.6, 0.0, 0.0],
+        [0.0, 0.0, 0.0],
+        [0.6, 0.0, -0.4],
+        [0.0, 0.0, 0.0],
+        [-0.6, 0.0, 0.4],
+        [0.0, 0.0, 0.0]
+      ],
+      "repeats_within_run": 3,
+      "repeats": 1,
+      "safety_limits": {
+        "max_offset_mm": 0.73,
+        "max_step_mm": 0.73,
+        "max_speed_mm_s": 100.0,
+        "max_acceleration_mm_s2": 28000.0
+      },
+      "campaign": "vzr_step_20260919",
+      "condition": "vzr_step_xz",
+      "reference": {
+        "plan": "VZR_STEP_PLAN.md",
+        "stage": "XS1",
+        "horizontal_axis": "x",
+        "S_h_mm": 0.6,
+        "S_z_mm": 0.4,
+        "source_file": "vzrstep_XS1_x0.6_z0.4.npz"
+      },
+      "note": "Step-type vzr record: x +/-0.6 mm and z +/-0.4 mm jumps mixed in one record. One block is (h,z): (0,0)->(+,0)->(+,+)->(0,0)->(-,-)->(-,0)->(0,0)->(+,-)->(0,0)->(-,+)->(0,0), repeated 3 times: 31 holds, 30 jumps (6 x-only, 6 z-only, 18 simultaneous), 0.3 s holds, 9.7 s. Largest single-sample change 0.721 mm = 34% of the estimated 2.144 mm escape boundary. First record; doubles as the retention check.",
+      "enabled": true
+    },
+    {
+      "name": "vzrstep_XS2",
+      "kind": "staircase",
+      "tier": "C",
+      "hold_sec": 0.3,
+      "initial_hold_sec": 0.5,
+      "final_hold_sec": 0.5,
+      "level_sequence_mm": [
+        [0.8, 0.0, 0.0],
+        [0.8, 0.0, 0.5],
+        [0.0, 0.0, 0.0],
+        [-0.8, 0.0, -0.5],
+        [-0.8, 0.0, 0.0],
+        [0.0, 0.0, 0.0],
+        [0.8, 0.0, -0.5],
+        [0.0, 0.0, 0.0],
+        [-0.8, 0.0, 0.5],
+        [0.0, 0.0, 0.0]
+      ],
+      "repeats_within_run": 3,
+      "repeats": 1,
+      "safety_limits": {
+        "max_offset_mm": 0.95,
+        "max_step_mm": 0.95,
+        "max_speed_mm_s": 100.0,
+        "max_acceleration_mm_s2": 28000.0
+      },
+      "campaign": "vzr_step_20260919",
+      "condition": "vzr_step_xz",
+      "reference": {
+        "plan": "VZR_STEP_PLAN.md",
+        "stage": "XS2",
+        "horizontal_axis": "x",
+        "S_h_mm": 0.8,
+        "S_z_mm": 0.5,
+        "source_file": "vzrstep_XS2_x0.8_z0.5.npz"
+      },
+      "note": "Step-type vzr record: x +/-0.8 mm and z +/-0.5 mm jumps mixed in one record. One block is (h,z): (0,0)->(+,0)->(+,+)->(0,0)->(-,-)->(-,0)->(0,0)->(+,-)->(0,0)->(-,+)->(0,0), repeated 3 times: 31 holds, 30 jumps (6 x-only, 6 z-only, 18 simultaneous), 0.3 s holds, 9.7 s. Largest single-sample change 0.943 mm = 44% of the estimated 2.144 mm escape boundary. Main record; take 2-3 of these at a constant interval.",
+      "enabled": true
+    },
+    {
+      "name": "vzrstep_XS3",
+      "kind": "staircase",
+      "tier": "D",
+      "hold_sec": 0.3,
+      "initial_hold_sec": 0.5,
+      "final_hold_sec": 0.5,
+      "level_sequence_mm": [
+        [1.0, 0.0, 0.0],
+        [1.0, 0.0, 0.6],
+        [0.0, 0.0, 0.0],
+        [-1.0, 0.0, -0.6],
+        [-1.0, 0.0, 0.0],
+        [0.0, 0.0, 0.0],
+        [1.0, 0.0, -0.6],
+        [0.0, 0.0, 0.0],
+        [-1.0, 0.0, 0.6],
+        [0.0, 0.0, 0.0]
+      ],
+      "repeats_within_run": 3,
+      "repeats": 1,
+      "safety_limits": {
+        "max_offset_mm": 1.17,
+        "max_step_mm": 1.17,
+        "max_speed_mm_s": 100.0,
+        "max_acceleration_mm_s2": 28000.0
+      },
+      "campaign": "vzr_step_20260919",
+      "condition": "vzr_step_xz",
+      "reference": {
+        "plan": "VZR_STEP_PLAN.md",
+        "stage": "XS3",
+        "horizontal_axis": "x",
+        "S_h_mm": 1.0,
+        "S_z_mm": 0.6,
+        "source_file": "vzrstep_XS3_x1_z0.6.npz"
+      },
+      "note": "Step-type vzr record: x +/-1 mm and z +/-0.6 mm jumps mixed in one record. One block is (h,z): (0,0)->(+,0)->(+,+)->(0,0)->(-,-)->(-,0)->(0,0)->(+,-)->(0,0)->(-,+)->(0,0), repeated 3 times: 31 holds, 30 jumps (6 x-only, 6 z-only, 18 simultaneous), 0.3 s holds, 9.7 s. Largest single-sample change 1.166 mm = 54% of the estimated 2.144 mm escape boundary. Optional; helps when vzr is small.",
+      "enabled": true
+    },
+    {
+      "name": "vzrstep_YS1",
+      "kind": "staircase",
+      "tier": "C",
+      "hold_sec": 0.3,
+      "initial_hold_sec": 0.5,
+      "final_hold_sec": 0.5,
+      "level_sequence_mm": [
+        [0.0, 0.6, 0.0],
+        [0.0, 0.6, 0.4],
+        [0.0, 0.0, 0.0],
+        [0.0, -0.6, -0.4],
+        [0.0, -0.6, 0.0],
+        [0.0, 0.0, 0.0],
+        [0.0, 0.6, -0.4],
+        [0.0, 0.0, 0.0],
+        [0.0, -0.6, 0.4],
+        [0.0, 0.0, 0.0]
+      ],
+      "repeats_within_run": 3,
+      "repeats": 1,
+      "safety_limits": {
+        "max_offset_mm": 0.73,
+        "max_step_mm": 0.73,
+        "max_speed_mm_s": 100.0,
+        "max_acceleration_mm_s2": 28000.0
+      },
+      "campaign": "vzr_step_20260919",
+      "condition": "vzr_step_yz",
+      "reference": {
+        "plan": "VZR_STEP_PLAN.md",
+        "stage": "YS1",
+        "horizontal_axis": "y",
+        "S_h_mm": 0.6,
+        "S_z_mm": 0.4,
+        "source_file": "vzrstep_YS1_y0.6_z0.4.npz"
+      },
+      "note": "Step-type vzr record: y +/-0.6 mm and z +/-0.4 mm jumps mixed in one record. One block is (h,z): (0,0)->(+,0)->(+,+)->(0,0)->(-,-)->(-,0)->(0,0)->(+,-)->(0,0)->(-,+)->(0,0), repeated 3 times: 31 holds, 30 jumps (6 y-only, 6 z-only, 18 simultaneous), 0.3 s holds, 9.7 s. Largest single-sample change 0.721 mm = 34% of the estimated 2.144 mm escape boundary. Optional y+z retention check before YS2.",
+      "enabled": true
+    },
+    {
+      "name": "vzrstep_YS2",
+      "kind": "staircase",
+      "tier": "C",
+      "hold_sec": 0.3,
+      "initial_hold_sec": 0.5,
+      "final_hold_sec": 0.5,
+      "level_sequence_mm": [
+        [0.0, 0.8, 0.0],
+        [0.0, 0.8, 0.5],
+        [0.0, 0.0, 0.0],
+        [0.0, -0.8, -0.5],
+        [0.0, -0.8, 0.0],
+        [0.0, 0.0, 0.0],
+        [0.0, 0.8, -0.5],
+        [0.0, 0.0, 0.0],
+        [0.0, -0.8, 0.5],
+        [0.0, 0.0, 0.0]
+      ],
+      "repeats_within_run": 3,
+      "repeats": 1,
+      "safety_limits": {
+        "max_offset_mm": 0.95,
+        "max_step_mm": 0.95,
+        "max_speed_mm_s": 100.0,
+        "max_acceleration_mm_s2": 28000.0
+      },
+      "campaign": "vzr_step_20260919",
+      "condition": "vzr_step_yz",
+      "reference": {
+        "plan": "VZR_STEP_PLAN.md",
+        "stage": "YS2",
+        "horizontal_axis": "y",
+        "S_h_mm": 0.8,
+        "S_z_mm": 0.5,
+        "source_file": "vzrstep_YS2_y0.8_z0.5.npz"
+      },
+      "note": "Step-type vzr record: y +/-0.8 mm and z +/-0.5 mm jumps mixed in one record. One block is (h,z): (0,0)->(+,0)->(+,+)->(0,0)->(-,-)->(-,0)->(0,0)->(+,-)->(0,0)->(-,+)->(0,0), repeated 3 times: 31 holds, 30 jumps (6 y-only, 6 z-only, 18 simultaneous), 0.3 s holds, 9.7 s. Largest single-sample change 0.943 mm = 44% of the estimated 2.144 mm escape boundary. Axis-symmetry check (does y+z give the same vzr as x+z); one record.",
+      "enabled": true
+    },
+    {
+      "name": "vzrstep_YS3",
+      "kind": "staircase",
+      "tier": "D",
+      "hold_sec": 0.3,
+      "initial_hold_sec": 0.5,
+      "final_hold_sec": 0.5,
+      "level_sequence_mm": [
+        [0.0, 1.0, 0.0],
+        [0.0, 1.0, 0.6],
+        [0.0, 0.0, 0.0],
+        [0.0, -1.0, -0.6],
+        [0.0, -1.0, 0.0],
+        [0.0, 0.0, 0.0],
+        [0.0, 1.0, -0.6],
+        [0.0, 0.0, 0.0],
+        [0.0, -1.0, 0.6],
+        [0.0, 0.0, 0.0]
+      ],
+      "repeats_within_run": 3,
+      "repeats": 1,
+      "safety_limits": {
+        "max_offset_mm": 1.17,
+        "max_step_mm": 1.17,
+        "max_speed_mm_s": 100.0,
+        "max_acceleration_mm_s2": 28000.0
+      },
+      "campaign": "vzr_step_20260919",
+      "condition": "vzr_step_yz",
+      "reference": {
+        "plan": "VZR_STEP_PLAN.md",
+        "stage": "YS3",
+        "horizontal_axis": "y",
+        "S_h_mm": 1.0,
+        "S_z_mm": 0.6,
+        "source_file": "vzrstep_YS3_y1_z0.6.npz"
+      },
+      "note": "Step-type vzr record: y +/-1 mm and z +/-0.6 mm jumps mixed in one record. One block is (h,z): (0,0)->(+,0)->(+,+)->(0,0)->(-,-)->(-,0)->(0,0)->(+,-)->(0,0)->(-,+)->(0,0), repeated 3 times: 31 holds, 30 jumps (6 y-only, 6 z-only, 18 simultaneous), 0.3 s holds, 9.7 s. Largest single-sample change 1.166 mm = 54% of the estimated 2.144 mm escape boundary. Optional.",
+      "enabled": true
+    }
+  ]
+}

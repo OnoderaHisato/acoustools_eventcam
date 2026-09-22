@@ -1,0 +1,11 @@
+# Keep this toolkit source-only if copied into its own repository.
+*
+!/.gitignore
+!/*.py
+!/*.ps1
+!/*.md
+!/*.json
+!/requirements.txt
+*.local.json
+credentials*.json
+secrets*.json

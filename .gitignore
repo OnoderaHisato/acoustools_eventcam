@@ -59,6 +59,43 @@
 !/hf_identification_handoff_20260817/*.py
 !/hf_identification_handoff_20260817/*.md
 
+# vzr identification campaign (2026-09-17): plan, reference plan/generator copies, and the
+# numerical comparison record. The generated export_vzr_identification/ stays ignored.
+!/vzr_identification_20260917/
+!/vzr_identification_20260917/*.py
+!/vzr_identification_20260917/*.md
+!/vzr_identification_20260917/*.json
+
+# Large single-axis step campaign (2026-09-20): plan, reference generator/plan copies and the
+# comparison record. The generated export_large_step/ stays ignored.
+!/large_step_20260920/
+!/large_step_20260920/*.py
+!/large_step_20260920/*.md
+!/large_step_20260920/*.json
+
+# Step-type vzr campaign (2026-09-19): plan, reference plan/generator copies, and the
+# comparison record. The generated export_vzr_step/ stays ignored.
+!/vzr_step_20260919/
+!/vzr_step_20260919/*.py
+!/vzr_step_20260919/*.md
+!/vzr_step_20260919/*.json
+
+# FF heart validation campaign (2026-09-18): plan, reference README/generator/metrics copies,
+# and the comparison record. source/*.npz and export_ff_heart/ stay ignored.
+!/ff_heart_20260918/
+!/ff_heart_20260918/*.py
+!/ff_heart_20260918/*.md
+!/ff_heart_20260918/*.json
+
+# Standalone camera-only code and instructions; keep SDKs/captures/calibration outputs ignored.
+!/eventcam_standalone/
+!/eventcam_standalone/.gitignore
+!/eventcam_standalone/*.py
+!/eventcam_standalone/*.ps1
+!/eventcam_standalone/*.md
+!/eventcam_standalone/*.json
+!/eventcam_standalone/requirements.txt
+
 # Preserve the comparison source, but not its numerical or image outputs.
 !/visualizations/
 !/visualizations/phase13mg_boards_comparison_20260910/

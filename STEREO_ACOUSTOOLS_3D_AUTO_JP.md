@@ -24,6 +24,106 @@ Plan Bでは次を追加で保証します。
   --dry-run
 ```
 
+## vzr同定計測（2026-09-17統合）
+
+`G:\マイドライブ\Experiment\20260917\measurement_plan` の計画（x/y と z の同時正弦駆動で
+OptiTrapの `vzr` を取る）は、`vzr_identification_20260917/` のplanとexportとして同じ
+`--hf-export-dir` 経路へ統合済みです。生成器に2軸同時の `kind=multitone` を追加し、
+G:の参照NPZと全サンプルで一致するexportを生成します。手順、run順序、安全ゲートは
+`VZR_IDENTIFICATION_MEASUREMENT_JP.md` を参照してください。
+
+```powershell
+# 実機を開かない確認
+powershell -ExecutionPolicy Bypass -File .\run_vzr_identification_all.ps1 -DryRunOnly
+
+# 実機計測（単軸保持確認 → L1 → L2 → L3 → L4 → y単軸 → Y1 → Y2。vzr正弦波は全runでpreviewとEnter）
+powershell -ExecutionPolicy Bypass -File .\run_vzr_identification_all.ps1
+```
+
+vzrのrunは `--acknowledge-vzr-protocol` を要求し、全runでステレオpreviewとEnterを強制、
+`--keep-going`・無人モード・他exportとの混在を拒否します。制限超過の指令は生成時に
+例外で止まり、自動縮小されません。
+
+## FFハート検証計測（2026-09-18統合）
+
+`G:\マイドライブ\Experiment\20260918\measurement_plan\ff_heart` の事前計算済み指令
+（ハート7 mm・10 HzのOFF／A／C／OT-ident）は、`ff_heart_20260918/` のplanとexportとして同じ
+`--hf-export-dir` 経路へ統合済みです。生成器の `kind=imported` がNPZの指令を数値そのまま
+取り込み（内容ハッシュ固定、制限超過は例外、取得側のFF・クリップ・縮小なし）、所望軌道 r は
+各runの `*_reference_log.csv` と `command_trajectory.npz` に保存されます。剛性確認用の
+短いステップも同じexportにあり、`--hf-run` で挟み込めます。手順は
+`FF_HEART_VALIDATION_MEASUREMENT_JP.md` を参照してください。
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\run_ff_heart_validation.ps1 -DryRunOnly
+powershell -ExecutionPolicy Bypass -File .\run_ff_heart_validation.ps1
+```
+
+FF検証のrunは `--acknowledge-ff-validation-protocol` を要求します。`--keep-going` と、step-response以外の
+exportとの混在は拒否します。一括スクリプトの既定は2026-09-20から「最初のrunだけpreviewとEnter」です
+（下の節を参照）。
+
+## ステップ型vzr計測（2026-09-19統合）
+
+`G:\マイドライブ\Experiment\20260918\measurement_plan\vzr_step` の計画（水平1軸とzのジャンプを
+1記録に混ぜ、同時ジャンプで `vzr` を取る）は、`vzr_step_20260919/` のplanとexportとして同じ
+`--hf-export-dir` 経路へ統合済みです。生成器の `kind=staircase` に、保持位置を `[x, y, z]` で並べる
+`level_sequence_mm` を追加し、解析側の指令NPZと全サンプルでビット一致するexportを生成します。
+安全検査は従来のstaircaseと同じ振幅のみ（中心からの距離、1サンプルの変化、脱出境界。いずれも
+ベクトルの大きさ）で、実機ackは `--acknowledge-step-response-risk` です。手順は
+`VZR_STEP_MEASUREMENT_JP.md` を参照してください。
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\run_vzr_step_all.ps1 -DryRunOnly
+powershell -ExecutionPolicy Bypass -File .\run_vzr_step_all.ps1
+```
+
+既定は計画書どおり XS1 → XS2 → XS2 → XS2 の4 runです（run間の確認は下の節を参照）。
+
+## 大振幅1軸ステップ（2026-09-20統合）
+
+`G:\マイドライブ\Experiment\20260919\measurement_plan\large_step` の計画（水平の飽和長 vxr を分離して
+力の上限 A_r = k/vxr を出す）は、`large_step_20260920/` のplanとexportとして同じ `--hf-export-dir` 経路へ
+統合済みです。既存の `kind=staircase`（単軸）で生成し、解析側の指令NPZとビット一致します。手順は
+`LARGE_STEP_MEASUREMENT_JP.md` を参照してください。
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\run_large_step_all.ps1 -DryRunOnly
+powershell -ExecutionPolicy Bypass -File .\run_large_step_all.ps1
+```
+
+既定は XL12 → XL15 の2 runです。1.8／2.0 mmは推定力最大点より外から戻るので、必ず小さい段から
+上げ、戻りが鈍ったら止めてください。
+
+## 一括スクリプトのrun間確認（2026-09-20変更）
+
+`run_ff_heart_validation.ps1`、`run_vzr_step_all.ps1`、`run_large_step_all.ps1` は、既定で**最初のrunだけ**
+ステレオpreviewとEnter確認を行い、残りは自動で続けます（`--unattended-after-first-checkpoint`）。
+記録やLED検出に失敗したときは、従来どおり「同じ軌道を再計測しますか？ (Y/n)」を出します
+（新設の `--prompt-on-capture-failure`）。
+
+- `-ConfirmEachRun`: 変更前と同じく、全runでpreviewとEnterを行う。
+- `-Unattended`: 失敗時も尋ねず、`-AutomaticCaptureRetries`（既定2）回まで自動で撮り直す。
+
+粒子の脱落は自動検知しません。
+
+## 電圧を下げた熱の保持試験（2026-09-23追加）
+
+解析側の `THERMAL_PLAN_20260922.md` §3（15 Vで熱の定常状態を作る）用に、自動計測の入口へ次を追加しました。
+手順は `THERMAL_15V_MEASUREMENT_JP.md` を参照してください。
+
+- `--supply-voltage-v V`: 全runのフォルダ名の末尾に `_V15` などを付け、`supply_voltage_V` を記録します。
+  電源の電圧は手で設定します。タグが長さ制限で切れる出力先は開始前に拒否します。
+- `--schedule-interval-sec S` と `--schedule-group-size N`（無人モードのみ）: N本ずつの組を、PATの出力開始
+  （音を出した時刻）から S 秒 × 組番号 に開始します。組の間は粒子を中心で保持します。
+- `run_thermal_hold_test.ps1 -SupplyVoltage 15`: kcheck x/y/z を5分ごとに60分（13組・39 run）。
+- `run_ff_heart_validation.ps1` に `-SupplyVoltage` と、kcheckだけを表す設計名 `K` を追加しました。
+- `thermal_log_prefill.py`: session JSONから記録用紙（`thermal_log_template.csv` と同じ列）の下書きを作ります。
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\run_thermal_hold_test.ps1 -SupplyVoltage 15 -DryRunOnly
+```
+
 ## 構成
 
 3D自動計測は、単発計測と同じrecording/postprocessコアを使用します。自動化スクリプトに、粒子追跡や三角測量の実装を重複させていません。
@@ -215,6 +315,17 @@ Z軸の`90_z_chirp_220_350hz_diagnostic`は、ノイズ床と保持を確認す�
 `--start-index`、`--limit`とは併用しません。カメラのtail marginは既定で2.0秒です。
 100,000点HF runで観測された約1.2秒のPAT送信開始遅延を含めても軌道末尾が欠けない
 ようにするためで、通常は`--capture-tail-margin-sec`を追加する必要はありません。
+
+`--hf-export-dir`は複数回指定でき、指定したディレクトリ順・各manifest順に1回のPAT接続で
+記録します。run名はexport間で重複できず、`--hf-run`、`--start-index`、`--limit`、Plan B
+selectorとは併用できません（`--label`は可）。
+
+step-response staircaseとFF検証の取り込み指令だけを選択した場合（混在可）は、`--unattended-after-first-checkpoint`で
+最初のrunだけプレビューとEnter確認を行い、残りを無人で連続記録できます。最初のrunの
+ホログラムはPAT出力前に計算します。無人区間で記録に失敗したrunは
+`--automatic-capture-retries`（既定2）回まで自動で再計測し、それでも失敗すれば停止します。
+粒子の脱落は自動検知しません。単一振幅系列の一括実行は
+`run_step_response_single_amplitude_all.ps1`と`STEP_RESPONSE_SINGLE_AMPLITUDE_JP.md`を参照してください。
 
 各HF runには元の`command_trajectory.npz`、`trajectory_metadata.json`、
 `command_offset_log.csv`、プレビューがコピーされ、SHA-256と実際のcommand scaleが

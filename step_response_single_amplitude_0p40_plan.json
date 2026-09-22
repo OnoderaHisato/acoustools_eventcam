@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "measurement_family": "step_response_identification",
+  "purpose": "Repeated identical 0.40 mm trap jumps with 2.0 s holds, alternating in sign, for averaging many realizations of one step size and for observing the full decay tail before the next jump.",
+  "escalation_note": "Every command in this file is exactly +/-0.40 mm, which tier A already recorded on 2026-08-21 with the particle retained in both cameras. What is new is the 2.0 s hold: each jump is followed by a much longer constant-command segment than the 0.3 s (tiers A-D) or 1.0 s (tiers E-H) used before, so the free response is observed to settling rather than truncated. Record the smallest amplitude file first and confirm the particle is retained and visible in both cameras before moving to the next amplitude. safety_limits in this file are pinned to this amplitude so that any generation error producing a larger jump is rejected instead of silently recorded.",
+  "defaults": {
+    "sample_hz": 10000,
+    "duration_sec": 26.0,
+    "ramp_sec": 0.0,
+    "safety_limits": {
+      "max_offset_mm": 0.4,
+      "max_step_mm": 0.4,
+      "max_speed_mm_s": 100.0,
+      "max_acceleration_mm_s2": 28000.0
+    }
+  },
+  "experiments": [
+    {
+      "name": "S040_x_single_amplitude_2s_hold",
+      "kind": "staircase",
+      "tier": "A",
+      "axis": "x",
+      "hold_sec": 2.0,
+      "initial_hold_sec": 2.0,
+      "final_hold_sec": 2.0,
+      "amplitudes_mm": [
+        0.4
+      ],
+      "directions": [
+        1,
+        -1
+      ],
+      "repeats_within_run": 3,
+      "repeats": 1,
+      "note": "Single step amplitude 0.40 mm, deterministic alternating sign, 2.0 s holds. 13 holds, 12 jumps, 26.0 s. 37% of the estimated 1.072 mm force maximum, 19% of the estimated 2.144 mm escape boundary. Amplitude already recorded with particle retention in tier A on 2026-08-21; the hold duration is the only change.",
+      "enabled": true
+    },
+    {
+      "name": "S040_y_single_amplitude_2s_hold",
+      "kind": "staircase",
+      "tier": "A",
+      "axis": "y",
+      "hold_sec": 2.0,
+      "initial_hold_sec": 2.0,
+      "final_hold_sec": 2.0,
+      "amplitudes_mm": [
+        0.4
+      ],
+      "directions": [
+        1,
+        -1
+      ],
+      "repeats_within_run": 3,
+      "repeats": 1,
+      "note": "Single step amplitude 0.40 mm, deterministic alternating sign, 2.0 s holds. 13 holds, 12 jumps, 26.0 s. 37% of the estimated 1.072 mm force maximum, 19% of the estimated 2.144 mm escape boundary. Amplitude already recorded with particle retention in tier A on 2026-08-21; the hold duration is the only change.",
+      "enabled": true
+    },
+    {
+      "name": "S040_z_single_amplitude_2s_hold",
+      "kind": "staircase",
+      "tier": "A",
+      "axis": "z",
+      "hold_sec": 2.0,
+      "initial_hold_sec": 2.0,
+      "final_hold_sec": 2.0,
+      "amplitudes_mm": [
+        0.4
+      ],
+      "directions": [
+        1,
+        -1
+      ],
+      "repeats_within_run": 3,
+      "repeats": 1,
+      "note": "Single step amplitude 0.40 mm, deterministic alternating sign, 2.0 s holds. 13 holds, 12 jumps, 26.0 s. 37% of the estimated 1.072 mm force maximum, 19% of the estimated 2.144 mm escape boundary. Amplitude already recorded with particle retention in tier A on 2026-08-21; the hold duration is the only change.",
+      "enabled": true
+    }
+  ]
+}

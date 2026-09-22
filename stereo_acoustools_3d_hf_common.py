@@ -12,7 +12,12 @@ from typing import Any, Iterable
 
 from acoustools_eventcam_sync import compute_pat_frame_rate_info
 from acoustools_multitraj_no_eventcam import trajectory_stats
-from hf_identification_trajectory import load_trajectory_for_hardware
+from hf_identification_trajectory import (
+    FEEDFORWARD_VALIDATION_FAMILY,
+    VZR_IDENTIFICATION_FAMILY,
+    load_reference_for_hardware,
+    load_trajectory_for_hardware,
+)
 from stereo_acoustools_3d_recording_core import PreparedTrajectory
 
 
@@ -24,6 +29,23 @@ PLAN_B_FAMILIES = frozenset(
         "plan_b3_drift_source",
     }
 )
+
+
+def is_vzr_metadata(metadata: dict[str, Any] | None) -> bool:
+    """True for the 2026-09-17 vzr identification family (multi-axis sine runs)."""
+    if not isinstance(metadata, dict):
+        return False
+    return str(metadata.get("measurement_family", "")).strip() == VZR_IDENTIFICATION_FAMILY
+
+
+def is_feedforward_validation_metadata(metadata: dict[str, Any] | None) -> bool:
+    """True for imported feedforward-validation commands (FF heart, 2026-09-18)."""
+    if not isinstance(metadata, dict):
+        return False
+    return (
+        str(metadata.get("measurement_family", "")).strip()
+        == FEEDFORWARD_VALIDATION_FAMILY
+    )
 
 
 @dataclass(frozen=True)
@@ -166,6 +188,47 @@ def load_hf_export_runs(export_dir: str | Path) -> tuple[Path, list[HfExportRun]
                 raise ValueError(
                     f"{name}: staircase metadata has unsupported measurement family {family!r}"
                 )
+        kind = str(metadata.get("kind", "")).lower()
+        if kind == "multitone":
+            axes = metadata.get("axes")
+            components = metadata.get("generation_detail", {}).get("components")
+            if (
+                not isinstance(axes, list)
+                or not axes
+                or not isinstance(components, list)
+                or not components
+            ):
+                raise ValueError(
+                    f"{name}: multitone metadata requires axes and generation_detail.components"
+                )
+            if float(metadata.get("safety_scale_applied", 0.0)) != 1.0:
+                raise ValueError(f"{name}: multitone exports must not be rescaled at generation")
+        if is_vzr_metadata(metadata) and kind not in {"multitone", "static"}:
+            raise ValueError(
+                f"{name}: vzr identification exports must be multitone or static commands"
+            )
+        if kind == "imported":
+            detail = metadata.get("generation_detail", {})
+            if not detail.get("source_sha256") or not detail.get("positions_sha256"):
+                raise ValueError(
+                    f"{name}: imported metadata requires source_sha256 and positions_sha256"
+                )
+            if float(metadata.get("safety_scale_applied", 0.0)) != 1.0:
+                raise ValueError(f"{name}: imported exports must not be rescaled at generation")
+        if is_feedforward_validation_metadata(metadata):
+            if kind != "imported":
+                raise ValueError(
+                    f"{name}: feedforward validation exports must be imported commands"
+                )
+            design = metadata.get("feedforward_design")
+            if not isinstance(design, dict) or not str(design.get("design", "")).strip():
+                raise ValueError(
+                    f"{name}: feedforward validation metadata requires feedforward_design.design"
+                )
+            if not metadata.get("generation_detail", {}).get("reference_available"):
+                raise ValueError(
+                    f"{name}: feedforward validation requires the reference trajectory"
+                )
         campaign = str(metadata.get("campaign", "")).strip()
         family = str(metadata.get("measurement_family", "")).strip()
         if campaign == PLAN_B_CAMPAIGN and family not in PLAN_B_FAMILIES:
@@ -281,6 +344,17 @@ def prepare_hf_trajectory(
     measurement_family = str(loader_metadata.get("measurement_family", "")).strip()
     is_step_response = is_staircase and measurement_family == "step_response_identification"
     is_plan_b = str(loader_metadata.get("campaign", "")) == PLAN_B_CAMPAIGN
+    is_vzr = is_vzr_metadata(loader_metadata)
+    is_feedforward_validation = is_feedforward_validation_metadata(loader_metadata)
+    is_multitone = str(loader_metadata.get("kind", "")).lower() == "multitone"
+    is_imported = str(loader_metadata.get("kind", "")).lower() == "imported"
+    reference_positions = (
+        load_reference_for_hardware(
+            run.command_npz, center_m=center_m, command_scale=command_scale
+        )
+        if is_imported
+        else None
+    )
     drive_amplitude_scale = float(loader_metadata.get("drive_amplitude_scale", 1.0))
     source_kind = (
         "step_response_identification"
@@ -313,9 +387,20 @@ def prepare_hf_trajectory(
         "particle_id",
         "operator_checkpoint",
         "requires_operator_context",
+        "reference",
+        "feedforward_design",
     ):
         if field in loader_metadata:
             trajectory_source[field] = loader_metadata[field]
+    if is_imported:
+        design = loader_metadata.get("feedforward_design", {})
+        trajectory_source["imported_command"] = True
+        trajectory_source["reference_trajectory_logged"] = reference_positions is not None
+        # delay_feedforward_applied=False means the acquisition side added nothing.
+        # An imported command may still contain feedforward designed offline.
+        trajectory_source["command_contains_offline_feedforward"] = bool(
+            isinstance(design, dict) and design.get("command_differs_from_reference", False)
+        )
     parameters = {
         "identification_input": True,
         "name": run.name,
@@ -329,6 +414,17 @@ def prepare_hf_trajectory(
     }
     if is_staircase:
         parameters["intentional_discontinuous_command"] = True
+    if is_multitone:
+        parameters["axes"] = [str(axis) for axis in loader_metadata.get("axes", [])]
+        parameters["components"] = list(
+            loader_metadata.get("generation_detail", {}).get("components", [])
+        )
+    if is_imported:
+        parameters["axes"] = [str(axis) for axis in loader_metadata.get("axes", [])]
+        parameters["imported_command"] = True
+        parameters["reference_trajectory_logged"] = reference_positions is not None
+        if "feedforward_design" in loader_metadata:
+            parameters["feedforward_design"] = loader_metadata["feedforward_design"]
     if is_step_response:
         parameters["measurement_family"] = "step_response_identification"
         parameters["step_response_tier"] = loader_metadata["step_response_tier"]
@@ -338,7 +434,10 @@ def prepare_hf_trajectory(
         shape_name=(
             "step_response_identification"
             if is_step_response
-            else "plan_b_identification" if is_plan_b else "hf_identification"
+            else "plan_b_identification" if is_plan_b
+            else "vzr_identification" if is_vzr
+            else "feedforward_validation" if is_feedforward_validation
+            else "hf_identification"
         ),
         positions=positions,
         n_steps=len(positions),
@@ -356,6 +455,7 @@ def prepare_hf_trajectory(
             "command_trajectory_preview.png": run.preview_png,
         },
         trajectory_source=trajectory_source,
+        reference_positions=reference_positions,
     )
 
 
@@ -399,6 +499,8 @@ def hf_automation_metadata(
         "particle_id",
         "operator_checkpoint",
         "requires_operator_context",
+        "reference",
+        "feedforward_design",
     ):
         if field in run.metadata:
             payload[field] = run.metadata[field]

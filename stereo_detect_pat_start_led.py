@@ -32,11 +32,33 @@ def detect_led_sync_npz(
     output_dir: Path | None = None,
     expected_t_recording_sec: float | None = None,
     search_half_window_sec: float = 0.1,
+    expected_onset_t_recording_sec: float | None = None,
+    onset_tolerance_sec: float = 0.0,
+    min_peak_to_threshold_ratio: float = 1.0,
 ) -> dict[str, Any]:
-    """Detect one LED onset without requiring the LED in the other camera."""
+    """Detect one LED onset without requiring the LED in the other camera.
+
+    Two optional acceptance checks reject a single noise bin that merely reaches the
+    threshold somewhere in a wide search window (false detections of 2026-09-16 and
+    2026-09-18, each more than one second away from the real PAT start):
+
+    * ``expected_onset_t_recording_sec`` with ``onset_tolerance_sec > 0``: the onset must
+      lie within the tolerance of the predicted onset (PC timing estimate plus the measured
+      PAT send overhead). 246 genuine detections were within +4..+14 ms of that prediction,
+      the worst outlier was -55 ms.
+    * ``min_peak_to_threshold_ratio > 1``: the peak bin must exceed the threshold by this
+      factor. A peak equal to the threshold cannot be told apart from noise.
+
+    The defaults keep both checks off, which is the behaviour before 2026-09-18. The onset
+    residual and the peak-to-threshold ratio are reported either way.
+    """
     npz_path = npz_path.resolve()
     if bin_us <= 0:
         raise ValueError("bin_us must be positive")
+    if onset_tolerance_sec < 0:
+        raise ValueError("onset_tolerance_sec must not be negative")
+    if min_peak_to_threshold_ratio < 1.0:
+        raise ValueError("min_peak_to_threshold_ratio must be at least 1")
     with np.load(npz_path, allow_pickle=False) as data:
         events = np.asarray(data["events"])
         if events.size == 0:
@@ -78,10 +100,14 @@ def detect_led_sync_npz(
         if search_end_index <= search_start_index:
             raise RuntimeError("PAT-start LED search window is outside the saved recording interval.")
     peak_index = search_start_index + int(np.argmax(counts[search_start_index:search_end_index]))
-    detected = int(counts[peak_index]) >= int(threshold)
+    threshold_crossed = int(counts[peak_index]) >= int(threshold)
 
     onset_index = peak_index
-    while detected and onset_index > search_start_index and int(counts[onset_index - 1]) >= int(threshold):
+    while (
+        threshold_crossed
+        and onset_index > search_start_index
+        and int(counts[onset_index - 1]) >= int(threshold)
+    ):
         onset_index -= 1
     onset_bin_start_ts_us = output_start_ts_us + onset_index * bin_us
     onset_bin_end_ts_us = min(output_end_ts_us, onset_bin_start_ts_us + bin_us)
@@ -91,6 +117,27 @@ def detect_led_sync_npz(
     ]
     sync_ts_us = int(onset_events["t"].min()) if onset_events.size else int(onset_bin_start_ts_us)
     sync_t_recording_sec = (sync_ts_us - output_start_ts_us) * 1e-6
+
+    peak_to_threshold_ratio = float(counts[peak_index]) / float(max(1, int(threshold)))
+    onset_residual_sec: float | None = None
+    rejection_reasons: list[str] = []
+    if threshold_crossed:
+        if peak_to_threshold_ratio < float(min_peak_to_threshold_ratio):
+            rejection_reasons.append(
+                f"peak {int(counts[peak_index])} is only {peak_to_threshold_ratio:.2f}x the threshold "
+                f"{int(threshold)} (required {float(min_peak_to_threshold_ratio):g}x); the LED is too "
+                "dim to be told apart from noise"
+            )
+        if expected_onset_t_recording_sec is not None:
+            # Always reported; it only rejects the candidate when a tolerance was requested.
+            onset_residual_sec = float(sync_t_recording_sec) - float(expected_onset_t_recording_sec)
+            if float(onset_tolerance_sec) > 0.0 and abs(onset_residual_sec) > float(onset_tolerance_sec):
+                rejection_reasons.append(
+                    f"onset at {sync_t_recording_sec:.6f} s is {onset_residual_sec * 1e3:+.1f} ms from "
+                    f"the predicted PAT start {float(expected_onset_t_recording_sec):.6f} s "
+                    f"(tolerance {float(onset_tolerance_sec) * 1e3:g} ms)"
+                )
+    detected = bool(threshold_crossed and not rejection_reasons)
 
     output_dir = (output_dir or npz_path.parent / "pat_start_led").resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -125,10 +172,29 @@ def detect_led_sync_npz(
             sync_t_recording_sec,
             color="tab:green" if detected else "tab:orange",
             linewidth=1.2,
-            label="detected onset" if detected else "candidate peak (below threshold)",
+            label=(
+                "detected onset"
+                if detected
+                else "candidate (rejected)" if threshold_crossed else "candidate peak (below threshold)"
+            ),
         )
         if expected_t_recording_sec is not None:
             axis.axvline(expected_t_recording_sec, color="black", linestyle=":", linewidth=1.0, label="PC estimate")
+        if expected_onset_t_recording_sec is not None:
+            axis.axvline(
+                float(expected_onset_t_recording_sec),
+                color="tab:purple",
+                linestyle="-.",
+                linewidth=1.0,
+                label="predicted onset (PC estimate + send overhead)",
+            )
+            if float(onset_tolerance_sec) > 0.0:
+                axis.axvspan(
+                    float(expected_onset_t_recording_sec) - float(onset_tolerance_sec),
+                    float(expected_onset_t_recording_sec) + float(onset_tolerance_sec),
+                    color="tab:purple",
+                    alpha=0.08,
+                )
         axis.set_xlabel("recording time [s]")
         axis.set_ylabel(f"events / {bin_us} us")
         axis.set_title(f"PAT-start LED detection: {side} camera only, ROI={roi}")
@@ -153,6 +219,15 @@ def detect_led_sync_npz(
         "configured_threshold": configured_threshold,
         "resolved_threshold": int(threshold),
         "detected": bool(detected),
+        "threshold_crossed": bool(threshold_crossed),
+        "peak_to_threshold_ratio": float(peak_to_threshold_ratio),
+        "min_peak_to_threshold_ratio": float(min_peak_to_threshold_ratio),
+        "expected_onset_t_recording_sec": (
+            None if expected_onset_t_recording_sec is None else float(expected_onset_t_recording_sec)
+        ),
+        "onset_tolerance_sec": float(onset_tolerance_sec),
+        "onset_residual_sec": onset_residual_sec,
+        "rejection_reasons": list(rejection_reasons),
         "expected_t_recording_sec": expected_t_recording_sec,
         "search_half_window_sec": float(search_half_window_sec),
         "search_bin_range": [search_start_index, search_end_index],
@@ -168,6 +243,12 @@ def detect_led_sync_npz(
     json_path = output_dir / f"{side}_pat_start_led.json"
     result["report_json"] = str(json_path)
     json_path.write_text(json.dumps(result, indent=2, ensure_ascii=False), encoding="utf-8")
+    if threshold_crossed and rejection_reasons:
+        raise RuntimeError(
+            "PAT-start LED candidate was rejected: "
+            + "; ".join(rejection_reasons)
+            + f". side={side}, roi={roi}, diagnostic={json_path}"
+        )
     if not detected:
         raise RuntimeError(
             "PAT-start LED was not detected in the selected side/ROI: "
@@ -187,6 +268,24 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--threshold", type=int, default=0, help="Event count threshold. 0 selects automatically.")
     parser.add_argument("--expected-t-sec", type=float, default=None, help="Optional approximate PAT start in recording time.")
     parser.add_argument("--search-half-window-sec", type=float, default=0.1)
+    parser.add_argument(
+        "--expected-onset-t-sec",
+        type=float,
+        default=None,
+        help="Predicted LED onset in recording time (PC estimate plus PAT send overhead).",
+    )
+    parser.add_argument(
+        "--onset-tolerance-sec",
+        type=float,
+        default=0.0,
+        help="Reject an onset further than this from --expected-onset-t-sec. 0 disables the check.",
+    )
+    parser.add_argument(
+        "--min-peak-ratio",
+        type=float,
+        default=1.0,
+        help="Reject a peak below this multiple of the threshold. 1 disables the check.",
+    )
     parser.add_argument("--output-dir", type=Path, default=None)
     return parser.parse_args()
 
@@ -201,6 +300,9 @@ def main() -> int:
         output_dir=args.output_dir,
         expected_t_recording_sec=args.expected_t_sec,
         search_half_window_sec=float(args.search_half_window_sec),
+        expected_onset_t_recording_sec=args.expected_onset_t_sec,
+        onset_tolerance_sec=float(args.onset_tolerance_sec),
+        min_peak_to_threshold_ratio=float(args.min_peak_ratio),
     )
     print(
         f"PAT-start LED: side={result['side']}, "

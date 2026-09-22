@@ -17,7 +17,14 @@ Git操作は実機を起動しません。過去の計測成功やシミュレ�
 - `acoustools_builtin_visualiser_phase_field.py`: AcousTools標準Visualiserを利用する可視化。
 - `hologram_optimization_package/`: ホログラム最適化・放射力評価。
 - `hologram_reoptimized_eps10mm_rho24p8_20260910/`: 直径10 mm・密度24.8 kg/m³の再最適化コード。
+- [MIYABI_UPLOAD_JP.md](MIYABI_UPLOAD_JP.md): 計測データをMiyabiへ直接転送し、3D化ジョブを投入する手順。`miyabi_upload.py`。
+- [EVENTCAM_MEASUREMENT_EXTRACTION_GUIDE_JP.md](EVENTCAM_MEASUREMENT_EXTRACTION_GUIDE_JP.md): イベントカメラ計測・粒子抽出の必要ファイル、実行手順、スパコンへ渡すデータ。
+- [eventcam_standalone/README_JP.md](eventcam_standalone/README_JP.md): AcousToolsなしで校正・同期撮影・粒子抽出・3D復元を行う独立キット。OpenEB環境構築の指示書も同梱。
 - [STEREO_ACOUSTOOLS_3D_AUTO_JP.md](STEREO_ACOUSTOOLS_3D_AUTO_JP.md): 自動計測。
+- [VZR_IDENTIFICATION_MEASUREMENT_JP.md](VZR_IDENTIFICATION_MEASUREMENT_JP.md): vzr同定（x/y＋z同時正弦駆動）の追加計測。`run_vzr_identification_all.ps1` で一括実行。
+- [LARGE_STEP_MEASUREMENT_JP.md](LARGE_STEP_MEASUREMENT_JP.md): 水平の力の上限を測る大振幅1軸ステップ（1.2〜2.0 mm）。`run_large_step_all.ps1` で一括実行。
+- [VZR_STEP_MEASUREMENT_JP.md](VZR_STEP_MEASUREMENT_JP.md): ステップ型のvzr計測（水平1軸とzの同時ジャンプ）。`run_vzr_step_all.ps1` で一括実行。
+- [FF_HEART_VALIDATION_MEASUREMENT_JP.md](FF_HEART_VALIDATION_MEASUREMENT_JP.md): 事前計算済みFF指令（ハート7 mm・10 HzのOFF／A／C）を数値そのまま実機へ送る検証計測。`run_ff_heart_validation.ps1` で一括実行。
 - [STEREO_ACOUSTOOLS_3D_PIPELINE_JP.md](STEREO_ACOUSTOOLS_3D_PIPELINE_JP.md): 録画と後処理。
 - [WINDOWS_EVENTCAM_SETUP_v2.md](WINDOWS_EVENTCAM_SETUP_v2.md): Windows環境構築。
 - `test_*.py`: 入力検査・計算・ワークフローなどの回帰テスト。実機接続テストではありませんが、全フォルダの一括収集は避け、対象を指定してください。

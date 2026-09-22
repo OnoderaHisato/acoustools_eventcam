@@ -25,7 +25,7 @@ import sys
 import time
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Any, Mapping, Tuple
+from typing import Any, Mapping, Sequence, Tuple
 
 import torch
 
@@ -129,6 +129,35 @@ def build_recording_parser() -> argparse.ArgumentParser:
     parser.add_argument("--pat-start-led-threshold", type=int, default=0, help="0 selects an event-count threshold automatically.")
     parser.add_argument("--pat-start-led-search-sec", type=float, default=0.2, help="Search half-width around the PC timing estimate.")
     parser.add_argument(
+        "--pat-start-led-onset-tolerance-sec",
+        type=float,
+        default=0.0,
+        help=(
+            "Strict mode: reject an LED onset further than this from the predicted PAT start "
+            "(PC timing estimate plus the measured PAT send overhead). The default 0 never rejects; "
+            "a detection more than 0.1 s from the prediction is recorded with a warning instead."
+        ),
+    )
+    parser.add_argument(
+        "--pat-start-led-min-peak-ratio",
+        type=float,
+        default=1.0,
+        help=(
+            "Strict mode: reject an LED peak below this multiple of the event-count threshold. "
+            "The default 1 never rejects; a peak below 1.5x the threshold is recorded with a "
+            "warning instead."
+        ),
+    )
+    parser.add_argument(
+        "--camera-stall-timeout-sec",
+        type=float,
+        default=3.0,
+        help=(
+            "Abort a stereo capture when one camera delivers no data for this long during the "
+            "saved interval. 0 disables the recorder's stream-stall watchdog."
+        ),
+    )
+    parser.add_argument(
         "--refine-led-time",
         action="store_true",
         help="Allow trajectory-fit time refinement after LED detection. By default the detected LED onset is fixed.",
@@ -164,6 +193,9 @@ class PreparedTrajectory:
     run_label: str = ""
     source_artifacts: dict[str, Path] = field(default_factory=dict)
     trajectory_source: dict[str, Any] = field(default_factory=dict)
+    # Desired particle trajectory when it differs from the PAT command on purpose
+    # (offline feedforward). It is only logged; PAT always plays ``positions``.
+    reference_positions: list[Tuple[float, float, float]] | None = None
 
 
 @dataclass(frozen=True)
@@ -177,6 +209,7 @@ class PrecomputedHologramPlayback:
     static_compacted: bool
     drive_amplitude_scale: float
     preparation_seconds: float
+    distinct_position_count: int | None = None
 
 
 @dataclass
@@ -191,6 +224,9 @@ class RecordingHardwareSession:
     active_output_started_perf_ns: int | None = None
     active_output_started_wall_ns: int | None = None
     last_active_warmup: dict[str, Any] = field(default_factory=dict)
+    # Why the last run's capture attempts failed and whether its LED detection looked
+    # inconsistent; copied into the auto session JSON because failed runs are deleted.
+    last_capture_report: dict[str, Any] = field(default_factory=dict)
 
 
 def precompute_hologram_playback(
@@ -208,13 +244,18 @@ def precompute_hologram_playback(
         raise ValueError("drive_amplitude_scale must be in (0, 1]")
 
     static_compacted = all(position == positions[0] for position in positions[1:])
-    compute_positions = [positions[0]] if static_compacted else positions
     message_loops = len(positions) * loops if static_compacted else loops
     started = time.perf_counter()
-    holograms = [
-        scale_hologram_drive_amplitude(hologram, scale)
-        for hologram in compute_holograms_for_positions(compute_positions)
-    ]
+    if static_compacted:
+        holograms = [
+            scale_hologram_drive_amplitude(hologram, scale)
+            for hologram in compute_holograms_for_positions([positions[0]])
+        ]
+        distinct_position_count = 1
+    else:
+        holograms, distinct_position_count = compute_scaled_holograms_for_positions(
+            positions, scale
+        )
     preparation_seconds = time.perf_counter() - started
     playback = PrecomputedHologramPlayback(
         holograms=holograms,
@@ -224,6 +265,7 @@ def precompute_hologram_playback(
         static_compacted=static_compacted,
         drive_amplitude_scale=scale,
         preparation_seconds=preparation_seconds,
+        distinct_position_count=distinct_position_count,
     )
     print(
         "[PREP] Holograms ready before PAT output: "
@@ -306,6 +348,55 @@ def scale_hologram_drive_amplitude(
     if not 0.0 < scale <= 1.0:
         raise ValueError("drive_amplitude_scale must be in (0, 1]")
     return hologram.clone() * scale
+
+
+def _position_key(position: Tuple[float, float, float]) -> tuple[tuple[float, float], ...]:
+    """Exact identity of a target position; keeps -0.0 distinct from 0.0."""
+    return tuple((float(value), math.copysign(1.0, float(value))) for value in position)
+
+
+def compute_scaled_holograms_for_positions(
+    positions: Sequence[Tuple[float, float, float]],
+    drive_amplitude_scale: float,
+) -> tuple[list[torch.Tensor], int]:
+    """Solve each distinct position once and reuse it for every repeated frame.
+
+    Staircase commands hold a few exact positions for hundreds of thousands of
+    frames. Every returned entry is exactly the (scaled) hologram its position
+    receives from ``compute_holograms_for_positions``; frames at the same
+    position share one tensor. Downstream code only reads these tensors or
+    clones them first (``mute_sync_transducer``, ``prepare_message_from_holograms``).
+    Distinct positions are solved in first-occurrence order and passed through
+    unchanged, so the solver sees the same values as before.
+    """
+    frames = list(positions)
+    index_by_key: dict[tuple[tuple[float, float], ...], int] = {}
+    distinct_positions: list[Tuple[float, float, float]] = []
+    frame_indices: list[int] = []
+    for position in frames:
+        key = _position_key(position)
+        index = index_by_key.get(key)
+        if index is None:
+            index = len(distinct_positions)
+            index_by_key[key] = index
+            distinct_positions.append(position)
+        frame_indices.append(index)
+    if len(distinct_positions) < len(frames):
+        print(
+            f"[PREP] {len(frames)} frames use {len(distinct_positions)} distinct "
+            f"position(s); solving {len(distinct_positions)} hologram(s) and reusing them.",
+            flush=True,
+        )
+    distinct_holograms = [
+        scale_hologram_drive_amplitude(hologram, drive_amplitude_scale)
+        for hologram in compute_holograms_for_positions(distinct_positions)
+    ]
+    if len(distinct_holograms) != len(distinct_positions):
+        raise RuntimeError(
+            "Hologram solver returned "
+            f"{len(distinct_holograms)} result(s) for {len(distinct_positions)} position(s)"
+        )
+    return [distinct_holograms[index] for index in frame_indices], len(distinct_positions)
 
 
 def set_recording_drive_amplitude(
@@ -670,6 +761,56 @@ def compute_led_search_half_window_sec(
     )
 
 
+LED_ADVISORY_ONSET_TOLERANCE_SEC = 0.1
+LED_ADVISORY_MIN_PEAK_RATIO = 1.5
+
+
+def led_consistency_warnings(led_result: dict[str, Any] | None) -> list[str]:
+    """Describe an accepted LED detection that looks like the known false detections.
+
+    Advisory only: the run is recorded exactly as before, but it is no longer a silent success.
+    248 recorded runs gave +4..+14 ms between onset and prediction for genuine detections
+    (worst outlier -55 ms) and -1.1 s / -1.4 s for the two false ones, whose peak equalled the
+    threshold.
+    """
+    if not isinstance(led_result, dict):
+        return []
+    warnings: list[str] = []
+    residual = led_result.get("onset_residual_sec")
+    if residual is not None and abs(float(residual)) > LED_ADVISORY_ONSET_TOLERANCE_SEC:
+        warnings.append(
+            f"LED onset is {float(residual) * 1e3:+.1f} ms from the predicted PAT start "
+            f"(advisory limit {LED_ADVISORY_ONSET_TOLERANCE_SEC * 1e3:g} ms); "
+            "this looks like a noise bin, not the LED"
+        )
+    ratio = led_result.get("peak_to_threshold_ratio")
+    if ratio is not None and float(ratio) < LED_ADVISORY_MIN_PEAK_RATIO:
+        warnings.append(
+            f"LED peak is only {float(ratio):.2f}x the threshold "
+            f"(advisory minimum {LED_ADVISORY_MIN_PEAK_RATIO:g}x); the LED is dim or out of the ROI"
+        )
+    return warnings
+
+
+def compute_recorder_wait_timeout_sec(
+    capture_duration_sec: float,
+    post_roll_sec: float,
+    capture_tail_margin_sec: float,
+) -> float:
+    """Seconds to wait for the stereo recorder after the PAT send call has returned.
+
+    The recorder enforces its own deadline (saved interval + start delay + 30 s, then up to
+    16 s to stop its workers) and names the camera that failed. Waiting less than that kills
+    it just before it can report, which is what hid the stalled camera on 2026-09-18. After
+    the PAT send only the post-roll and tail margin of the interval remain to be recorded.
+    """
+    return max(
+        60.0,
+        float(capture_duration_sec) + 20.0,
+        float(post_roll_sec) + float(capture_tail_margin_sec) + 55.0,
+    )
+
+
 def remove_capture_attempt(attempt_dir: Path, run_dir: Path) -> None:
     """Permanently remove one pipeline-owned temporary capture attempt."""
     target = attempt_dir.resolve()
@@ -766,7 +907,24 @@ def run_recording(
     hardware_session: RecordingHardwareSession | None = None,
     precomputed_playback: PrecomputedHologramPlayback | None = None,
     active_warmup_target_minutes: float | None = None,
+    automatic_capture_retries: int | None = None,
 ) -> tuple[int, Path | None]:
+    """Record one prepared trajectory.
+
+    ``automatic_capture_retries=None`` keeps the interactive behaviour: an LED
+    detection failure asks the operator whether to re-record, and any other
+    capture failure raises.  An integer N enables unattended operation: a failed
+    capture attempt (camera start, recorder exit, PAT send, or LED detection) is
+    discarded and re-recorded with the same prepared holograms up to N times
+    without prompting.  Once N is exhausted, an LED failure ends the run like a
+    declined retry (exit code 2) and any other capture failure raises as before.
+    """
+    if automatic_capture_retries is not None and (
+        isinstance(automatic_capture_retries, bool)
+        or int(automatic_capture_retries) != automatic_capture_retries
+        or int(automatic_capture_retries) < 0
+    ):
+        raise ValueError("automatic_capture_retries must be None or a non-negative integer")
     if min(args.camera_delta_t_us, args.window_us, args.hop_us) <= 0 or args.dt_us <= 0:
         raise SystemExit("Camera/tracking time windows must be positive.")
     if min(args.capture_marker_timeout_sec, args.post_roll_sec, args.capture_tail_margin_sec) < 0:
@@ -775,11 +933,30 @@ def run_recording(
     calibration = validate_calibration(args.stereo_calibration, args.left_serial, args.right_serial)
     if args.camera_to_pat_transform is not None and not args.camera_to_pat_transform.resolve().exists():
         raise SystemExit(f"Camera-to-PAT transform not found: {args.camera_to_pat_transform.resolve()}")
+    led_onset_tolerance_sec = float(getattr(args, "pat_start_led_onset_tolerance_sec", 0.0))
+    led_min_peak_ratio = float(getattr(args, "pat_start_led_min_peak_ratio", 1.0))
+    camera_stall_timeout_sec = float(getattr(args, "camera_stall_timeout_sec", 3.0))
+    if led_onset_tolerance_sec < 0:
+        raise SystemExit("--pat-start-led-onset-tolerance-sec must not be negative.")
+    if led_min_peak_ratio < 1.0:
+        raise SystemExit("--pat-start-led-min-peak-ratio must be at least 1.")
+    if camera_stall_timeout_sec < 0:
+        raise SystemExit("--camera-stall-timeout-sec must not be negative.")
 
     owns_hardware_session = hardware_session is None
     session = hardware_session or open_recording_hardware_session()
     if session.is_shutdown:
         raise RuntimeError("Cannot record with an AcousTools/OpenMPD session that is already shut down.")
+    # Reset before anything can fail, so a report never belongs to the previous run.
+    capture_failure_log: list[str] = []
+    led_warning_log: list[str] = []
+    try:
+        session.last_capture_report = {
+            "failures": capture_failure_log,
+            "led_warnings": led_warning_log,
+        }
+    except AttributeError:
+        pass
     lev = session.lev
     current_pos = session.current_pos
     current_hologram = session.current_hologram
@@ -836,14 +1013,15 @@ def run_recording(
 
         if precomputed_playback is None:
             print(f"[PREP] Computing {len(positions)} holograms before cameras are opened...")
-            holograms = [
-                scale_hologram_drive_amplitude(hologram, drive_amplitude_scale)
-                for hologram in compute_holograms_for_positions(positions)
-            ]
+            hologram_started = time.perf_counter()
+            holograms, playback_distinct_position_count = compute_scaled_holograms_for_positions(
+                positions, drive_amplitude_scale
+            )
             playback_source_frame_count = len(positions) * int(loops)
             playback_message_loops = int(loops)
             playback_static_compacted = False
             playback_preparation_seconds = None
+            playback_hologram_solve_seconds = time.perf_counter() - hologram_started
         else:
             if precomputed_playback.source_frame_count != len(positions) * int(loops):
                 raise ValueError("Precomputed playback frame count does not match trajectory")
@@ -855,6 +1033,8 @@ def run_recording(
             ):
                 raise ValueError("Precomputed playback drive amplitude does not match trajectory")
             holograms = precomputed_playback.holograms
+            playback_distinct_position_count = precomputed_playback.distinct_position_count
+            playback_hologram_solve_seconds = None
             playback_source_frame_count = precomputed_playback.source_frame_count
             playback_message_loops = precomputed_playback.message_loops
             playback_static_compacted = precomputed_playback.static_compacted
@@ -872,6 +1052,16 @@ def run_recording(
         all_positions = positions * loops
         ideal_log = (run_dir / f"{run_base}_ideal_log.csv").resolve()
         write_ideal_log(str(ideal_log), all_positions, actual_fps)
+        reference_log: Path | None = None
+        if trajectory.reference_positions is not None:
+            if len(trajectory.reference_positions) != len(positions):
+                raise ValueError(
+                    "reference_positions must contain one point per commanded position"
+                )
+            reference_log = (run_dir / f"{run_base}_reference_log.csv").resolve()
+            write_ideal_log(
+                str(reference_log), list(trajectory.reference_positions) * loops, actual_fps
+            )
 
         start_pos = positions[0]
         end_pos = positions[0] if closed_cycle else positions[-1]
@@ -900,6 +1090,85 @@ def run_recording(
         )
         attempt_number = 0
         led_result: dict[str, Any] | None = None
+        automatic_capture_failures: list[str] = []
+
+        def automatic_retry_allowed(reason: str) -> bool:
+            """Count one unattended capture failure and report whether to retry."""
+            automatic_capture_failures.append(reason)
+            used = len(automatic_capture_failures)
+            limit = int(automatic_capture_retries or 0)
+            print(f"[CAPTURE][AUTO] Attempt {attempt_number} failed: {reason}")
+            if used > limit:
+                print(
+                    f"[CAPTURE][AUTO] Automatic retry limit reached ({limit}); "
+                    "this run will not be recorded."
+                )
+                return False
+            print(
+                f"[CAPTURE][AUTO] Re-recording automatically ({used}/{limit}) "
+                "with the prepared holograms."
+            )
+            return True
+
+        interactive_capture_failures: list[str] = []
+
+        def capture_retry_requested(reason: str) -> bool:
+            """Decide whether a failed stereo capture is recorded again with the same holograms.
+
+            Unattended sessions retry automatically up to their limit. Interactive sessions ask
+            the operator instead of ending the whole PAT session, exactly as after an LED failure.
+            """
+            capture_failure_log.append(f"attempt {attempt_number}: {reason}")
+            if automatic_capture_retries is not None:
+                return automatic_retry_allowed(reason)
+            interactive_capture_failures.append(reason)
+            print(f"\n[CAPTURE] Stereo recording failed on attempt {attempt_number}: {reason}")
+            try:
+                retry_answer = input(
+                    "\nステレオ記録に失敗しました。粒子とカメラを確認して、同じ軌道を再計測しますか？ (Y/n): "
+                ).strip().lower()
+            except EOFError:
+                retry_answer = "n"
+            return retry_answer not in {"n", "no", "いいえ"}
+
+        def discard_failed_attempt() -> None:
+            """Stop a failed recorder and remove its temporary attempt directory."""
+            nonlocal recorder_process, active_attempt_dir
+            if recorder_process is not None:
+                if recorder_process.poll() is None:
+                    recorder_process.terminate()
+                    try:
+                        recorder_process.wait(timeout=10.0)
+                    except subprocess.TimeoutExpired:
+                        recorder_process.kill()
+                        recorder_process.wait(timeout=5.0)
+                recorder_process = None
+            if active_attempt_dir is not None and run_dir is not None:
+                if args.keep_failed_captures:
+                    print(f"[CAPTURE] Failed capture retained for debugging: {active_attempt_dir}")
+                else:
+                    try:
+                        remove_capture_attempt(active_attempt_dir, run_dir)
+                        print("[CAPTURE] Failed stereo capture attempt was permanently deleted.")
+                    except Exception as exc:
+                        print(f"[CAPTURE] WARNING: could not delete failed capture attempt: {exc}")
+                active_attempt_dir = None
+            # Give the camera driver time to release both devices before re-arming.
+            time.sleep(2.0)
+
+        def return_to_start_for_retry() -> None:
+            nonlocal current_pos, current_hologram
+            current_pos = move_static_position(
+                lev,
+                current_pos,
+                start_pos,
+                "Returning smoothly to trajectory start for retry",
+                drive_amplitude_scale=drive_amplitude_scale,
+            )
+            current_hologram = mute_sync_transducer(holograms[0])
+            lev.levitate(current_hologram)
+            print("[CAPTURE] Ready. Re-arming both cameras with the prepared holograms.")
+
         while True:
             attempt_number += 1
             attempt_dir = (run_dir / f"_capture_attempt_{attempt_number:02d}").resolve()
@@ -915,13 +1184,23 @@ def run_recording(
                 "--start-delay-sec", str(args.camera_start_delay_sec),
                 "--hw-sync", str(args.hw_sync), "--npz-compression", str(args.npz_compression),
                 "--stereo-calibration", str(calibration), "--capture-start-marker", str(marker_path),
+                "--stream-stall-timeout-sec", f"{camera_stall_timeout_sec:g}",
                 "--no-preview", "--note", f"AcousTools 3D pipeline: {shape_name}; attempt={attempt_number}",
             ]
             print(f"[CAPTURE] Attempt {attempt_number}: " + subprocess.list2cmdline(recorder_command), flush=True)
             recorder_process = subprocess.Popen(recorder_command)
-            marker = wait_for_capture_marker(
-                recorder_process, marker_path, float(args.capture_marker_timeout_sec)
-            )
+            try:
+                marker = wait_for_capture_marker(
+                    recorder_process, marker_path, float(args.capture_marker_timeout_sec)
+                )
+            except (RuntimeError, TimeoutError) as exc:
+                if not capture_retry_requested(
+                    f"synchronized camera capture did not start: {exc}"
+                ):
+                    raise
+                discard_failed_attempt()
+                return_to_start_for_retry()
+                continue
             marker_seen_perf_ns = time.perf_counter_ns()
             if active_warmup:
                 camera_start_perf_ns = int(marker["pc_start_perf_ns"])
@@ -992,11 +1271,32 @@ def run_recording(
                 f"[PAT] send call={call_duration:.6f} s, expected={expected_duration:.6f} s, "
                 f"ideal starts at recording t={ideal_start_in_recording_sec:.9f} s"
             )
-            if recorder_process.wait(timeout=max(30.0, capture_duration + 20.0)) != 0:
-                raise RuntimeError(f"Stereo recording failed with code {recorder_process.returncode}.")
-            recorder_process = None
-            if send_error:
-                raise RuntimeError(f"PAT send failed: {send_error}")
+            capture_error: BaseException | None = None
+            try:
+                recorder_exit_code = recorder_process.wait(
+                    timeout=compute_recorder_wait_timeout_sec(
+                        capture_duration,
+                        float(args.post_roll_sec),
+                        float(args.capture_tail_margin_sec),
+                    )
+                )
+            except subprocess.TimeoutExpired as exc:
+                capture_error = exc
+            else:
+                if recorder_exit_code != 0:
+                    capture_error = RuntimeError(
+                        f"Stereo recording failed with code {recorder_process.returncode}."
+                    )
+                else:
+                    recorder_process = None
+                    if send_error:
+                        capture_error = RuntimeError(f"PAT send failed: {send_error}")
+            if capture_error is not None:
+                if not capture_retry_requested(str(capture_error)):
+                    raise capture_error
+                discard_failed_attempt()
+                return_to_start_for_retry()
+                continue
 
             led_result = None
             led_failure: RuntimeError | None = None
@@ -1016,6 +1316,14 @@ def run_recording(
                     f"(base={float(args.pat_start_led_search_sec):.6f} s, "
                     f"PAT send overhead={max(0.0, call_duration - expected_duration):.6f} s)"
                 )
+                # The LED lights when playback starts, i.e. after the message-transfer overhead
+                # of the send call. 246 genuine detections were +4..+14 ms from this prediction.
+                led_expected_onset_sec = float(ideal_start_in_recording_sec) + max(
+                    0.0, call_duration - expected_duration
+                )
+                timing_payload["pat_start_led_expected_onset_sec"] = led_expected_onset_sec
+                timing_payload["pat_start_led_onset_tolerance_sec"] = led_onset_tolerance_sec
+                timing_payload["pat_start_led_min_peak_ratio"] = led_min_peak_ratio
                 try:
                     led_result = detect_led_sync_npz(
                         led_npz,
@@ -1025,6 +1333,9 @@ def run_recording(
                         output_dir=attempt_dir / "pat_start_led",
                         expected_t_recording_sec=float(ideal_start_in_recording_sec),
                         search_half_window_sec=led_search_half_window_sec,
+                        expected_onset_t_recording_sec=led_expected_onset_sec,
+                        onset_tolerance_sec=led_onset_tolerance_sec,
+                        min_peak_to_threshold_ratio=led_min_peak_ratio,
                     )
                     if not bool(led_result.get("hardware_synchronized")):
                         raise RuntimeError(
@@ -1035,6 +1346,9 @@ def run_recording(
 
             if led_failure is not None:
                 print(f"\n[SYNC][LED] LED detection failed on attempt {attempt_number}: {led_failure}")
+                capture_failure_log.append(
+                    f"attempt {attempt_number}: LED detection failed: {led_failure}"
+                )
                 if args.keep_failed_captures:
                     print(f"[CAPTURE] Failed capture retained for debugging: {attempt_dir}")
                     active_attempt_dir = None
@@ -1042,35 +1356,44 @@ def run_recording(
                     remove_capture_attempt(attempt_dir, run_dir)
                     active_attempt_dir = None
                     print("[CAPTURE] Failed stereo RAW/NPZ and LED diagnostics were permanently deleted.")
-                try:
-                    retry_answer = input(
-                        "\nLEDを確認・調整して、同じ軌道を再計測しますか？ (Y/n): "
-                    ).strip().lower()
-                except EOFError:
-                    retry_answer = "n"
-                if retry_answer not in {"n", "no", "いいえ"}:
-                    current_pos = move_static_position(
-                        lev,
-                        current_pos,
-                        start_pos,
-                        "Returning smoothly to trajectory start for retry",
-                        drive_amplitude_scale=drive_amplitude_scale,
+                if automatic_capture_retries is not None:
+                    retry_requested = automatic_retry_allowed(
+                        f"LED detection failed: {led_failure}"
                     )
-                    current_hologram = mute_sync_transducer(holograms[0])
-                    lev.levitate(current_hologram)
-                    print("[CAPTURE] Ready. Re-arming both cameras with the prepared holograms.")
+                    decline_reason = "Automatic retries exhausted"
+                else:
+                    try:
+                        retry_answer = input(
+                            "\nLEDを確認・調整して、同じ軌道を再計測しますか？ (Y/n): "
+                        ).strip().lower()
+                    except EOFError:
+                        retry_answer = "n"
+                    retry_requested = retry_answer not in {"n", "no", "いいえ"}
+                    decline_reason = "Retry declined"
+                if retry_requested:
+                    return_to_start_for_retry()
                     continue
                 if not args.keep_failed_captures:
                     failed_run = run_dir
                     remove_failed_run(failed_run, output_root)
                     run_dir = None
                     print(
-                        f"[PIPELINE] Retry declined; failed run was permanently deleted: {failed_run}"
+                        f"[PIPELINE] {decline_reason}; failed run was permanently deleted: {failed_run}"
                     )
                 else:
-                    print(f"[PIPELINE] Retry declined; debug artifacts remain in: {run_dir}")
+                    print(f"[PIPELINE] {decline_reason}; debug artifacts remain in: {run_dir}")
                 return 2, None
 
+            led_warnings = led_consistency_warnings(led_result)
+            for warning in led_warnings:
+                led_warning_log.append(f"attempt {attempt_number}: {warning}")
+                print(f"\n[SYNC][LED][WARN] {warning}. The run is kept; check it before analysis.")
+            timing_payload["pat_start_led_consistency"] = {
+                "suspicious": bool(led_warnings),
+                "warnings": list(led_warnings),
+                "advisory_onset_tolerance_sec": LED_ADVISORY_ONSET_TOLERANCE_SEC,
+                "advisory_min_peak_to_threshold_ratio": LED_ADVISORY_MIN_PEAK_RATIO,
+            }
             if led_result is not None:
                 ideal_start_in_recording_sec = float(led_result["sync_t_recording_sec"])
                 ideal_start_source = f"PAT-start LED onset detected in {args.pat_start_led_side} camera only"
@@ -1117,10 +1440,28 @@ def run_recording(
                 "static_compacted": bool(playback_static_compacted),
                 "precomputed_before_pat_output": precomputed_playback is not None,
                 "preparation_seconds": playback_preparation_seconds,
+                "distinct_position_count": playback_distinct_position_count,
+                "hologram_solve_seconds": playback_hologram_solve_seconds,
             },
             "active_warmup": dict(active_warmup),
             "successful_capture_attempt": attempt_number,
+            "capture_retry": {
+                "mode": (
+                    "automatic" if automatic_capture_retries is not None else "interactive"
+                ),
+                "automatic_retry_limit": automatic_capture_retries,
+                "automatic_failures": list(automatic_capture_failures),
+                "interactive_failures": list(interactive_capture_failures),
+            },
+            "camera_stall_timeout_sec": camera_stall_timeout_sec,
             "ideal_log": str(ideal_log),
+            "reference_log": "" if reference_log is None else str(reference_log),
+            "reference_log_note": (
+                ""
+                if reference_log is None
+                else "ideal_log is the PAT command u(t); reference_log is the desired "
+                "particle trajectory r(t) in the same frame and sample times"
+            ),
             "trajectory_preview": str(preview_path.resolve()),
             "trajectory_stats": stats,
             "drive_amplitude_scale": drive_amplitude_scale,
@@ -1143,6 +1484,9 @@ def run_recording(
                 "bin_us": int(args.pat_start_led_bin_us),
                 "threshold": int(args.pat_start_led_threshold),
                 "search_half_window_sec": float(args.pat_start_led_search_sec),
+                "onset_tolerance_sec": led_onset_tolerance_sec,
+                "min_peak_to_threshold_ratio": led_min_peak_ratio,
+                "consistency": dict(timing_payload.get("pat_start_led_consistency", {})),
                 "comparison_time_refinement_enabled": bool(args.refine_led_time),
                 "result": led_result,
             },

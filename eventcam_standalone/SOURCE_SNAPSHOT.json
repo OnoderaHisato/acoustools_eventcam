@@ -1,0 +1,101 @@
+{
+  "source_date": "2026-09-16",
+  "note": "Project source copies. Standalone-specific changes are described in README_JP.md. No SDK bundled. One imported stereo calibration is bundled under data/; see imported_calibration below and data/session_cal20260805/calibration/IMPORTED_CALIBRATION.txt.",
+  "files": {
+    "eventcam_checkerboard_calibration_capture.py": {
+      "original_sha256": "59b52aaf07c1744819def5452e31211dcdbf3ee72c23fdf00182bfbb374c30aa",
+      "bundled_sha256": "59b52aaf07c1744819def5452e31211dcdbf3ee72c23fdf00182bfbb374c30aa",
+      "modified_for_standalone": false
+    },
+    "single_camera_calibrate.py": {
+      "original_sha256": "928d2a88822b54f91b5382fb73cf1f74a570934d1de9026d89e7b61c85e7c01f",
+      "bundled_sha256": "4691729e2f21f020da8480b2b47832c396d801eda373ecb8921c0a8e77cb2e2b",
+      "modified_for_standalone": true
+    },
+    "stereo_checkerboard_sync_capture.py": {
+      "original_sha256": "9587e9b63626ef0948e3373cd1e7cfeaf048babd86cf8345bda653f68b87050b",
+      "bundled_sha256": "9587e9b63626ef0948e3373cd1e7cfeaf048babd86cf8345bda653f68b87050b",
+      "modified_for_standalone": false
+    },
+    "stereo_camera_calibrate.py": {
+      "original_sha256": "96113c46e38a3c10a3ef3a9b9f97028d27e7921b8c8e9b5603af452a4e7ecfea",
+      "bundled_sha256": "96113c46e38a3c10a3ef3a9b9f97028d27e7921b8c8e9b5603af452a4e7ecfea",
+      "modified_for_standalone": false
+    },
+    "stereo_eventcam_record_sync.py": {
+      "original_sha256": "0ddbe9b1d098af90fcbce2723a7b857be0d84690c036b9e630ee9e07d2dbe1f4",
+      "bundled_sha256": "33e5e797837b93bd9a72782f503af9c70b89ffaa7ed559b3da0b7d0fcd90e0b8",
+      "modified_for_standalone": true
+    },
+    "eventcam_scale_calibration_capture.py": {
+      "original_sha256": "3952978071cad5086b789c9880b4a3249d5f59be2bf59124130cca1da18ecbb9",
+      "bundled_sha256": "4ff21092efe7bb542f6b35470b8a9d924a3423fba68ca62e4191dec655cffe24",
+      "modified_for_standalone": true
+    },
+    "eventcam_npz_storage.py": {
+      "original_sha256": "2ea90e9523af4c7b0dbf858833d057e166c5daf2b2d8ab62e9f39875b48539a4",
+      "bundled_sha256": "2ea90e9523af4c7b0dbf858833d057e166c5daf2b2d8ab62e9f39875b48539a4",
+      "modified_for_standalone": false
+    },
+    "stereo_process_recording.py": {
+      "original_sha256": "b81ea57d75439c5deb1f16b81fca14b1b670986468e37619666c81f7d8a13fd5",
+      "bundled_sha256": "8da53dbfdb2450ee25e604d78c18342eef4b32d93b73e0c9af24909ff6593f21",
+      "modified_for_standalone": true
+    },
+    "eventcam_npz_track.py": {
+      "original_sha256": "e8970e568822ce61c6f52e0c07b5040eac1f7c26194a432a4d19a4fac8f32d5a",
+      "bundled_sha256": "a2e601f4dddefede9f1b27f652a47e5fbff5f014a803013a44571220509fc417",
+      "modified_for_standalone": true
+    },
+    "stereo_triangulate_tracks.py": {
+      "original_sha256": "46e84474ab388796e2323204efcc6c4df171a2be51a2719fd47114bebde54fc5",
+      "bundled_sha256": "a12ace075878d7f11766c0b87782cc4e4a5c247bff2c8f25ce077e2efc1321ae",
+      "modified_for_standalone": true
+    },
+    "stereo_plot_3d_points.py": {
+      "original_sha256": "bb7f9ecd289c74ccef18a4dc83cc8deca38f7b3628960f90ee4279e4578ec647",
+      "bundled_sha256": "bb7f9ecd289c74ccef18a4dc83cc8deca38f7b3628960f90ee4279e4578ec647",
+      "modified_for_standalone": false
+    },
+    "eventcam_npz_render_video.py": {
+      "original_sha256": "b735eb360288753aca65b98ad8e0ebd6bc359bcfa6013ea3b8098c7e96f2ff5e",
+      "bundled_sha256": "b735eb360288753aca65b98ad8e0ebd6bc359bcfa6013ea3b8098c7e96f2ff5e",
+      "modified_for_standalone": false
+    }
+  },
+  "new_files": {
+    ".gitignore": "f3528d459206f9cd9e4fe1f50fccd5d66531b9f90f22da9677865716e407405b",
+    "activate_metavision_env.ps1": "a14ec6a98be6ff6b4dc59b4f5ecd916e9ec3c645853bba0382807774d0d906f9",
+    "check_environment.py": "60c0930731be193b465f341ff1a8474064f899e89211ba77abce5d6c8b3d8f7e",
+    "eventcam_workflow.py": "6c0863296868de94f1d9026287a78986012cdc250530c2d587ae6adc9eddb161",
+    "mono_eventcam_record.py": "2458f0e5e596c9393685f7b05f34a2061524c37123e478c078baffdcf543be0c",
+    "mono_sample.py": "97cdc02ad14f48a397a3a5fb6fd9c0d1d616b77fdaee1228f1f329850dfd4d73",
+    "MONO_SAMPLE_JP.md": "1a0425a594a8e70bd44a7792ead8a426769e9b1ea1d2a7fff8e51f333dec971a",
+    "README_JP.md": "e900d4a03de5da40d232d89a911cbb370056191af378edadc7ad467ca6ee991f",
+    "RECORDING_RUNBOOK_JP.md": "df637b723abb1d95b5fcfb0df214d203060d48d4a12333142d58671e5873716d",
+    "requirements.txt": "841ee24b9a01c62a5fa7c68e0f28ae86a805ddc65143f804094072e9ebb12e04",
+    "selftest.py": "b9957191be9116e72ea6ea56b0e64ed3bcd6c46e36359d2ac3037fed34399415",
+    "SETUP_OPENEB_JP.md": "66cdeeca5ab84abe3d948ee4d0ce0d6ddf0fad4cc1bed4e73d387d89f74b3c54",
+    "VALIDATION_JP.md": "383289b80b3243c0b80484736720efe22e7448ebeb9313fe7d666774bf02427f",
+    "workflow_config.json": "53cf3cec62899e8f355b399866ae5ace49a9dc7e0cea06e2a2f73c51054b53c7"
+  },
+  "imported_calibration": {
+    "session_dir": "data/session_cal20260805",
+    "source": "eventcam_control/stereo_checkerboard_calib_extrinsics_20260805/stereo_calibration_square7p12_extrinsics_final.npz",
+    "source_date": "2026-08-05",
+    "bundled_as": "data/session_cal20260805/calibration/stereo_calibration.npz",
+    "sha256": "91e5971503736857f4b5b570267cbb162d83e1da7e0e801d13bb527c0070efe7",
+    "left_camera_serial": "00000508",
+    "right_camera_serial": "00000509",
+    "image_size": [
+      1280,
+      720
+    ],
+    "square_size_mm": 7.12,
+    "accepted_pairs": 23,
+    "stereo_rms_px": 0.3617649572997996,
+    "baseline_mm": 120.5327931065089,
+    "modified_for_standalone": false,
+    "note": "Copied unchanged and renamed to the workflow's expected filename. Valid only for the camera mounting in use when it was captured; recalibrate in a new session_dir if the cameras, lenses, focus or relative pose change."
+  }
+}

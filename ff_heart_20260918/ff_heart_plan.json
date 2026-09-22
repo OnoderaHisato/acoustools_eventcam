@@ -1,0 +1,1076 @@
+{
+  "schema_version": 1,
+  "campaign": "ff_heart_20260918",
+  "measurement_family": "feedforward_validation",
+  "purpose": "Hardware validation of offline feedforward designs for the 7 mm / 10 Hz heart (XZ plane, 8 s, 10 kHz, 0.5 s ramps): OFF (u = r), A (pure-delay lookahead, tau0 = 0.8 ms), C (lookahead + per-axis linear inverse model), OT_ident_nodelay (OptiTrap-type inverse model with identified parameters and no lookahead; added 2026-09-18 21:40). Reference: G:/マイドライブ/Experiment/20260918/measurement_plan/ff_heart/README.md (copied to ff_heart_20260918/REFERENCE_FF_HEART_README.md). Added 2026-09-19: the same heart without compensation at 5 Hz and 7 Hz (ffheart_s7_f5_OFF, ffheart_s7_f7_OFF) to separate the source of the 70-90 Hz residual. Added later on 2026-09-19: 1 Hz and 2 Hz uncompensated hearts (14 s), the stiffness check on y (kcheck_y_S105_6jumps), and acquisition-side YZ-plane variants of the uncompensated hearts (swap_axes). Added 2026-09-20: w-compensated hearts from the latest model (OFFW = r - w, CW = C - w) at 7 Hz and 10 Hz, and design C at 7 Hz as their comparison arm (source G:/Experiment/20260919/measurement_plan/ff_heart). Added 2026-09-20: the w-field surface scans (wscan_*, spirals in the XZ, YZ, XY and y = +/-4 mm planes, 14 s, no compensation) from G:/Experiment/20260919/measurement_plan/w_scan. Added 2026-09-21: the stage-2 w designs at 7 Hz (OFFWxz / CWxz leave the out-of-plane y uncompensated, OFFW2 / CW2 use the y value back-calculated from the resonant response).",
+  "import_note": "The heart commands are imported numerically unchanged from ff_heart_20260918/source/*.npz (copies of the G: drive files; positions_sha256 pins the float64 content of positions_mm). Regenerating them with reference_make_ff_heart.py on another OS reproduces the command only to about 3e-10 mm, so the reviewed files themselves are imported. The acquisition side applies no feedforward, clipping, or rescaling; a command above safety_limits is rejected. delay_feedforward_applied=false in the export manifest therefore means 'nothing added at acquisition', while designs A and C already contain feedforward designed offline (see feedforward_design).",
+  "naming_note": "OFF, A and C keep the run names under which they were recorded on 2026-09-18 (sessions 20:13, 20:59 and 21:20). With the default output folder stereo_acoustools_3d_records_ff_heart the run-directory descriptor may be at most 63 characters before the Windows path budget replaces its end with a hash. ffheart_s7_f10_C_delay_inverse needs 66, so the two recorded C runs are in folders named feedforward_validation_004_ffheart_s7_f10_C_delay_in_af5d3e6291_<timestamp>; the full label is in pipeline_manifest.json. Designs added later use the short form ffheart_<design> so that the design name stays in the folder name.",
+  "protocol_note": "Proposed order OFF -> A -> C -> C -> A -> OFF with a constant interval, each heart run sandwiched by the two short stiffness checks (kcheck_x / kcheck_z: 1.05 mm, 6 jumps, 2.0 s holds, 14 s) because the trap stiffness droops 25-35% in 10 minutes of operation. Use --hf-run LABEL=SCALE to repeat labels in order, or run_ff_heart_validation.ps1.",
+  "defaults": {
+    "sample_hz": 10000,
+    "duration_sec": 8.0,
+    "ramp_sec": 0.5,
+    "safety_limits": {
+      "max_offset_mm": 9.5,
+      "max_speed_mm_s": 800.0,
+      "max_acceleration_mm_s2": 100000.0,
+      "max_endpoint_offset_mm": 0.01,
+      "max_command_reference_distance_mm": 1.0
+    }
+  },
+  "experiments": [
+    {
+      "name": "kcheck_x_S105_6jumps",
+      "kind": "staircase",
+      "tier": "C",
+      "axis": "x",
+      "duration_sec": 14.0,
+      "hold_sec": 2.0,
+      "initial_hold_sec": 2.0,
+      "final_hold_sec": 2.0,
+      "amplitudes_mm": [1.05],
+      "directions": [1, -1, 1],
+      "repeats_within_run": 1,
+      "repeats": 1,
+      "safety_limits": {
+        "max_offset_mm": 1.05,
+        "max_step_mm": 1.05,
+        "max_speed_mm_s": 100.0,
+        "max_acceleration_mm_s2": 28000.0
+      },
+      "condition": "stiffness_check_x",
+      "note": "Stiffness check (sandwich) for the feedforward validation: x steps 0 -> +1.05 -> 0 -> -1.05 -> 0 -> +1.05 -> 0 mm, 7 holds of 2.0 s, 6 jumps, 14.0 s. Same amplitude and hold as the S105 single-amplitude series recorded on 2026-09-16 with the particle retained.",
+      "enabled": true
+    },
+    {
+      "name": "kcheck_z_S105_6jumps",
+      "kind": "staircase",
+      "tier": "C",
+      "axis": "z",
+      "duration_sec": 14.0,
+      "hold_sec": 2.0,
+      "initial_hold_sec": 2.0,
+      "final_hold_sec": 2.0,
+      "amplitudes_mm": [1.05],
+      "directions": [1, -1, 1],
+      "repeats_within_run": 1,
+      "repeats": 1,
+      "safety_limits": {
+        "max_offset_mm": 1.05,
+        "max_step_mm": 1.05,
+        "max_speed_mm_s": 100.0,
+        "max_acceleration_mm_s2": 28000.0
+      },
+      "condition": "stiffness_check_z",
+      "note": "Stiffness check (sandwich) for the feedforward validation: z steps 0 -> +1.05 -> 0 -> -1.05 -> 0 -> +1.05 -> 0 mm, 7 holds of 2.0 s, 6 jumps, 14.0 s. Same amplitude and hold as the S105 single-amplitude series recorded on 2026-09-16 with the particle retained.",
+      "enabled": true
+    },
+    {
+      "name": "ffheart_s7_f10_OFF",
+      "kind": "imported",
+      "source_npz": "source/heart_s7_f10_OFF.npz",
+      "positions_key": "positions_mm",
+      "reference_key": "reference_mm",
+      "extra_time_keys": ["time_pat_sec", "time_cam_expected_sec"],
+      "positions_sha256": "46c631c8cb6163a62defc3db48dbfee9a908559f4df45e2cccd09546ffe2a50a",
+      "campaign": "ff_heart_20260918",
+      "measurement_family": "feedforward_validation",
+      "condition": "OFF",
+      "note": "Control: command equals the desired heart, u = r. Predicted tracking error 0.53 mm rms (delay 0.6 mm + dynamics 0.3 mm).",
+      "feedforward_design": {
+        "design": "OFF",
+        "command_differs_from_reference": false,
+        "description": "u(t) = r(t)",
+        "lookahead_ms": 0.0,
+        "clock_ratio_ppm_assumed": 182.0
+      },
+      "reference": {
+        "trajectory": "heart mode 4, XZ plane, scale 7 mm, 10 Hz, 8 s, ramp 0.5 s",
+        "predicted_rms_mm": 0.53,
+        "predicted_max_mm": 0.80,
+        "evaluation": "compare measured position at time_cam_expected_sec with reference_mm of the same row"
+      },
+      "enabled": true
+    },
+    {
+      "name": "ffheart_s7_f10_A_delay",
+      "kind": "imported",
+      "source_npz": "source/heart_s7_f10_A_delay.npz",
+      "positions_key": "positions_mm",
+      "reference_key": "reference_mm",
+      "extra_time_keys": ["time_pat_sec", "time_cam_expected_sec"],
+      "positions_sha256": "843bc71a558dd2a1ab6b13c5d3c2b96aa989f2fe6ffb92b3eb5eeced37fa6b1b",
+      "campaign": "ff_heart_20260918",
+      "measurement_family": "feedforward_validation",
+      "condition": "A_delay",
+      "note": "Design A: pure-delay lookahead u(t) = r(t + 0.8 ms). Command departs from r by up to 0.596 mm. Predicted tracking error 0.19 mm rms.",
+      "feedforward_design": {
+        "design": "A_delay",
+        "command_differs_from_reference": true,
+        "description": "u(t) = r(t + tau0)",
+        "lookahead_ms": 0.8,
+        "clock_ratio_ppm_assumed": 182.0
+      },
+      "reference": {
+        "trajectory": "heart mode 4, XZ plane, scale 7 mm, 10 Hz, 8 s, ramp 0.5 s",
+        "predicted_rms_mm": 0.19,
+        "predicted_max_mm": 0.33,
+        "evaluation": "compare measured position at time_cam_expected_sec with reference_mm of the same row"
+      },
+      "enabled": true
+    },
+    {
+      "name": "ffheart_s7_f10_C_delay_inverse",
+      "kind": "imported",
+      "source_npz": "source/heart_s7_f10_C_delay_inverse.npz",
+      "positions_key": "positions_mm",
+      "reference_key": "reference_mm",
+      "extra_time_keys": ["time_pat_sec", "time_cam_expected_sec"],
+      "positions_sha256": "d74628332be2ee12f478777354b0c3514fd9701eefd35bea3df6885e5ee23897",
+      "campaign": "ff_heart_20260918",
+      "measurement_family": "feedforward_validation",
+      "condition": "C_delay_inverse",
+      "note": "Design C: lookahead plus per-axis linear inverse model u = r(t+tau0) + (r'' + gamma r')/k with k x 0.30 / z 3.1 [1/ms^2] and gamma x 0.040 / z 0.024 [1/ms] from the first run of the September block. Command departs from r by up to 0.713 mm. Predicted 0.03 mm rms when the model is exact; stiffness droop leaves a residual.",
+      "feedforward_design": {
+        "design": "C_delay_inverse",
+        "command_differs_from_reference": true,
+        "description": "u(t) = r(t + tau0) + (r''(t + tau0) + gamma r'(t + tau0)) / k, per axis",
+        "lookahead_ms": 0.8,
+        "inverse_model": {
+          "k_per_ms2": {"x": 0.30, "y": 0.28, "z": 3.1},
+          "gamma_per_ms": {"x": 0.040, "y": 0.036, "z": 0.024}
+        },
+        "clock_ratio_ppm_assumed": 182.0
+      },
+      "reference": {
+        "trajectory": "heart mode 4, XZ plane, scale 7 mm, 10 Hz, 8 s, ramp 0.5 s",
+        "predicted_rms_mm": 0.03,
+        "predicted_max_mm": 0.05,
+        "evaluation": "compare measured position at time_cam_expected_sec with reference_mm of the same row"
+      },
+      "enabled": true
+    },
+    {
+      "name": "ffheart_OT_ident_nodelay",
+      "kind": "imported",
+      "source_npz": "source/heart_s7_f10_OT_ident_nodelay.npz",
+      "positions_key": "positions_mm",
+      "reference_key": "reference_mm",
+      "extra_time_keys": ["time_pat_sec", "time_cam_expected_sec"],
+      "positions_sha256": "ff0181c79ff57938659be7a14daa1ad45e36e9b2e2c898612af950852d4b86b4",
+      "campaign": "ff_heart_20260918",
+      "measurement_family": "feedforward_validation",
+      "condition": "OT_ident_nodelay",
+      "note": "OptiTrap-type comparison arm added to the plan on 2026-09-18 21:40: per-axis linear inverse model with the device-identified stiffness and damping and NO lookahead (= design C without the 0.8 ms lookahead). Command departs from r by up to 0.287 mm. Predicted tracking error 0.462 mm rms.",
+      "feedforward_design": {
+        "design": "OT_ident_nodelay",
+        "command_differs_from_reference": true,
+        "description": "u(t) = r(t) + (r''(t) + gamma r'(t)) / k, per axis; no delay term",
+        "lookahead_ms": 0.0,
+        "inverse_model": {
+          "k_per_ms2": {"x": 0.30, "y": 0.28, "z": 3.1},
+          "gamma_per_ms": {"x": 0.040, "y": 0.036, "z": 0.024}
+        },
+        "clock_ratio_ppm_assumed": 182.0
+      },
+      "reference": {
+        "trajectory": "heart mode 4, XZ plane, scale 7 mm, 10 Hz, 8 s, ramp 0.5 s",
+        "predicted_rms_mm": 0.462,
+        "evaluation": "compare measured position at time_cam_expected_sec with reference_mm of the same row"
+      },
+      "enabled": true
+    },
+    {
+      "name": "ffheart_A_delay03",
+      "kind": "imported",
+      "source_npz": "source/heart_s7_f10_A_delay03.npz",
+      "positions_key": "positions_mm",
+      "reference_key": "reference_mm",
+      "extra_time_keys": ["time_pat_sec", "time_cam_expected_sec"],
+      "positions_sha256": "432c43e3d25290774900de5a60e16510b82307245dd29d675b0454a845c7bda2",
+      "campaign": "ff_heart_20260918",
+      "measurement_family": "feedforward_validation",
+      "condition": "A_delay03",
+      "note": "Design A re-tuned (added to the plan on 2026-09-18 22:46): pure-delay lookahead u(t) = r(t + 0.3 ms), the tau0 measured by the 2026-09-18 kcheck steps. Command departs from r by up to 0.224 mm.",
+      "feedforward_design": {
+        "design": "A_delay03",
+        "command_differs_from_reference": true,
+        "description": "u(t) = r(t + tau0)",
+        "lookahead_ms": 0.3,
+        "clock_ratio_ppm_assumed": 182.0
+      },
+      "reference": {
+        "trajectory": "heart mode 4, XZ plane, scale 7 mm, 10 Hz, 8 s, ramp 0.5 s",
+        "evaluation": "compare measured position at time_cam_expected_sec with reference_mm of the same row"
+      },
+      "enabled": true
+    },
+    {
+      "name": "ffheart_C_delay03_inv_k918",
+      "kind": "imported",
+      "source_npz": "source/heart_s7_f10_C_delay03_inverse_k918.npz",
+      "positions_key": "positions_mm",
+      "reference_key": "reference_mm",
+      "extra_time_keys": ["time_pat_sec", "time_cam_expected_sec"],
+      "positions_sha256": "c2220aa83a3d377aeaf1772d1a23bf64bc398c1be9a967857341d11484214bd8",
+      "campaign": "ff_heart_20260918",
+      "measurement_family": "feedforward_validation",
+      "condition": "C_delay03_inverse_k918",
+      "note": "Design C re-tuned (added to the plan on 2026-09-18 22:46): lookahead 0.3 ms plus per-axis linear inverse model with the stiffness and damping from the 2026-09-18 kcheck steps (k x 0.25 / z 3.45 [1/ms^2], gamma x 0.050 / z 0.022 [1/ms]). Command departs from r by up to 0.455 mm. The run name abbreviates 'inverse' so that the run-directory name is not shortened; the full design name is in feedforward_design.",
+      "feedforward_design": {
+        "design": "C_delay03_inverse_k918",
+        "command_differs_from_reference": true,
+        "description": "u(t) = r(t + tau0) + (r''(t + tau0) + gamma r'(t + tau0)) / k, per axis",
+        "lookahead_ms": 0.3,
+        "inverse_model": {
+          "k_per_ms2": {"x": 0.25, "y": 0.23, "z": 3.45},
+          "gamma_per_ms": {"x": 0.050, "y": 0.045, "z": 0.022}
+        },
+        "clock_ratio_ppm_assumed": 182.0
+      },
+      "reference": {
+        "trajectory": "heart mode 4, XZ plane, scale 7 mm, 10 Hz, 8 s, ramp 0.5 s",
+        "evaluation": "compare measured position at time_cam_expected_sec with reference_mm of the same row"
+      },
+      "enabled": true
+    },
+    {
+      "name": "ffheart_s7_f5_OFF",
+      "kind": "imported",
+      "source_npz": "source/heart_s7_f5_OFF.npz",
+      "positions_key": "positions_mm",
+      "reference_key": "reference_mm",
+      "extra_time_keys": ["time_pat_sec", "time_cam_expected_sec"],
+      "positions_sha256": "a7c2a3adb47f65e2c511abc6c2f6be2c767a6970abd523776046fb5ecaf160cf",
+      "campaign": "ff_heart_20260918",
+      "measurement_family": "feedforward_validation",
+      "condition": "OFF_f5",
+      "note": "Uncompensated heart at a lower loop frequency (added to the plan on 2026-09-19): u = r, 7 mm, 5 Hz, 8 s. Same path as ffheart_s7_f10_OFF, max acceleration about 23k mm/s2. Purpose: separate the source of the 70-90 Hz residual seen in the 10 Hz heart. If the force nonlinearity drives it, the amplitude scales like f^6 and vanishes at 5 Hz; if spatial ripple of the field or phase quantisation drives it, it stays in the resonance band at a lower loop frequency.",
+      "feedforward_design": {
+        "design": "OFF",
+        "command_differs_from_reference": false,
+        "description": "u(t) = r(t)",
+        "lookahead_ms": 0.0,
+        "clock_ratio_ppm_assumed": 182.0,
+        "loop_frequency_hz": 5.0
+      },
+      "reference": {
+        "trajectory": "heart mode 4, XZ plane, scale 7 mm, 5 Hz, 8 s, ramp 0.5 s",
+        "evaluation": "compare measured position at time_cam_expected_sec with reference_mm of the same row"
+      },
+      "enabled": true
+    },
+    {
+      "name": "ffheart_s7_f7_OFF",
+      "kind": "imported",
+      "source_npz": "source/heart_s7_f7_OFF.npz",
+      "positions_key": "positions_mm",
+      "reference_key": "reference_mm",
+      "extra_time_keys": ["time_pat_sec", "time_cam_expected_sec"],
+      "positions_sha256": "ffb35479218d51e91986ba1ac43ec67b9caf8dada6e1675059e05733c17c3aea",
+      "campaign": "ff_heart_20260918",
+      "measurement_family": "feedforward_validation",
+      "condition": "OFF_f7",
+      "note": "Uncompensated heart at a lower loop frequency (added to the plan on 2026-09-19): u = r, 7 mm, 7 Hz, 8 s. Same path as ffheart_s7_f10_OFF, max acceleration about 46k mm/s2. Purpose: separate the source of the 70-90 Hz residual seen in the 10 Hz heart. If the force nonlinearity drives it, the amplitude scales like f^6 and vanishes at 5 Hz; if spatial ripple of the field or phase quantisation drives it, it stays in the resonance band at a lower loop frequency.",
+      "feedforward_design": {
+        "design": "OFF",
+        "command_differs_from_reference": false,
+        "description": "u(t) = r(t)",
+        "lookahead_ms": 0.0,
+        "clock_ratio_ppm_assumed": 182.0,
+        "loop_frequency_hz": 7.0
+      },
+      "reference": {
+        "trajectory": "heart mode 4, XZ plane, scale 7 mm, 7 Hz, 8 s, ramp 0.5 s",
+        "evaluation": "compare measured position at time_cam_expected_sec with reference_mm of the same row"
+      },
+      "enabled": true
+    },
+    {
+      "name": "ffheart_s7_f1_OFF",
+      "kind": "imported",
+      "source_npz": "source/heart_s7_f1_OFF.npz",
+      "positions_key": "positions_mm",
+      "reference_key": "reference_mm",
+      "extra_time_keys": ["time_pat_sec", "time_cam_expected_sec"],
+      "positions_sha256": "85d50c7369fd77fe5d5e71b31533a4a83c560276da02af9f3ebac93458eaaf42",
+      "duration_sec": 14.0,
+      "campaign": "ff_heart_20260918",
+      "measurement_family": "feedforward_validation",
+      "condition": "OFF_f1",
+      "note": "Uncompensated heart, u = r, 7 mm, 1 Hz, 14 s, XZ plane (added to the plan on 2026-09-19). At 1-2 Hz the particle follows the equilibrium-shift field w(u) without resonant amplification, so w can be measured directly.",
+      "feedforward_design": {
+        "design": "OFF",
+        "command_differs_from_reference": false,
+        "description": "u(t) = r(t)",
+        "lookahead_ms": 0.0,
+        "clock_ratio_ppm_assumed": 182.0,
+        "loop_frequency_hz": 1.0,
+        "plane": "xz"
+      },
+      "reference": {
+        "trajectory": "heart mode 4, XZ plane, scale 7 mm, 1 Hz, 14 s, ramp 0.5 s",
+        "evaluation": "compare measured position at time_cam_expected_sec with reference_mm of the same row"
+      },
+      "enabled": true
+    },
+    {
+      "name": "ffheart_s7_f2_OFF",
+      "kind": "imported",
+      "source_npz": "source/heart_s7_f2_OFF.npz",
+      "positions_key": "positions_mm",
+      "reference_key": "reference_mm",
+      "extra_time_keys": ["time_pat_sec", "time_cam_expected_sec"],
+      "positions_sha256": "1d0842d3106de4b672db3faf02838e90526470992e25c6eb607972dd772e8bb0",
+      "duration_sec": 14.0,
+      "campaign": "ff_heart_20260918",
+      "measurement_family": "feedforward_validation",
+      "condition": "OFF_f2",
+      "note": "Uncompensated heart, u = r, 7 mm, 2 Hz, 14 s, XZ plane (added to the plan on 2026-09-19). At 1-2 Hz the particle follows the equilibrium-shift field w(u) without resonant amplification, so w can be measured directly.",
+      "feedforward_design": {
+        "design": "OFF",
+        "command_differs_from_reference": false,
+        "description": "u(t) = r(t)",
+        "lookahead_ms": 0.0,
+        "clock_ratio_ppm_assumed": 182.0,
+        "loop_frequency_hz": 2.0,
+        "plane": "xz"
+      },
+      "reference": {
+        "trajectory": "heart mode 4, XZ plane, scale 7 mm, 2 Hz, 14 s, ramp 0.5 s",
+        "evaluation": "compare measured position at time_cam_expected_sec with reference_mm of the same row"
+      },
+      "enabled": true
+    },
+    {
+      "name": "kcheck_y_S105_6jumps",
+      "kind": "staircase",
+      "tier": "C",
+      "axis": "y",
+      "duration_sec": 14.0,
+      "hold_sec": 2.0,
+      "initial_hold_sec": 2.0,
+      "final_hold_sec": 2.0,
+      "amplitudes_mm": [1.05],
+      "directions": [1, -1, 1],
+      "repeats_within_run": 1,
+      "repeats": 1,
+      "safety_limits": {
+        "max_offset_mm": 1.05,
+        "max_step_mm": 1.05,
+        "max_speed_mm_s": 100.0,
+        "max_acceleration_mm_s2": 28000.0
+      },
+      "condition": "stiffness_check_y",
+      "note": "Stiffness check (sandwich) for the feedforward validation: y steps 0 -> +1.05 -> 0 -> -1.05 -> 0 -> +1.05 -> 0 mm, 7 holds of 2.0 s, 6 jumps, 14.0 s. Same amplitude and hold as the S105 single-amplitude series recorded on 2026-09-16 with the particle retained.",
+      "enabled": true
+    },
+    {
+      "name": "ffheart_s7_f1_OFF_yz",
+      "kind": "imported",
+      "source_npz": "source/heart_s7_f1_OFF.npz",
+      "positions_key": "positions_mm",
+      "reference_key": "reference_mm",
+      "extra_time_keys": ["time_pat_sec", "time_cam_expected_sec"],
+      "positions_sha256": "85d50c7369fd77fe5d5e71b31533a4a83c560276da02af9f3ebac93458eaaf42",
+      "swap_axes": ["x", "y"],
+      "duration_sec": 14.0,
+      "campaign": "ff_heart_20260918",
+      "measurement_family": "feedforward_validation",
+      "condition": "OFF_f1_yz",
+      "note": "Uncompensated heart, u = r, 7 mm, 1 Hz, 14 s, YZ plane (added to the plan on 2026-09-19). Acquisition-side variant: the reviewed XZ-plane command is imported unchanged and its x and y columns are swapped (swap_axes), so the same heart is drawn in the YZ plane. The analysis-side plan only defines the XZ plane.",
+      "feedforward_design": {
+        "design": "OFF",
+        "command_differs_from_reference": false,
+        "description": "u(t) = r(t)",
+        "lookahead_ms": 0.0,
+        "clock_ratio_ppm_assumed": 182.0,
+        "loop_frequency_hz": 1.0,
+        "plane": "yz"
+      },
+      "reference": {
+        "trajectory": "heart mode 4, YZ plane, scale 7 mm, 1 Hz, 14 s, ramp 0.5 s",
+        "evaluation": "compare measured position at time_cam_expected_sec with reference_mm of the same row"
+      },
+      "enabled": true
+    },
+    {
+      "name": "ffheart_s7_f2_OFF_yz",
+      "kind": "imported",
+      "source_npz": "source/heart_s7_f2_OFF.npz",
+      "positions_key": "positions_mm",
+      "reference_key": "reference_mm",
+      "extra_time_keys": ["time_pat_sec", "time_cam_expected_sec"],
+      "positions_sha256": "1d0842d3106de4b672db3faf02838e90526470992e25c6eb607972dd772e8bb0",
+      "swap_axes": ["x", "y"],
+      "duration_sec": 14.0,
+      "campaign": "ff_heart_20260918",
+      "measurement_family": "feedforward_validation",
+      "condition": "OFF_f2_yz",
+      "note": "Uncompensated heart, u = r, 7 mm, 2 Hz, 14 s, YZ plane (added to the plan on 2026-09-19). Acquisition-side variant: the reviewed XZ-plane command is imported unchanged and its x and y columns are swapped (swap_axes), so the same heart is drawn in the YZ plane. The analysis-side plan only defines the XZ plane.",
+      "feedforward_design": {
+        "design": "OFF",
+        "command_differs_from_reference": false,
+        "description": "u(t) = r(t)",
+        "lookahead_ms": 0.0,
+        "clock_ratio_ppm_assumed": 182.0,
+        "loop_frequency_hz": 2.0,
+        "plane": "yz"
+      },
+      "reference": {
+        "trajectory": "heart mode 4, YZ plane, scale 7 mm, 2 Hz, 14 s, ramp 0.5 s",
+        "evaluation": "compare measured position at time_cam_expected_sec with reference_mm of the same row"
+      },
+      "enabled": true
+    },
+    {
+      "name": "ffheart_s7_f5_OFF_yz",
+      "kind": "imported",
+      "source_npz": "source/heart_s7_f5_OFF.npz",
+      "positions_key": "positions_mm",
+      "reference_key": "reference_mm",
+      "extra_time_keys": ["time_pat_sec", "time_cam_expected_sec"],
+      "positions_sha256": "a7c2a3adb47f65e2c511abc6c2f6be2c767a6970abd523776046fb5ecaf160cf",
+      "swap_axes": ["x", "y"],
+      "campaign": "ff_heart_20260918",
+      "measurement_family": "feedforward_validation",
+      "condition": "OFF_f5_yz",
+      "note": "Uncompensated heart, u = r, 7 mm, 5 Hz, 8 s, YZ plane (added to the plan on 2026-09-19). Acquisition-side variant: the reviewed XZ-plane command is imported unchanged and its x and y columns are swapped (swap_axes), so the same heart is drawn in the YZ plane. The analysis-side plan only defines the XZ plane.",
+      "feedforward_design": {
+        "design": "OFF",
+        "command_differs_from_reference": false,
+        "description": "u(t) = r(t)",
+        "lookahead_ms": 0.0,
+        "clock_ratio_ppm_assumed": 182.0,
+        "loop_frequency_hz": 5.0,
+        "plane": "yz"
+      },
+      "reference": {
+        "trajectory": "heart mode 4, YZ plane, scale 7 mm, 5 Hz, 8 s, ramp 0.5 s",
+        "evaluation": "compare measured position at time_cam_expected_sec with reference_mm of the same row"
+      },
+      "enabled": true
+    },
+    {
+      "name": "ffheart_s7_f7_OFF_yz",
+      "kind": "imported",
+      "source_npz": "source/heart_s7_f7_OFF.npz",
+      "positions_key": "positions_mm",
+      "reference_key": "reference_mm",
+      "extra_time_keys": ["time_pat_sec", "time_cam_expected_sec"],
+      "positions_sha256": "ffb35479218d51e91986ba1ac43ec67b9caf8dada6e1675059e05733c17c3aea",
+      "swap_axes": ["x", "y"],
+      "campaign": "ff_heart_20260918",
+      "measurement_family": "feedforward_validation",
+      "condition": "OFF_f7_yz",
+      "note": "Uncompensated heart, u = r, 7 mm, 7 Hz, 8 s, YZ plane (added to the plan on 2026-09-19). Acquisition-side variant: the reviewed XZ-plane command is imported unchanged and its x and y columns are swapped (swap_axes), so the same heart is drawn in the YZ plane. The analysis-side plan only defines the XZ plane.",
+      "feedforward_design": {
+        "design": "OFF",
+        "command_differs_from_reference": false,
+        "description": "u(t) = r(t)",
+        "lookahead_ms": 0.0,
+        "clock_ratio_ppm_assumed": 182.0,
+        "loop_frequency_hz": 7.0,
+        "plane": "yz"
+      },
+      "reference": {
+        "trajectory": "heart mode 4, YZ plane, scale 7 mm, 7 Hz, 8 s, ramp 0.5 s",
+        "evaluation": "compare measured position at time_cam_expected_sec with reference_mm of the same row"
+      },
+      "enabled": true
+    },
+    {
+      "name": "ffheart_s7_f10_OFF_yz",
+      "kind": "imported",
+      "source_npz": "source/heart_s7_f10_OFF.npz",
+      "positions_key": "positions_mm",
+      "reference_key": "reference_mm",
+      "extra_time_keys": ["time_pat_sec", "time_cam_expected_sec"],
+      "positions_sha256": "46c631c8cb6163a62defc3db48dbfee9a908559f4df45e2cccd09546ffe2a50a",
+      "swap_axes": ["x", "y"],
+      "campaign": "ff_heart_20260918",
+      "measurement_family": "feedforward_validation",
+      "condition": "OFF_f10_yz",
+      "note": "Uncompensated heart, u = r, 7 mm, 10 Hz, 8 s, YZ plane (added to the plan on 2026-09-19). Acquisition-side variant: the reviewed XZ-plane command is imported unchanged and its x and y columns are swapped (swap_axes), so the same heart is drawn in the YZ plane. The analysis-side plan only defines the XZ plane.",
+      "feedforward_design": {
+        "design": "OFF",
+        "command_differs_from_reference": false,
+        "description": "u(t) = r(t)",
+        "lookahead_ms": 0.0,
+        "clock_ratio_ppm_assumed": 182.0,
+        "loop_frequency_hz": 10.0,
+        "plane": "yz"
+      },
+      "reference": {
+        "trajectory": "heart mode 4, YZ plane, scale 7 mm, 10 Hz, 8 s, ramp 0.5 s",
+        "evaluation": "compare measured position at time_cam_expected_sec with reference_mm of the same row"
+      },
+      "enabled": true
+    },
+    {
+      "name": "ffheart_s7_f7_OFFW",
+      "kind": "imported",
+      "source_npz": "source/heart_s7_f7_OFFW.npz",
+      "positions_key": "positions_mm",
+      "reference_key": "reference_mm",
+      "extra_time_keys": ["time_pat_sec", "time_cam_expected_sec"],
+      "positions_sha256": "f12a58e15f80ef236736bf3d825f6ecf225821cc33485958e4a9d465adb5f63e",
+      "campaign": "ff_heart_20260918",
+      "measurement_family": "feedforward_validation",
+      "condition": "OFFW_f7",
+      "note": "Heart 7 mm, 7 Hz, 8 s, design OFFW: r minus the measured equilibrium-shift field w (wavenumber <= 9 at 10 Hz / the plan's cut at 7 Hz). Added to the plan on 2026-09-20 from G:/Experiment/20260919/measurement_plan/ff_heart (README: the w field measured with the 1-2 Hz hearts; compare with ffheart_s7_f7_OFF and ffheart_s7_f7_C_delay_inv recorded the same day, right after a rest). The command departs from r by up to 0.564 mm and has a y component (w is three-dimensional).",
+      "feedforward_design": {
+        "design": "OFFW",
+        "command_differs_from_reference": true,
+        "description": "u(t) = r(t) - w(r)",
+        "lookahead_ms": 0.0,
+        "clock_ratio_ppm_assumed": 182.0,
+        "loop_frequency_hz": 7.0,
+        "plane": "xz"
+      },
+      "reference": {
+        "trajectory": "heart mode 4, XZ plane, scale 7 mm, 7 Hz, 8 s, ramp 0.5 s",
+        "evaluation": "compare measured position at time_cam_expected_sec with reference_mm of the same row"
+      },
+      "enabled": true
+    },
+    {
+      "name": "ffheart_s7_f7_CW",
+      "kind": "imported",
+      "source_npz": "source/heart_s7_f7_CW.npz",
+      "positions_key": "positions_mm",
+      "reference_key": "reference_mm",
+      "extra_time_keys": ["time_pat_sec", "time_cam_expected_sec"],
+      "positions_sha256": "d8b3ae6f8aa60b6436fd121e328214c075211a82a1777cc3bcd3cdfd53ffe3bd",
+      "campaign": "ff_heart_20260918",
+      "measurement_family": "feedforward_validation",
+      "condition": "CW_f7",
+      "note": "Heart 7 mm, 7 Hz, 8 s, design CW: design C (0.8 ms lookahead + per-axis linear inverse model) minus the measured w field. Added to the plan on 2026-09-20 from G:/Experiment/20260919/measurement_plan/ff_heart (README: the w field measured with the 1-2 Hz hearts; compare with ffheart_s7_f7_OFF and ffheart_s7_f7_C_delay_inv recorded the same day, right after a rest). The command departs from r by up to 0.834 mm and has a y component (w is three-dimensional).",
+      "feedforward_design": {
+        "design": "CW",
+        "command_differs_from_reference": true,
+        "description": "u(t) = C(t) - w",
+        "lookahead_ms": 0.8,
+        "clock_ratio_ppm_assumed": 182.0,
+        "loop_frequency_hz": 7.0,
+        "plane": "xz"
+      },
+      "reference": {
+        "trajectory": "heart mode 4, XZ plane, scale 7 mm, 7 Hz, 8 s, ramp 0.5 s",
+        "evaluation": "compare measured position at time_cam_expected_sec with reference_mm of the same row"
+      },
+      "enabled": true
+    },
+    {
+      "name": "ffheart_s7_f7_C_delay_inv",
+      "kind": "imported",
+      "source_npz": "source/heart_s7_f7_C_delay_inverse.npz",
+      "positions_key": "positions_mm",
+      "reference_key": "reference_mm",
+      "extra_time_keys": ["time_pat_sec", "time_cam_expected_sec"],
+      "positions_sha256": "76271a454019c748f83f56a47d20724d6b7971498c19a859c0b3b87b68d0ab04",
+      "campaign": "ff_heart_20260918",
+      "measurement_family": "feedforward_validation",
+      "condition": "C_delay_inverse_f7",
+      "note": "Heart 7 mm, 7 Hz, 8 s, design C_delay_inverse: design C at 7 Hz, the comparison arm for CW. Added to the plan on 2026-09-20 from G:/Experiment/20260919/measurement_plan/ff_heart (README: the w field measured with the 1-2 Hz hearts; compare with ffheart_s7_f7_OFF and ffheart_s7_f7_C_delay_inv recorded the same day, right after a rest). The command departs from r by up to 0.479 mm and has a y component (w is three-dimensional).",
+      "feedforward_design": {
+        "design": "C_delay_inverse",
+        "command_differs_from_reference": true,
+        "description": "u(t) = r(t + tau0) + (r'' + gamma r')/k",
+        "lookahead_ms": 0.8,
+        "clock_ratio_ppm_assumed": 182.0,
+        "loop_frequency_hz": 7.0,
+        "plane": "xz"
+      },
+      "reference": {
+        "trajectory": "heart mode 4, XZ plane, scale 7 mm, 7 Hz, 8 s, ramp 0.5 s",
+        "evaluation": "compare measured position at time_cam_expected_sec with reference_mm of the same row"
+      },
+      "enabled": true
+    },
+    {
+      "name": "ffheart_s7_f10_OFFW",
+      "kind": "imported",
+      "source_npz": "source/heart_s7_f10_OFFW.npz",
+      "positions_key": "positions_mm",
+      "reference_key": "reference_mm",
+      "extra_time_keys": ["time_pat_sec", "time_cam_expected_sec"],
+      "positions_sha256": "862e2ac99dda904c01b1cc3a18d06341ef10a838b36952f6e064b2582c673067",
+      "safety_limits": {
+        "max_offset_mm": 9.5,
+        "max_speed_mm_s": 800.0,
+        "max_acceleration_mm_s2": 110000.0,
+        "max_endpoint_offset_mm": 0.01,
+        "max_command_reference_distance_mm": 1.0
+      },
+      "campaign": "ff_heart_20260918",
+      "measurement_family": "feedforward_validation",
+      "condition": "OFFW_f10",
+      "note": "Heart 7 mm, 10 Hz, 8 s, design OFFW: r minus the measured equilibrium-shift field w (wavenumber <= 9 at 10 Hz / the plan's cut at 7 Hz). Added to the plan on 2026-09-20 from G:/Experiment/20260919/measurement_plan/ff_heart (README: the w field measured with the 1-2 Hz hearts; compare with ffheart_s7_f7_OFF and ffheart_s7_f7_C_delay_inv recorded the same day, right after a rest). The command departs from r by up to 0.393 mm and has a y component (w is three-dimensional). Its peak acceleration exceeds the plan default 100000 mm/s2, so this run alone is pinned to max_acceleration_mm_s2 = 110000 as the analysis-side README requests; every other limit is the plan default.",
+      "feedforward_design": {
+        "design": "OFFW",
+        "command_differs_from_reference": true,
+        "description": "u(t) = r(t) - w(r)",
+        "lookahead_ms": 0.0,
+        "clock_ratio_ppm_assumed": 182.0,
+        "loop_frequency_hz": 10.0,
+        "plane": "xz"
+      },
+      "reference": {
+        "trajectory": "heart mode 4, XZ plane, scale 7 mm, 10 Hz, 8 s, ramp 0.5 s",
+        "evaluation": "compare measured position at time_cam_expected_sec with reference_mm of the same row"
+      },
+      "enabled": true
+    },
+    {
+      "name": "ffheart_s7_f10_CW",
+      "kind": "imported",
+      "source_npz": "source/heart_s7_f10_CW.npz",
+      "positions_key": "positions_mm",
+      "reference_key": "reference_mm",
+      "extra_time_keys": ["time_pat_sec", "time_cam_expected_sec"],
+      "positions_sha256": "28371964e21eab3a05cc3d0018ca6863d93bd5f1cad57ac39c68dd24dfc61572",
+      "safety_limits": {
+        "max_offset_mm": 9.5,
+        "max_speed_mm_s": 800.0,
+        "max_acceleration_mm_s2": 110000.0,
+        "max_endpoint_offset_mm": 0.01,
+        "max_command_reference_distance_mm": 1.0
+      },
+      "campaign": "ff_heart_20260918",
+      "measurement_family": "feedforward_validation",
+      "condition": "CW_f10",
+      "note": "Heart 7 mm, 10 Hz, 8 s, design CW: design C (0.8 ms lookahead + per-axis linear inverse model) minus the measured w field. Added to the plan on 2026-09-20 from G:/Experiment/20260919/measurement_plan/ff_heart (README: the w field measured with the 1-2 Hz hearts; compare with ffheart_s7_f7_OFF and ffheart_s7_f7_C_delay_inv recorded the same day, right after a rest). The command departs from r by up to 0.886 mm and has a y component (w is three-dimensional). Its peak acceleration exceeds the plan default 100000 mm/s2, so this run alone is pinned to max_acceleration_mm_s2 = 110000 as the analysis-side README requests; every other limit is the plan default.",
+      "feedforward_design": {
+        "design": "CW",
+        "command_differs_from_reference": true,
+        "description": "u(t) = C(t) - w",
+        "lookahead_ms": 0.8,
+        "clock_ratio_ppm_assumed": 182.0,
+        "loop_frequency_hz": 10.0,
+        "plane": "xz"
+      },
+      "reference": {
+        "trajectory": "heart mode 4, XZ plane, scale 7 mm, 10 Hz, 8 s, ramp 0.5 s",
+        "evaluation": "compare measured position at time_cam_expected_sec with reference_mm of the same row"
+      },
+      "enabled": true
+    },
+    {
+      "name": "wscan_XZ_a",
+      "kind": "imported",
+      "source_npz": "source/wscan_XZ_a.npz",
+      "positions_key": "positions_mm",
+      "reference_key": "reference_mm",
+      "extra_time_keys": ["time_pat_sec", "time_cam_expected_sec"],
+      "positions_sha256": "29b51dc277550df2fa4bfe9a07775c9af6d580829e793c2b2486ad487479d288",
+      "duration_sec": 14.0,
+      "campaign": "ff_heart_20260918",
+      "measurement_family": "feedforward_validation",
+      "condition": "w_scan_xz_a",
+      "note": "Surface scan of the equilibrium-shift field w: spiral from the centre out to the edge and back, XZ plane (y = 0), radius 9.2 mm, counter-clockwise, 1.5 turns/s, 14 s, no compensation (u = r). Added to the plan on 2026-09-20 from G:/Experiment/20260919/measurement_plan/w_scan (NEXT_MEASUREMENTS_20260920.md item 2). Peak speed 87 mm/s and acceleration 818 mm/s2, so the horizontal resonance is not excited and the particle follows w directly. Record a then b of the same plane back to back; the pair tests whether w depends on position only or also on the direction of travel. The stiffness checks are not needed around these runs.",
+      "feedforward_design": {
+        "design": "WSCAN",
+        "command_differs_from_reference": false,
+        "description": "u(t) = r(t), spiral survey of w",
+        "lookahead_ms": 0.0,
+        "clock_ratio_ppm_assumed": 182.0,
+        "plane": "xz",
+        "direction": "counter-clockwise",
+        "radius_mm": 9.2,
+        "plane_offset_mm": 0.0
+      },
+      "reference": {
+        "trajectory": "spiral survey, XZ plane (y = 0), radius 9.2 mm, counter-clockwise, 1.5 turns/s, 14 s",
+        "evaluation": "compare measured position at time_cam_expected_sec with reference_mm of the same row"
+      },
+      "enabled": true
+    },
+    {
+      "name": "wscan_XZ_b",
+      "kind": "imported",
+      "source_npz": "source/wscan_XZ_b.npz",
+      "positions_key": "positions_mm",
+      "reference_key": "reference_mm",
+      "extra_time_keys": ["time_pat_sec", "time_cam_expected_sec"],
+      "positions_sha256": "90f3ed0efb9c663a84fccbb867052e3cf38a6b4f3f1a9b1a123b5e52d158269f",
+      "duration_sec": 14.0,
+      "campaign": "ff_heart_20260918",
+      "measurement_family": "feedforward_validation",
+      "condition": "w_scan_xz_b",
+      "note": "Surface scan of the equilibrium-shift field w: spiral from the centre out to the edge and back, XZ plane (y = 0), radius 9.2 mm, clockwise, 1.5 turns/s, 14 s, no compensation (u = r). Added to the plan on 2026-09-20 from G:/Experiment/20260919/measurement_plan/w_scan (NEXT_MEASUREMENTS_20260920.md item 2). Peak speed 87 mm/s and acceleration 818 mm/s2, so the horizontal resonance is not excited and the particle follows w directly. Record a then b of the same plane back to back; the pair tests whether w depends on position only or also on the direction of travel. The stiffness checks are not needed around these runs.",
+      "feedforward_design": {
+        "design": "WSCAN",
+        "command_differs_from_reference": false,
+        "description": "u(t) = r(t), spiral survey of w",
+        "lookahead_ms": 0.0,
+        "clock_ratio_ppm_assumed": 182.0,
+        "plane": "xz",
+        "direction": "clockwise",
+        "radius_mm": 9.2,
+        "plane_offset_mm": 0.0
+      },
+      "reference": {
+        "trajectory": "spiral survey, XZ plane (y = 0), radius 9.2 mm, clockwise, 1.5 turns/s, 14 s",
+        "evaluation": "compare measured position at time_cam_expected_sec with reference_mm of the same row"
+      },
+      "enabled": true
+    },
+    {
+      "name": "wscan_YZ_a",
+      "kind": "imported",
+      "source_npz": "source/wscan_YZ_a.npz",
+      "positions_key": "positions_mm",
+      "reference_key": "reference_mm",
+      "extra_time_keys": ["time_pat_sec", "time_cam_expected_sec"],
+      "positions_sha256": "1d8d669b7dfde2f2815d4e33dede336c296b12a617b5522d904a34e7d1f69b14",
+      "duration_sec": 14.0,
+      "campaign": "ff_heart_20260918",
+      "measurement_family": "feedforward_validation",
+      "condition": "w_scan_yz_a",
+      "note": "Surface scan of the equilibrium-shift field w: spiral from the centre out to the edge and back, YZ plane (x = 0), radius 9.2 mm, counter-clockwise, 1.5 turns/s, 14 s, no compensation (u = r). Added to the plan on 2026-09-20 from G:/Experiment/20260919/measurement_plan/w_scan (NEXT_MEASUREMENTS_20260920.md item 2). Peak speed 87 mm/s and acceleration 818 mm/s2, so the horizontal resonance is not excited and the particle follows w directly. Record a then b of the same plane back to back; the pair tests whether w depends on position only or also on the direction of travel. The stiffness checks are not needed around these runs.",
+      "feedforward_design": {
+        "design": "WSCAN",
+        "command_differs_from_reference": false,
+        "description": "u(t) = r(t), spiral survey of w",
+        "lookahead_ms": 0.0,
+        "clock_ratio_ppm_assumed": 182.0,
+        "plane": "yz",
+        "direction": "counter-clockwise",
+        "radius_mm": 9.2,
+        "plane_offset_mm": 0.0
+      },
+      "reference": {
+        "trajectory": "spiral survey, YZ plane (x = 0), radius 9.2 mm, counter-clockwise, 1.5 turns/s, 14 s",
+        "evaluation": "compare measured position at time_cam_expected_sec with reference_mm of the same row"
+      },
+      "enabled": true
+    },
+    {
+      "name": "wscan_YZ_b",
+      "kind": "imported",
+      "source_npz": "source/wscan_YZ_b.npz",
+      "positions_key": "positions_mm",
+      "reference_key": "reference_mm",
+      "extra_time_keys": ["time_pat_sec", "time_cam_expected_sec"],
+      "positions_sha256": "d02830e626045c0055c47d1dce033f822bf7a726d468749d2b47f817813a5238",
+      "duration_sec": 14.0,
+      "campaign": "ff_heart_20260918",
+      "measurement_family": "feedforward_validation",
+      "condition": "w_scan_yz_b",
+      "note": "Surface scan of the equilibrium-shift field w: spiral from the centre out to the edge and back, YZ plane (x = 0), radius 9.2 mm, clockwise, 1.5 turns/s, 14 s, no compensation (u = r). Added to the plan on 2026-09-20 from G:/Experiment/20260919/measurement_plan/w_scan (NEXT_MEASUREMENTS_20260920.md item 2). Peak speed 87 mm/s and acceleration 818 mm/s2, so the horizontal resonance is not excited and the particle follows w directly. Record a then b of the same plane back to back; the pair tests whether w depends on position only or also on the direction of travel. The stiffness checks are not needed around these runs.",
+      "feedforward_design": {
+        "design": "WSCAN",
+        "command_differs_from_reference": false,
+        "description": "u(t) = r(t), spiral survey of w",
+        "lookahead_ms": 0.0,
+        "clock_ratio_ppm_assumed": 182.0,
+        "plane": "yz",
+        "direction": "clockwise",
+        "radius_mm": 9.2,
+        "plane_offset_mm": 0.0
+      },
+      "reference": {
+        "trajectory": "spiral survey, YZ plane (x = 0), radius 9.2 mm, clockwise, 1.5 turns/s, 14 s",
+        "evaluation": "compare measured position at time_cam_expected_sec with reference_mm of the same row"
+      },
+      "enabled": true
+    },
+    {
+      "name": "wscan_XY_a",
+      "kind": "imported",
+      "source_npz": "source/wscan_XY_a.npz",
+      "positions_key": "positions_mm",
+      "reference_key": "reference_mm",
+      "extra_time_keys": ["time_pat_sec", "time_cam_expected_sec"],
+      "positions_sha256": "c1585a41c29c29e7220c4ada771a04efe146fc06e62c67c391e4454dc088a15f",
+      "duration_sec": 14.0,
+      "campaign": "ff_heart_20260918",
+      "measurement_family": "feedforward_validation",
+      "condition": "w_scan_xy_a",
+      "note": "Surface scan of the equilibrium-shift field w: spiral from the centre out to the edge and back, XY plane (z = 0), radius 9.2 mm, counter-clockwise, 1.5 turns/s, 14 s, no compensation (u = r). Added to the plan on 2026-09-20 from G:/Experiment/20260919/measurement_plan/w_scan (NEXT_MEASUREMENTS_20260920.md item 2). Peak speed 87 mm/s and acceleration 818 mm/s2, so the horizontal resonance is not excited and the particle follows w directly. Record a then b of the same plane back to back; the pair tests whether w depends on position only or also on the direction of travel. The stiffness checks are not needed around these runs.",
+      "feedforward_design": {
+        "design": "WSCAN",
+        "command_differs_from_reference": false,
+        "description": "u(t) = r(t), spiral survey of w",
+        "lookahead_ms": 0.0,
+        "clock_ratio_ppm_assumed": 182.0,
+        "plane": "xy",
+        "direction": "counter-clockwise",
+        "radius_mm": 9.2,
+        "plane_offset_mm": 0.0
+      },
+      "reference": {
+        "trajectory": "spiral survey, XY plane (z = 0), radius 9.2 mm, counter-clockwise, 1.5 turns/s, 14 s",
+        "evaluation": "compare measured position at time_cam_expected_sec with reference_mm of the same row"
+      },
+      "enabled": true
+    },
+    {
+      "name": "wscan_XY_b",
+      "kind": "imported",
+      "source_npz": "source/wscan_XY_b.npz",
+      "positions_key": "positions_mm",
+      "reference_key": "reference_mm",
+      "extra_time_keys": ["time_pat_sec", "time_cam_expected_sec"],
+      "positions_sha256": "abc7a130e06b0125374c8a408ad184f07cebd92419dd3f9ae8cbc281bbede297",
+      "duration_sec": 14.0,
+      "campaign": "ff_heart_20260918",
+      "measurement_family": "feedforward_validation",
+      "condition": "w_scan_xy_b",
+      "note": "Surface scan of the equilibrium-shift field w: spiral from the centre out to the edge and back, XY plane (z = 0), radius 9.2 mm, clockwise, 1.5 turns/s, 14 s, no compensation (u = r). Added to the plan on 2026-09-20 from G:/Experiment/20260919/measurement_plan/w_scan (NEXT_MEASUREMENTS_20260920.md item 2). Peak speed 87 mm/s and acceleration 818 mm/s2, so the horizontal resonance is not excited and the particle follows w directly. Record a then b of the same plane back to back; the pair tests whether w depends on position only or also on the direction of travel. The stiffness checks are not needed around these runs.",
+      "feedforward_design": {
+        "design": "WSCAN",
+        "command_differs_from_reference": false,
+        "description": "u(t) = r(t), spiral survey of w",
+        "lookahead_ms": 0.0,
+        "clock_ratio_ppm_assumed": 182.0,
+        "plane": "xy",
+        "direction": "clockwise",
+        "radius_mm": 9.2,
+        "plane_offset_mm": 0.0
+      },
+      "reference": {
+        "trajectory": "spiral survey, XY plane (z = 0), radius 9.2 mm, clockwise, 1.5 turns/s, 14 s",
+        "evaluation": "compare measured position at time_cam_expected_sec with reference_mm of the same row"
+      },
+      "enabled": true
+    },
+    {
+      "name": "wscan_XZyp4_a",
+      "kind": "imported",
+      "source_npz": "source/wscan_XZyp4_a.npz",
+      "positions_key": "positions_mm",
+      "reference_key": "reference_mm",
+      "extra_time_keys": ["time_pat_sec", "time_cam_expected_sec"],
+      "positions_sha256": "58a0db16891bd928e3dd07588e9cb5621afd10136e3291f292cc9508e0853754",
+      "duration_sec": 14.0,
+      "campaign": "ff_heart_20260918",
+      "measurement_family": "feedforward_validation",
+      "condition": "w_scan_xz_y+4_a",
+      "note": "Surface scan of the equilibrium-shift field w: spiral from the centre out to the edge and back, XZ plane offset to y = +4 mm, radius 8 mm, counter-clockwise, 1.5 turns/s, 14 s, no compensation (u = r). Added to the plan on 2026-09-20 from G:/Experiment/20260919/measurement_plan/w_scan (NEXT_MEASUREMENTS_20260920.md item 2). Peak speed 76 mm/s and acceleration 716 mm/s2, so the horizontal resonance is not excited and the particle follows w directly. Record a then b of the same plane back to back; the pair tests whether w depends on position only or also on the direction of travel. The stiffness checks are not needed around these runs. The command ramps y to its offset during the first 0.5 s and back at the end, so it starts and ends at the centre.",
+      "feedforward_design": {
+        "design": "WSCAN",
+        "command_differs_from_reference": false,
+        "description": "u(t) = r(t), spiral survey of w",
+        "lookahead_ms": 0.0,
+        "clock_ratio_ppm_assumed": 182.0,
+        "plane": "xz_y+4",
+        "direction": "counter-clockwise",
+        "radius_mm": 8.0,
+        "plane_offset_mm": 4.0
+      },
+      "reference": {
+        "trajectory": "spiral survey, XZ plane offset to y = +4 mm, radius 8 mm, counter-clockwise, 1.5 turns/s, 14 s",
+        "evaluation": "compare measured position at time_cam_expected_sec with reference_mm of the same row"
+      },
+      "enabled": true
+    },
+    {
+      "name": "wscan_XZyp4_b",
+      "kind": "imported",
+      "source_npz": "source/wscan_XZyp4_b.npz",
+      "positions_key": "positions_mm",
+      "reference_key": "reference_mm",
+      "extra_time_keys": ["time_pat_sec", "time_cam_expected_sec"],
+      "positions_sha256": "4a692b7e2ba97ebe96f3ff08b00ac6b57a345c5ae6ab9b771f1a03478ca555ee",
+      "duration_sec": 14.0,
+      "campaign": "ff_heart_20260918",
+      "measurement_family": "feedforward_validation",
+      "condition": "w_scan_xz_y+4_b",
+      "note": "Surface scan of the equilibrium-shift field w: spiral from the centre out to the edge and back, XZ plane offset to y = +4 mm, radius 8 mm, clockwise, 1.5 turns/s, 14 s, no compensation (u = r). Added to the plan on 2026-09-20 from G:/Experiment/20260919/measurement_plan/w_scan (NEXT_MEASUREMENTS_20260920.md item 2). Peak speed 76 mm/s and acceleration 716 mm/s2, so the horizontal resonance is not excited and the particle follows w directly. Record a then b of the same plane back to back; the pair tests whether w depends on position only or also on the direction of travel. The stiffness checks are not needed around these runs. The command ramps y to its offset during the first 0.5 s and back at the end, so it starts and ends at the centre.",
+      "feedforward_design": {
+        "design": "WSCAN",
+        "command_differs_from_reference": false,
+        "description": "u(t) = r(t), spiral survey of w",
+        "lookahead_ms": 0.0,
+        "clock_ratio_ppm_assumed": 182.0,
+        "plane": "xz_y+4",
+        "direction": "clockwise",
+        "radius_mm": 8.0,
+        "plane_offset_mm": 4.0
+      },
+      "reference": {
+        "trajectory": "spiral survey, XZ plane offset to y = +4 mm, radius 8 mm, clockwise, 1.5 turns/s, 14 s",
+        "evaluation": "compare measured position at time_cam_expected_sec with reference_mm of the same row"
+      },
+      "enabled": true
+    },
+    {
+      "name": "wscan_XZym4_a",
+      "kind": "imported",
+      "source_npz": "source/wscan_XZym4_a.npz",
+      "positions_key": "positions_mm",
+      "reference_key": "reference_mm",
+      "extra_time_keys": ["time_pat_sec", "time_cam_expected_sec"],
+      "positions_sha256": "dd5d9fd17752b1fa61dab93e641cb5e553c32ed7d6403a32b69118ee0ad971b4",
+      "duration_sec": 14.0,
+      "campaign": "ff_heart_20260918",
+      "measurement_family": "feedforward_validation",
+      "condition": "w_scan_xz_y-4_a",
+      "note": "Surface scan of the equilibrium-shift field w: spiral from the centre out to the edge and back, XZ plane offset to y = -4 mm, radius 8 mm, counter-clockwise, 1.5 turns/s, 14 s, no compensation (u = r). Added to the plan on 2026-09-20 from G:/Experiment/20260919/measurement_plan/w_scan (NEXT_MEASUREMENTS_20260920.md item 2). Peak speed 76 mm/s and acceleration 716 mm/s2, so the horizontal resonance is not excited and the particle follows w directly. Record a then b of the same plane back to back; the pair tests whether w depends on position only or also on the direction of travel. The stiffness checks are not needed around these runs. The command ramps y to its offset during the first 0.5 s and back at the end, so it starts and ends at the centre.",
+      "feedforward_design": {
+        "design": "WSCAN",
+        "command_differs_from_reference": false,
+        "description": "u(t) = r(t), spiral survey of w",
+        "lookahead_ms": 0.0,
+        "clock_ratio_ppm_assumed": 182.0,
+        "plane": "xz_y-4",
+        "direction": "counter-clockwise",
+        "radius_mm": 8.0,
+        "plane_offset_mm": -4.0
+      },
+      "reference": {
+        "trajectory": "spiral survey, XZ plane offset to y = -4 mm, radius 8 mm, counter-clockwise, 1.5 turns/s, 14 s",
+        "evaluation": "compare measured position at time_cam_expected_sec with reference_mm of the same row"
+      },
+      "enabled": true
+    },
+    {
+      "name": "wscan_XZym4_b",
+      "kind": "imported",
+      "source_npz": "source/wscan_XZym4_b.npz",
+      "positions_key": "positions_mm",
+      "reference_key": "reference_mm",
+      "extra_time_keys": ["time_pat_sec", "time_cam_expected_sec"],
+      "positions_sha256": "1c516ff7b0a34c5746a739efbad8733852ec7eee9cd37dc2a6d6e6499ebb1a53",
+      "duration_sec": 14.0,
+      "campaign": "ff_heart_20260918",
+      "measurement_family": "feedforward_validation",
+      "condition": "w_scan_xz_y-4_b",
+      "note": "Surface scan of the equilibrium-shift field w: spiral from the centre out to the edge and back, XZ plane offset to y = -4 mm, radius 8 mm, clockwise, 1.5 turns/s, 14 s, no compensation (u = r). Added to the plan on 2026-09-20 from G:/Experiment/20260919/measurement_plan/w_scan (NEXT_MEASUREMENTS_20260920.md item 2). Peak speed 76 mm/s and acceleration 716 mm/s2, so the horizontal resonance is not excited and the particle follows w directly. Record a then b of the same plane back to back; the pair tests whether w depends on position only or also on the direction of travel. The stiffness checks are not needed around these runs. The command ramps y to its offset during the first 0.5 s and back at the end, so it starts and ends at the centre.",
+      "feedforward_design": {
+        "design": "WSCAN",
+        "command_differs_from_reference": false,
+        "description": "u(t) = r(t), spiral survey of w",
+        "lookahead_ms": 0.0,
+        "clock_ratio_ppm_assumed": 182.0,
+        "plane": "xz_y-4",
+        "direction": "clockwise",
+        "radius_mm": 8.0,
+        "plane_offset_mm": -4.0
+      },
+      "reference": {
+        "trajectory": "spiral survey, XZ plane offset to y = -4 mm, radius 8 mm, clockwise, 1.5 turns/s, 14 s",
+        "evaluation": "compare measured position at time_cam_expected_sec with reference_mm of the same row"
+      },
+      "enabled": true
+    },
+    {
+      "name": "ffheart_s7_f7_OFFWxz",
+      "kind": "imported",
+      "source_npz": "source/heart_s7_f7_OFFWxz.npz",
+      "positions_key": "positions_mm",
+      "reference_key": "reference_mm",
+      "extra_time_keys": ["time_pat_sec", "time_cam_expected_sec"],
+      "positions_sha256": "fbfdde78db67e596ed31acc53122d0176c1e785a0fc1f19510ce6b79d5cae328",
+      "campaign": "ff_heart_20260918",
+      "measurement_family": "feedforward_validation",
+      "condition": "OFFWxz_f7",
+      "note": "Heart 7 mm, 7 Hz, 8 s, design OFFWxz: r minus the w field with the out-of-plane y component left out (make_w_compensation.py --axes xz). Added to the plan on 2026-09-21 from G:/Experiment/20260919/measurement_plan/ff_heart (w_field/W_FIELD_3D_PLAN.md stage 2). On 2026-09-20 the in-plane compensation worked (x resonance band -63%) while the out-of-plane y band got worse (0.17 -> 0.74 mm), because the fine y part of the slowly measured w was measurement bias, not a real trap offset. These four separate the two: the xz runs leave y uncompensated, the 2 runs use the y value back-calculated from the resonant response. Record them in the same session, right after a rest and the stiffness checks, so the thermal state matches. The command departs from r by up to 0.323 mm and leaves y at zero.",
+      "feedforward_design": {
+        "design": "OFFWxz",
+        "command_differs_from_reference": true,
+        "description": "u(t) = r(t) - w_xz(r)",
+        "lookahead_ms": 0.0,
+        "clock_ratio_ppm_assumed": 182.0,
+        "loop_frequency_hz": 7.0,
+        "plane": "xz",
+        "w_axes": "xz",
+        "w_y_source": "none"
+      },
+      "reference": {
+        "trajectory": "heart mode 4, XZ plane, scale 7 mm, 7 Hz, 8 s, ramp 0.5 s",
+        "evaluation": "compare measured position at time_cam_expected_sec with reference_mm of the same row"
+      },
+      "enabled": true
+    },
+    {
+      "name": "ffheart_s7_f7_CWxz",
+      "kind": "imported",
+      "source_npz": "source/heart_s7_f7_CWxz.npz",
+      "positions_key": "positions_mm",
+      "reference_key": "reference_mm",
+      "extra_time_keys": ["time_pat_sec", "time_cam_expected_sec"],
+      "positions_sha256": "77bbb044f2366318831938d5adc76a3b1c0acbb30f9aad23b17429acc6c3f9e9",
+      "campaign": "ff_heart_20260918",
+      "measurement_family": "feedforward_validation",
+      "condition": "CWxz_f7",
+      "note": "Heart 7 mm, 7 Hz, 8 s, design CWxz: design C minus the w field with the out-of-plane y component left out. Added to the plan on 2026-09-21 from G:/Experiment/20260919/measurement_plan/ff_heart (w_field/W_FIELD_3D_PLAN.md stage 2). On 2026-09-20 the in-plane compensation worked (x resonance band -63%) while the out-of-plane y band got worse (0.17 -> 0.74 mm), because the fine y part of the slowly measured w was measurement bias, not a real trap offset. These four separate the two: the xz runs leave y uncompensated, the 2 runs use the y value back-calculated from the resonant response. Record them in the same session, right after a rest and the stiffness checks, so the thermal state matches. The command departs from r by up to 0.698 mm and leaves y at zero.",
+      "feedforward_design": {
+        "design": "CWxz",
+        "command_differs_from_reference": true,
+        "description": "u(t) = C(t) - w_xz",
+        "lookahead_ms": 0.8,
+        "clock_ratio_ppm_assumed": 182.0,
+        "loop_frequency_hz": 7.0,
+        "plane": "xz",
+        "w_axes": "xz",
+        "w_y_source": "none"
+      },
+      "reference": {
+        "trajectory": "heart mode 4, XZ plane, scale 7 mm, 7 Hz, 8 s, ramp 0.5 s",
+        "evaluation": "compare measured position at time_cam_expected_sec with reference_mm of the same row"
+      },
+      "enabled": true
+    },
+    {
+      "name": "ffheart_s7_f7_OFFW2",
+      "kind": "imported",
+      "source_npz": "source/heart_s7_f7_OFFW2.npz",
+      "positions_key": "positions_mm",
+      "reference_key": "reference_mm",
+      "extra_time_keys": ["time_pat_sec", "time_cam_expected_sec"],
+      "positions_sha256": "05c14e905cdd255debdf7149012dabd139417cd67a3e8dd4784467075c23c4ff",
+      "campaign": "ff_heart_20260918",
+      "measurement_family": "feedforward_validation",
+      "condition": "OFFW2_f7",
+      "note": "Heart 7 mm, 7 Hz, 8 s, design OFFW2: r minus the revised w field: x and z as before, and the fine y component replaced by the value back-calculated from the resonant response (make_w_y_dynamic.py). Added to the plan on 2026-09-21 from G:/Experiment/20260919/measurement_plan/ff_heart (w_field/W_FIELD_3D_PLAN.md stage 2). On 2026-09-20 the in-plane compensation worked (x resonance band -63%) while the out-of-plane y band got worse (0.17 -> 0.74 mm), because the fine y part of the slowly measured w was measurement bias, not a real trap offset. These four separate the two: the xz runs leave y uncompensated, the 2 runs use the y value back-calculated from the resonant response. Record them in the same session, right after a rest and the stiffness checks, so the thermal state matches. The command departs from r by up to 0.465 mm and moves y by up to 0.346 mm.",
+      "feedforward_design": {
+        "design": "OFFW2",
+        "command_differs_from_reference": true,
+        "description": "u(t) = r(t) - w2(r)",
+        "lookahead_ms": 0.0,
+        "clock_ratio_ppm_assumed": 182.0,
+        "loop_frequency_hz": 7.0,
+        "plane": "xz",
+        "w_axes": "xyz",
+        "w_y_source": "back-calculated from the resonant response"
+      },
+      "reference": {
+        "trajectory": "heart mode 4, XZ plane, scale 7 mm, 7 Hz, 8 s, ramp 0.5 s",
+        "evaluation": "compare measured position at time_cam_expected_sec with reference_mm of the same row"
+      },
+      "enabled": true
+    },
+    {
+      "name": "ffheart_s7_f7_CW2",
+      "kind": "imported",
+      "source_npz": "source/heart_s7_f7_CW2.npz",
+      "positions_key": "positions_mm",
+      "reference_key": "reference_mm",
+      "extra_time_keys": ["time_pat_sec", "time_cam_expected_sec"],
+      "positions_sha256": "a38d20e9379ab9a98bdf04af414bf9f8db4812ee9c140f625f1f2d6ef6d0d42f",
+      "campaign": "ff_heart_20260918",
+      "measurement_family": "feedforward_validation",
+      "condition": "CW2_f7",
+      "note": "Heart 7 mm, 7 Hz, 8 s, design CW2: design C minus the revised w field (fine y from the resonant response). Added to the plan on 2026-09-21 from G:/Experiment/20260919/measurement_plan/ff_heart (w_field/W_FIELD_3D_PLAN.md stage 2). On 2026-09-20 the in-plane compensation worked (x resonance band -63%) while the out-of-plane y band got worse (0.17 -> 0.74 mm), because the fine y part of the slowly measured w was measurement bias, not a real trap offset. These four separate the two: the xz runs leave y uncompensated, the 2 runs use the y value back-calculated from the resonant response. Record them in the same session, right after a rest and the stiffness checks, so the thermal state matches. The command departs from r by up to 0.770 mm and moves y by up to 0.346 mm.",
+      "feedforward_design": {
+        "design": "CW2",
+        "command_differs_from_reference": true,
+        "description": "u(t) = C(t) - w2",
+        "lookahead_ms": 0.8,
+        "clock_ratio_ppm_assumed": 182.0,
+        "loop_frequency_hz": 7.0,
+        "plane": "xz",
+        "w_axes": "xyz",
+        "w_y_source": "back-calculated from the resonant response"
+      },
+      "reference": {
+        "trajectory": "heart mode 4, XZ plane, scale 7 mm, 7 Hz, 8 s, ramp 0.5 s",
+        "evaluation": "compare measured position at time_cam_expected_sec with reference_mm of the same row"
+      },
+      "enabled": true
+    }
+  ]
+}

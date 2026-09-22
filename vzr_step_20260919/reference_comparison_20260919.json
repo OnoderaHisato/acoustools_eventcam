@@ -1,0 +1,130 @@
+{
+  "compared_at": "2026-09-19T01:38:51",
+  "plan": "vzr_step_20260919/vzr_step_plan.json",
+  "plan_sha256": "7426341b9bcae76a84f0c579b8c7460fd02cdc25bf90f62a0c69509a6040dad5",
+  "export_source_plan_sha256": "7426341b9bcae76a84f0c579b8c7460fd02cdc25bf90f62a0c69509a6040dad5",
+  "reference_directory": "G:\\マイドライブ\\Experiment\\20260918\\measurement_plan\\vzr_step\\commands",
+  "all_bitwise_equal": true,
+  "runs": [
+    {
+      "name": "vzrstep_XS1",
+      "source_file": "vzrstep_XS1_x0.6_z0.4.npz",
+      "source_sha256": "3f6c96774e5fb7d900ac14ec5ffdfabed638509ec5990b44962e38e264c837db",
+      "samples": 97000,
+      "bitwise_equal": true,
+      "max_abs_difference_mm": 0.0,
+      "sample_hz_equal": true,
+      "negative_zero_samples": 0,
+      "tier": "C",
+      "axis": "xz",
+      "n_jumps": 30,
+      "jump_kind_counts": {
+        "x": 6,
+        "xz": 18,
+        "z": 6
+      },
+      "max_step_mm": 0.7211102550927979,
+      "escape_margin_fraction": 0.33637796155932265
+    },
+    {
+      "name": "vzrstep_XS2",
+      "source_file": "vzrstep_XS2_x0.8_z0.5.npz",
+      "source_sha256": "c99689720360a010d5b898260249221e854f9619cea8ffc71c3826f7116c25aa",
+      "samples": 97000,
+      "bitwise_equal": true,
+      "max_abs_difference_mm": 0.0,
+      "sample_hz_equal": true,
+      "negative_zero_samples": 0,
+      "tier": "C",
+      "axis": "xz",
+      "n_jumps": 30,
+      "jump_kind_counts": {
+        "x": 6,
+        "xz": 18,
+        "z": 6
+      },
+      "max_step_mm": 0.9433981132056605,
+      "escape_margin_fraction": 0.44006909070817984
+    },
+    {
+      "name": "vzrstep_XS3",
+      "source_file": "vzrstep_XS3_x1_z0.6.npz",
+      "source_sha256": "81391e21237f3f0f3b3ee575d39a4c2d358dd2f2caa3add17c010871d1e9896b",
+      "samples": 97000,
+      "bitwise_equal": true,
+      "max_abs_difference_mm": 0.0,
+      "sample_hz_equal": true,
+      "negative_zero_samples": 0,
+      "tier": "D",
+      "axis": "xz",
+      "n_jumps": 30,
+      "jump_kind_counts": {
+        "x": 6,
+        "xz": 18,
+        "z": 6
+      },
+      "max_step_mm": 1.16619037896906,
+      "escape_margin_fraction": 0.5439955120555382
+    },
+    {
+      "name": "vzrstep_YS1",
+      "source_file": "vzrstep_YS1_y0.6_z0.4.npz",
+      "source_sha256": "f555d82d7c4097b9ccef294f4e28163bcae991c06a9a8dd489c9cf8d1139fa18",
+      "samples": 97000,
+      "bitwise_equal": true,
+      "max_abs_difference_mm": 0.0,
+      "sample_hz_equal": true,
+      "negative_zero_samples": 0,
+      "tier": "C",
+      "axis": "yz",
+      "n_jumps": 30,
+      "jump_kind_counts": {
+        "y": 6,
+        "yz": 18,
+        "z": 6
+      },
+      "max_step_mm": 0.7211102550927979,
+      "escape_margin_fraction": 0.33637796155932265
+    },
+    {
+      "name": "vzrstep_YS2",
+      "source_file": "vzrstep_YS2_y0.8_z0.5.npz",
+      "source_sha256": "4b01ae0572fbbc3bc91e76977701522b1f913936638b45ad2975c53f3e2778dc",
+      "samples": 97000,
+      "bitwise_equal": true,
+      "max_abs_difference_mm": 0.0,
+      "sample_hz_equal": true,
+      "negative_zero_samples": 0,
+      "tier": "C",
+      "axis": "yz",
+      "n_jumps": 30,
+      "jump_kind_counts": {
+        "y": 6,
+        "yz": 18,
+        "z": 6
+      },
+      "max_step_mm": 0.9433981132056605,
+      "escape_margin_fraction": 0.44006909070817984
+    },
+    {
+      "name": "vzrstep_YS3",
+      "source_file": "vzrstep_YS3_y1_z0.6.npz",
+      "source_sha256": "7d68f6a780a36240d361f0c2c93a60ec02a6cbea8099c8286f3be41771b361fa",
+      "samples": 97000,
+      "bitwise_equal": true,
+      "max_abs_difference_mm": 0.0,
+      "sample_hz_equal": true,
+      "negative_zero_samples": 0,
+      "tier": "D",
+      "axis": "yz",
+      "n_jumps": 30,
+      "jump_kind_counts": {
+        "y": 6,
+        "yz": 18,
+        "z": 6
+      },
+      "max_step_mm": 1.16619037896906,
+      "escape_margin_fraction": 0.5439955120555382
+    }
+  ]
+}

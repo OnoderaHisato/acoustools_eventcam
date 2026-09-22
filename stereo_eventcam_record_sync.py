@@ -99,6 +99,15 @@ def parse_args() -> argparse.Namespace:
         default=10.0,
         help="Max seconds the Master worker waits for the Slave to finish configuring before giving up.",
     )
+    parser.add_argument(
+        "--stream-stall-timeout-sec",
+        type=float,
+        default=3.0,
+        help=(
+            "Abort the paired capture when a camera delivers no data for this long during the "
+            "saved interval (its event stream stalled). 0 disables the watchdog."
+        ),
+    )
     parser.add_argument("--sensor-width", type=int, default=1280, help="Fallback sensor width.")
     parser.add_argument("--sensor-height", type=int, default=720, help="Fallback sensor height.")
     parser.add_argument("--max-events", type=int, default=0, help="Per-side event cap. 0 means no cap.")
@@ -222,6 +231,81 @@ def wait_for_event_or_abort(
             raise RuntimeError(f"Aborted while waiting for {description}")
         if time.monotonic() >= deadline:
             raise RuntimeError(f"Timed out after {timeout_sec:.1f}s waiting for {description}")
+
+
+CAPTURE_PHASE_STARTING = 0   # opening the camera / waiting for the synchronized start
+CAPTURE_PHASE_CAPTURING = 1  # inside the saved interval: slices must keep arriving
+CAPTURE_PHASE_SAVING = 2     # interval complete: concatenating and writing the NPZ
+
+
+def set_shared_value(shared_value: Any, value: int) -> None:
+    """Write a progress value shared with the parent process; None means 'not monitored'."""
+    if shared_value is not None:
+        shared_value.value = int(value)
+
+
+def stalled_capture_sides(
+    progress: dict[str, tuple[int, int]],
+    now_perf_ns: int,
+    stall_timeout_sec: float,
+) -> dict[str, float]:
+    """Return ``{side: seconds_without_data}`` for workers that are mid-capture but silent.
+
+    ``progress`` maps a side to ``(capture_phase, last_slice_perf_ns)``. Only the capturing
+    phase is watched: before it the hardware-sync start-up has its own timeouts, and after it
+    the worker is busy writing the NPZ and receives no slices by design.
+    """
+    if stall_timeout_sec <= 0:
+        return {}
+    limit_ns = int(float(stall_timeout_sec) * 1_000_000_000)
+    stalled: dict[str, float] = {}
+    for side, (phase, last_slice_perf_ns) in progress.items():
+        if int(phase) != CAPTURE_PHASE_CAPTURING or int(last_slice_perf_ns) <= 0:
+            continue
+        silent_ns = int(now_perf_ns) - int(last_slice_perf_ns)
+        if silent_ns > limit_ns:
+            stalled[side] = silent_ns * 1e-9
+    return stalled
+
+
+def collect_worker_results(
+    result_queue: Any,
+    *,
+    expected_sides: list[str],
+    progress: dict[str, tuple[Any, Any]],
+    abort_event: Any,
+    deadline_monotonic: float,
+    stall_timeout_sec: float,
+    poll_sec: float = 0.5,
+) -> tuple[list[dict[str, Any]], dict[str, float]]:
+    """Wait for the camera workers, but stop within seconds when a stream stalls.
+
+    A worker blocked inside the vendor event iterator never returns on its own, so the parent
+    watches the per-slice heartbeat instead of waiting for the full deadline.
+    """
+    results: list[dict[str, Any]] = []
+    stalled: dict[str, float] = {}
+    while len(results) < len(expected_sides) and time.monotonic() < deadline_monotonic:
+        try:
+            result = result_queue.get(timeout=poll_sec)
+            results.append(result)
+            if not bool(result.get("ok")):
+                abort_event.set()
+                break
+        except queue.Empty:
+            pass
+        if stall_timeout_sec > 0:
+            returned = {str(result.get("side")) for result in results}
+            snapshot = {
+                side: (int(phase.value), int(last_slice.value))
+                for side, (phase, last_slice) in progress.items()
+                if side in expected_sides and side not in returned
+            }
+            stalled = stalled_capture_sides(snapshot, time.perf_counter_ns(), stall_timeout_sec)
+            if stalled:
+                abort_event.set()
+                break
+    return results, stalled
 
 
 def read_shared_int(shared_value: Any) -> int:
@@ -713,6 +797,8 @@ def record_worker(
     timestamp_domain_id: str = "",
     npz_compression: str = "none",
     capture_start_marker: str = "",
+    capture_phase: Any = None,
+    last_slice_perf_ns: Any = None,
 ) -> None:
     side_dir = Path(output_dir)
     side_dir.mkdir(parents=True, exist_ok=True)
@@ -806,6 +892,7 @@ def record_worker(
         for events in iterator:
             now_ns = time.perf_counter_ns()
             meta["total_slices"] = int(meta["total_slices"]) + 1
+            set_shared_value(last_slice_perf_ns, now_ns)
 
             if abort_event is not None and abort_event.is_set():
                 raise RuntimeError(f"{side}: paired capture was aborted")
@@ -841,6 +928,7 @@ def record_worker(
                     camera_ts_at_marker_us = int(iterator.get_current_time())
                     pc_start_perf_ns = now_ns
                     pc_start_wall_ns = time.time_ns()
+                    set_shared_value(capture_phase, CAPTURE_PHASE_CAPTURING)
                     meta["started_at"] = dt.datetime.now().isoformat(timespec="milliseconds")
                     meta["pc_start_perf_ns"] = int(pc_start_perf_ns)
                     meta["pc_start_wall_ns"] = int(pc_start_wall_ns)
@@ -870,6 +958,7 @@ def record_worker(
                     capture_end_ts_us = None
                     pc_start_perf_ns = now_ns
                     pc_start_wall_ns = time.time_ns()
+                    set_shared_value(capture_phase, CAPTURE_PHASE_CAPTURING)
                     stop_perf_ns = now_ns + int(float(duration_sec) * 1_000_000_000)
                     meta["started_at"] = dt.datetime.now().isoformat(timespec="milliseconds")
                     meta["pc_start_perf_ns"] = int(pc_start_perf_ns)
@@ -895,6 +984,7 @@ def record_worker(
             if capture_complete or event_limit_reached:
                 break
 
+        set_shared_value(capture_phase, CAPTURE_PHASE_SAVING)
         meta["capture_loop_sec"] = float(time.perf_counter() - capture_loop_started)
         pc_end_perf_ns = time.perf_counter_ns()
         pc_end_wall_ns = time.time_ns()
@@ -1003,6 +1093,8 @@ def main() -> int:
         raise SystemExit("--start-delay-sec must be non-negative.")
     if args.hw_sync_timeout_sec <= 0:
         raise SystemExit("--hw-sync-timeout-sec must be positive.")
+    if args.stream_stall_timeout_sec < 0:
+        raise SystemExit("--stream-stall-timeout-sec must not be negative.")
     if args.max_events < 0:
         raise SystemExit("--max-events must be non-negative.")
     if args.list_devices:
@@ -1051,6 +1143,11 @@ def main() -> int:
     capture_ts_ready_event = ctx.Event()
     shared_capture_start_ts_us = ctx.Value("q", -1)
     abort_event = ctx.Event()
+    # Per-side progress for the stream-stall watchdog: (capture phase, perf_counter_ns of last slice).
+    capture_progress = {
+        "left": (ctx.Value("i", CAPTURE_PHASE_STARTING), ctx.Value("q", 0)),
+        "right": (ctx.Value("i", CAPTURE_PHASE_STARTING), ctx.Value("q", 0)),
+    }
     master_side = "left" if args.hw_sync == "left-master" else "right"
     master_serial = left_serial if master_side == "left" else right_serial
     timestamp_domain_id = (
@@ -1080,6 +1177,8 @@ def main() -> int:
                 "timestamp_domain_id": timestamp_domain_id if args.hw_sync != "off" else f"local:{left_serial}",
                 "npz_compression": str(args.npz_compression),
                 "capture_start_marker": str(args.capture_start_marker),
+                "capture_phase": capture_progress["left"][0],
+                "last_slice_perf_ns": capture_progress["left"][1],
             },
         ),
         ctx.Process(
@@ -1105,6 +1204,8 @@ def main() -> int:
                 "timestamp_domain_id": timestamp_domain_id if args.hw_sync != "off" else f"local:{right_serial}",
                 "npz_compression": str(args.npz_compression),
                 "capture_start_marker": str(args.capture_start_marker),
+                "capture_phase": capture_progress["right"][0],
+                "last_slice_perf_ns": capture_progress["right"][1],
             },
         ),
     ]
@@ -1141,17 +1242,21 @@ def main() -> int:
             workers[master_index].start()
             started_worker_indices.append(master_index)
 
-    results: list[dict[str, Any]] = []
     deadline = time.monotonic() + float(args.duration_sec) + float(args.start_delay_sec) + 30.0
-    while len(results) < len(started_worker_indices) and time.monotonic() < deadline:
-        try:
-            result = result_queue.get(timeout=0.5)
-            results.append(result)
-            if not bool(result.get("ok")):
-                abort_event.set()
-                break
-        except queue.Empty:
-            pass
+    side_by_index = {0: "left", 1: "right"}
+    results, stalled_sides = collect_worker_results(
+        result_queue,
+        expected_sides=[side_by_index[index] for index in started_worker_indices],
+        progress=capture_progress,
+        abort_event=abort_event,
+        deadline_monotonic=deadline,
+        stall_timeout_sec=float(args.stream_stall_timeout_sec),
+    )
+    for index in started_worker_indices:
+        # A stalled worker is blocked inside the vendor iterator and cannot see abort_event.
+        if side_by_index[index] in stalled_sides and workers[index].is_alive():
+            workers[index].terminate()
+            workers[index].join(timeout=2.0)
 
     timed_out_indices: set[int] = set()
     for index in started_worker_indices:
@@ -1181,6 +1286,12 @@ def main() -> int:
             continue
         if index not in started_worker_indices:
             error = startup_error or "Worker was not started because paired-camera setup failed."
+        elif side in stalled_sides:
+            error = (
+                f"Camera event stream stalled: the {side} camera delivered no data for "
+                f"{stalled_sides[side]:.1f} s during the saved interval "
+                f"(limit {float(args.stream_stall_timeout_sec):g} s). The paired capture was aborted."
+            )
         elif index in timed_out_indices:
             if sync_role == "slave":
                 error = (
@@ -1308,6 +1419,10 @@ def main() -> int:
             "pc_start_perf_ns_target": int(start_perf_ns) if args.hw_sync == "off" else None,
             "pc_start_wall_ns_approx": int(start_wall_ns) if args.hw_sync == "off" else None,
             "common_camera_window": common_camera_window,
+        },
+        "stream_stall_watchdog": {
+            "timeout_sec": float(args.stream_stall_timeout_sec),
+            "stalled_sides": {side: float(seconds) for side, seconds in stalled_sides.items()},
         },
         "left": by_side.get("left", {}),
         "right": by_side.get("right", {}),

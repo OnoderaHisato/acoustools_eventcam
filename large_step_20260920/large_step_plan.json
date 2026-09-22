@@ -1,0 +1,309 @@
+{
+  "schema_version": 1,
+  "campaign": "large_step_20260920",
+  "measurement_family": "step_response_identification",
+  "purpose": "Single-axis large steps that separate the horizontal saturation length vxr from the product k = ar*vxr, so the horizontal force ceiling A_r = k/vxr can be stated. Reference: G:/マイドライブ/Experiment/20260919/measurement_plan/NEXT_MEASUREMENTS_20260920.md (item 3) and large_step/make_large_step_trajectory.py (copied to large_step_20260920/).",
+  "generation_note": "Generated natively by kind=staircase (axis, amplitudes_mm, directions, repeats_within_run), which reproduces the analysis-side commands/vzrstep_*L*.npz exactly (see reference_comparison_20260920.json). Staircase safety is amplitude-only: the offset from the centre, the single-sample change and the 2.144 mm escape boundary. safety_limits are pinned per run just above the designed step.",
+  "protocol_note": "Escalate: XL12 -> XL15, and only then XL18 -> XL20; the y ladder afterwards if it is still wanted. The simulated ladder keeps the particle at every stage, but 1.8-2.0 mm starts from beyond the estimated force maximum, so watch the return in the preview and stop when it becomes sluggish. Use run_large_step_all.ps1 or --hf-run LABEL=SCALE.",
+  "defaults": {
+    "sample_hz": 10000,
+    "duration_sec": 5.4,
+    "ramp_sec": 0.0,
+    "safety_limits": {
+      "max_offset_mm": 2.05,
+      "max_step_mm": 2.05,
+      "max_speed_mm_s": 100.0,
+      "max_acceleration_mm_s2": 28000.0
+    }
+  },
+  "experiments": [
+    {
+      "name": "largestep_XL12",
+      "kind": "staircase",
+      "tier": "D",
+      "axis": "x",
+      "duration_sec": 5.4,
+      "hold_sec": 0.4,
+      "initial_hold_sec": 0.5,
+      "final_hold_sec": 0.5,
+      "amplitudes_mm": [
+        1.2
+      ],
+      "directions": [
+        1,
+        -1
+      ],
+      "repeats_within_run": 3,
+      "repeats": 1,
+      "safety_limits": {
+        "max_offset_mm": 1.25,
+        "max_step_mm": 1.25,
+        "max_speed_mm_s": 100.0,
+        "max_acceleration_mm_s2": 28000.0
+      },
+      "campaign": "large_step_20260920",
+      "condition": "horizontal_saturation_x",
+      "reference": {
+        "plan": "NEXT_MEASUREMENTS_20260920.md item 3",
+        "stage": "XL12",
+        "axis": "x",
+        "step_mm": 1.2,
+        "source_file": "vzrstep_XL12_x1.2_z0.npz"
+      },
+      "note": "Horizontal force ceiling: x only, 0 -> +1.2 -> 0 -> -1.2 -> 0 mm repeated 3 times. 13 holds of 0.4 s (0.5 s at each end), 12 jumps, 5.4 s. A single jump is 1.2 mm = 56% of the estimated 2.144 mm escape boundary; the command never jumps from +1.2 to -1.2. Below 1 mm only the product k = ar*vxr is identifiable, so this ladder separates the saturation length vxr and gives the force ceiling A_r = k/vxr. First step of the ladder; 1.2 mm is close to amplitudes already recorded with the particle retained. Record the ladder from the smallest step upwards and stop where the particle returns sluggishly - that itself is the answer.",
+      "enabled": true
+    },
+    {
+      "name": "largestep_XL15",
+      "kind": "staircase",
+      "tier": "E",
+      "axis": "x",
+      "duration_sec": 5.4,
+      "hold_sec": 0.4,
+      "initial_hold_sec": 0.5,
+      "final_hold_sec": 0.5,
+      "amplitudes_mm": [
+        1.5
+      ],
+      "directions": [
+        1,
+        -1
+      ],
+      "repeats_within_run": 3,
+      "repeats": 1,
+      "safety_limits": {
+        "max_offset_mm": 1.55,
+        "max_step_mm": 1.55,
+        "max_speed_mm_s": 100.0,
+        "max_acceleration_mm_s2": 28000.0
+      },
+      "campaign": "large_step_20260920",
+      "condition": "horizontal_saturation_x",
+      "reference": {
+        "plan": "NEXT_MEASUREMENTS_20260920.md item 3",
+        "stage": "XL15",
+        "axis": "x",
+        "step_mm": 1.5,
+        "source_file": "vzrstep_XL15_x1.5_z0.npz"
+      },
+      "note": "Horizontal force ceiling: x only, 0 -> +1.5 -> 0 -> -1.5 -> 0 mm repeated 3 times. 13 holds of 0.4 s (0.5 s at each end), 12 jumps, 5.4 s. A single jump is 1.5 mm = 70% of the estimated 2.144 mm escape boundary; the command never jumps from +1.5 to -1.5. Below 1 mm only the product k = ar*vxr is identifiable, so this ladder separates the saturation length vxr and gives the force ceiling A_r = k/vxr. The saturation length separates from the product k = ar*vxr from about 1.5 mm. Record the ladder from the smallest step upwards and stop where the particle returns sluggishly - that itself is the answer.",
+      "enabled": true
+    },
+    {
+      "name": "largestep_XL18",
+      "kind": "staircase",
+      "tier": "F",
+      "axis": "x",
+      "duration_sec": 5.4,
+      "hold_sec": 0.4,
+      "initial_hold_sec": 0.5,
+      "final_hold_sec": 0.5,
+      "amplitudes_mm": [
+        1.8
+      ],
+      "directions": [
+        1,
+        -1
+      ],
+      "repeats_within_run": 3,
+      "repeats": 1,
+      "safety_limits": {
+        "max_offset_mm": 1.85,
+        "max_step_mm": 1.85,
+        "max_speed_mm_s": 100.0,
+        "max_acceleration_mm_s2": 28000.0
+      },
+      "campaign": "large_step_20260920",
+      "condition": "horizontal_saturation_x",
+      "reference": {
+        "plan": "NEXT_MEASUREMENTS_20260920.md item 3",
+        "stage": "XL18",
+        "axis": "x",
+        "step_mm": 1.8,
+        "source_file": "vzrstep_XL18_x1.8_z0.npz"
+      },
+      "note": "Horizontal force ceiling: x only, 0 -> +1.8 -> 0 -> -1.8 -> 0 mm repeated 3 times. 13 holds of 0.4 s (0.5 s at each end), 12 jumps, 5.4 s. A single jump is 1.8 mm = 84% of the estimated 2.144 mm escape boundary; the command never jumps from +1.8 to -1.8. Below 1 mm only the product k = ar*vxr is identifiable, so this ladder separates the saturation length vxr and gives the force ceiling A_r = k/vxr. Only after L15 looks healthy; the particle starts from beyond the estimated force maximum. Record the ladder from the smallest step upwards and stop where the particle returns sluggishly - that itself is the answer.",
+      "enabled": true
+    },
+    {
+      "name": "largestep_XL20",
+      "kind": "staircase",
+      "tier": "G",
+      "axis": "x",
+      "duration_sec": 5.4,
+      "hold_sec": 0.4,
+      "initial_hold_sec": 0.5,
+      "final_hold_sec": 0.5,
+      "amplitudes_mm": [
+        2.0
+      ],
+      "directions": [
+        1,
+        -1
+      ],
+      "repeats_within_run": 3,
+      "repeats": 1,
+      "safety_limits": {
+        "max_offset_mm": 2.05,
+        "max_step_mm": 2.05,
+        "max_speed_mm_s": 100.0,
+        "max_acceleration_mm_s2": 28000.0
+      },
+      "campaign": "large_step_20260920",
+      "condition": "horizontal_saturation_x",
+      "reference": {
+        "plan": "NEXT_MEASUREMENTS_20260920.md item 3",
+        "stage": "XL20",
+        "axis": "x",
+        "step_mm": 2.0,
+        "source_file": "vzrstep_XL20_x2_z0.npz"
+      },
+      "note": "Horizontal force ceiling: x only, 0 -> +2 -> 0 -> -2 -> 0 mm repeated 3 times. 13 holds of 0.4 s (0.5 s at each end), 12 jumps, 5.4 s. A single jump is 2 mm = 93% of the estimated 2.144 mm escape boundary; the command never jumps from +2 to -2. Below 1 mm only the product k = ar*vxr is identifiable, so this ladder separates the saturation length vxr and gives the force ceiling A_r = k/vxr. Largest step of the ladder. 2.0 mm on x was recorded with the particle retained in August. Record the ladder from the smallest step upwards and stop where the particle returns sluggishly - that itself is the answer.",
+      "enabled": true
+    },
+    {
+      "name": "largestep_YL12",
+      "kind": "staircase",
+      "tier": "D",
+      "axis": "y",
+      "duration_sec": 5.4,
+      "hold_sec": 0.4,
+      "initial_hold_sec": 0.5,
+      "final_hold_sec": 0.5,
+      "amplitudes_mm": [
+        1.2
+      ],
+      "directions": [
+        1,
+        -1
+      ],
+      "repeats_within_run": 3,
+      "repeats": 1,
+      "safety_limits": {
+        "max_offset_mm": 1.25,
+        "max_step_mm": 1.25,
+        "max_speed_mm_s": 100.0,
+        "max_acceleration_mm_s2": 28000.0
+      },
+      "campaign": "large_step_20260920",
+      "condition": "horizontal_saturation_y",
+      "reference": {
+        "plan": "NEXT_MEASUREMENTS_20260920.md item 3",
+        "stage": "YL12",
+        "axis": "y",
+        "step_mm": 1.2,
+        "source_file": "vzrstep_YL12_y1.2_z0.npz"
+      },
+      "note": "Horizontal force ceiling: y only, 0 -> +1.2 -> 0 -> -1.2 -> 0 mm repeated 3 times. 13 holds of 0.4 s (0.5 s at each end), 12 jumps, 5.4 s. A single jump is 1.2 mm = 56% of the estimated 2.144 mm escape boundary; the command never jumps from +1.2 to -1.2. Below 1 mm only the product k = ar*vxr is identifiable, so this ladder separates the saturation length vxr and gives the force ceiling A_r = k/vxr. First step of the ladder; 1.2 mm is close to amplitudes already recorded with the particle retained. Record the ladder from the smallest step upwards and stop where the particle returns sluggishly - that itself is the answer.",
+      "enabled": true
+    },
+    {
+      "name": "largestep_YL15",
+      "kind": "staircase",
+      "tier": "E",
+      "axis": "y",
+      "duration_sec": 5.4,
+      "hold_sec": 0.4,
+      "initial_hold_sec": 0.5,
+      "final_hold_sec": 0.5,
+      "amplitudes_mm": [
+        1.5
+      ],
+      "directions": [
+        1,
+        -1
+      ],
+      "repeats_within_run": 3,
+      "repeats": 1,
+      "safety_limits": {
+        "max_offset_mm": 1.55,
+        "max_step_mm": 1.55,
+        "max_speed_mm_s": 100.0,
+        "max_acceleration_mm_s2": 28000.0
+      },
+      "campaign": "large_step_20260920",
+      "condition": "horizontal_saturation_y",
+      "reference": {
+        "plan": "NEXT_MEASUREMENTS_20260920.md item 3",
+        "stage": "YL15",
+        "axis": "y",
+        "step_mm": 1.5,
+        "source_file": "vzrstep_YL15_y1.5_z0.npz"
+      },
+      "note": "Horizontal force ceiling: y only, 0 -> +1.5 -> 0 -> -1.5 -> 0 mm repeated 3 times. 13 holds of 0.4 s (0.5 s at each end), 12 jumps, 5.4 s. A single jump is 1.5 mm = 70% of the estimated 2.144 mm escape boundary; the command never jumps from +1.5 to -1.5. Below 1 mm only the product k = ar*vxr is identifiable, so this ladder separates the saturation length vxr and gives the force ceiling A_r = k/vxr. The saturation length separates from the product k = ar*vxr from about 1.5 mm. Record the ladder from the smallest step upwards and stop where the particle returns sluggishly - that itself is the answer.",
+      "enabled": true
+    },
+    {
+      "name": "largestep_YL18",
+      "kind": "staircase",
+      "tier": "F",
+      "axis": "y",
+      "duration_sec": 5.4,
+      "hold_sec": 0.4,
+      "initial_hold_sec": 0.5,
+      "final_hold_sec": 0.5,
+      "amplitudes_mm": [
+        1.8
+      ],
+      "directions": [
+        1,
+        -1
+      ],
+      "repeats_within_run": 3,
+      "repeats": 1,
+      "safety_limits": {
+        "max_offset_mm": 1.85,
+        "max_step_mm": 1.85,
+        "max_speed_mm_s": 100.0,
+        "max_acceleration_mm_s2": 28000.0
+      },
+      "campaign": "large_step_20260920",
+      "condition": "horizontal_saturation_y",
+      "reference": {
+        "plan": "NEXT_MEASUREMENTS_20260920.md item 3",
+        "stage": "YL18",
+        "axis": "y",
+        "step_mm": 1.8,
+        "source_file": "vzrstep_YL18_y1.8_z0.npz"
+      },
+      "note": "Horizontal force ceiling: y only, 0 -> +1.8 -> 0 -> -1.8 -> 0 mm repeated 3 times. 13 holds of 0.4 s (0.5 s at each end), 12 jumps, 5.4 s. A single jump is 1.8 mm = 84% of the estimated 2.144 mm escape boundary; the command never jumps from +1.8 to -1.8. Below 1 mm only the product k = ar*vxr is identifiable, so this ladder separates the saturation length vxr and gives the force ceiling A_r = k/vxr. Only after L15 looks healthy; the particle starts from beyond the estimated force maximum. Record the ladder from the smallest step upwards and stop where the particle returns sluggishly - that itself is the answer.",
+      "enabled": true
+    },
+    {
+      "name": "largestep_YL20",
+      "kind": "staircase",
+      "tier": "G",
+      "axis": "y",
+      "duration_sec": 5.4,
+      "hold_sec": 0.4,
+      "initial_hold_sec": 0.5,
+      "final_hold_sec": 0.5,
+      "amplitudes_mm": [
+        2.0
+      ],
+      "directions": [
+        1,
+        -1
+      ],
+      "repeats_within_run": 3,
+      "repeats": 1,
+      "safety_limits": {
+        "max_offset_mm": 2.05,
+        "max_step_mm": 2.05,
+        "max_speed_mm_s": 100.0,
+        "max_acceleration_mm_s2": 28000.0
+      },
+      "campaign": "large_step_20260920",
+      "condition": "horizontal_saturation_y",
+      "reference": {
+        "plan": "NEXT_MEASUREMENTS_20260920.md item 3",
+        "stage": "YL20",
+        "axis": "y",
+        "step_mm": 2.0,
+        "source_file": "vzrstep_YL20_y2_z0.npz"
+      },
+      "note": "Horizontal force ceiling: y only, 0 -> +2 -> 0 -> -2 -> 0 mm repeated 3 times. 13 holds of 0.4 s (0.5 s at each end), 12 jumps, 5.4 s. A single jump is 2 mm = 93% of the estimated 2.144 mm escape boundary; the command never jumps from +2 to -2. Below 1 mm only the product k = ar*vxr is identifiable, so this ladder separates the saturation length vxr and gives the force ceiling A_r = k/vxr. Largest step of the ladder. 2.0 mm on x was recorded with the particle retained in August. Record the ladder from the smallest step upwards and stop where the particle returns sluggishly - that itself is the answer.",
+      "enabled": true
+    }
+  ]
+}
