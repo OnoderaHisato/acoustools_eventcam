@@ -208,6 +208,44 @@ class UnevenScheduleTests(unittest.TestCase):
             )
             self.assertEqual(session["schedule"]["start_offsets_sec"], [0.0, None, 2400.0, None])
 
+    def test_the_particle_is_checked_right_after_sound_on_before_waiting(self) -> None:
+        with TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            export_dir = write_export(root)
+            argv = [
+                "--hf-export-dir", str(export_dir), "--output-dir", str(root / "rec"),
+                "--hf-run", "kx=1", "--hf-run", "kz=1",
+                "--acknowledge-step-response-risk", "--unattended-after-first-checkpoint",
+                "--schedule-offsets-sec", "300,",      # first run only at 5 minutes
+            ]
+            clock = FakeClock(SOUND_ON_SEC + 30.0)
+            result, events, starts = run_main(argv, clock=clock, run_seconds=50.0)
+            self.assertEqual(result, 0)
+            events.preview.assert_called_once()
+            # The preview came at t = 30 s, before the wait; the first run then started at 5 min.
+            self.assertEqual([s - SOUND_ON_SEC for s in starts], [300, 350])
+            self.assertFalse(any(c.kwargs["prompt_before_capture"] for c in events.record.call_args_list))
+            session = json.loads(next((root / "rec").glob("auto_recording_session_*.json")).read_text(encoding="utf-8"))
+            self.assertTrue(session["initial_particle_checkpoint"]["accepted"])
+            self.assertAlmostEqual(session["initial_particle_checkpoint"]["minutes_after_sound_on"], 0.5)
+
+    def test_aborting_the_particle_check_records_nothing(self) -> None:
+        with TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            export_dir = write_export(root)
+            argv = [
+                "--hf-export-dir", str(export_dir), "--output-dir", str(root / "rec"),
+                "--hf-run", "kx=1",
+                "--acknowledge-step-response-risk", "--unattended-after-first-checkpoint",
+                "--schedule-offsets-sec", "300",
+            ]
+            result, events, _starts = run_main(argv, clock=FakeClock(SOUND_ON_SEC), preview_accepted=False)
+            self.assertEqual(result, 130)
+            events.record.assert_not_called()
+            events.close_hw.assert_called_once()
+            session = json.loads(next((root / "rec").glob("auto_recording_session_*.json")).read_text(encoding="utf-8"))
+            self.assertEqual(session["status"], "interrupted")
+
     def test_offsets_require_unattended_and_exclude_the_interval_form(self) -> None:
         with TemporaryDirectory() as temporary:
             root = Path(temporary)

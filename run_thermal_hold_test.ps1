@@ -9,7 +9,8 @@ kcheck x / y / z every 5 minutes for 60 minutes with the particle held and no tr
    matches ff_heart_plan.json.
 2. Runs the hardware-free dry run.
 3. Opens PAT/OpenMPD once. The clock starts when PAT output starts (sound on). Confirm the
-   FIRST run in the stereo preview and press Enter; group 0 (x, y, z) is recorded right away.
+   particle in the stereo preview right after sound on and press Enter; group 0 (x, y, z) is
+   recorded right away.
    Group g (g = 1, 2, ...) starts g x IntervalMin minutes after sound on. Between groups the
    particle is held at centre with PAT on (this counts as operating, not as rest).
    A failed capture asks "re-record? (Y/n)" (-Unattended re-records automatically instead).
@@ -48,10 +49,18 @@ param(
     [int]$AutomaticCaptureRetries = 2,
     [double]$CaptureTailMarginSec = 5.0,
     [switch]$KeepFailedCaptures,
+    # Log the PAT supply (Kikusui PWR801L) during the session: -PsuUsb finds it on USB (needs a
+    # VISA library such as KI-VISA), -PsuResource names a VISA resource, -PsuHost uses the LAN.
+    # The logger is read-only and is started before PAT opens. See PSU_LOGGING_JP.md.
+    [switch]$PsuUsb,
+    [string]$PsuResource = "",
+    [string]$PsuHost = "",
+    [double]$PsuIntervalSec = 1.0,
     [switch]$DryRunOnly
 )
 
 $ErrorActionPreference = "Stop"
+. (Join-Path $PSScriptRoot "psu_logging.ps1")
 Set-Location -LiteralPath $PSScriptRoot
 
 $python = ".\venv\Scripts\python.exe"
@@ -172,9 +181,18 @@ Write-Host "[THERMAL] Check before starting:"
 Write-Host "  - The power supply is set to $voltageText V and the boards are cold (45 min or more of rest or power off)."
 Write-Host "  - Read the supply current right after the sound starts and at every group (thermal log)."
 Write-Host "  - Temperature sensors stay outside the acoustic field."
-Write-Host "[THERMAL] Opening PAT and cameras. The clock starts now (sound on). Confirm the FIRST run in the stereo preview and press Enter."
-& $python .\acoustools_stereo_eventcam_3d_recording_auto.py @recordArgs --acknowledge-step-response-risk
-$code = $LASTEXITCODE
+Write-Host "[THERMAL] Opening PAT. The clock starts now (sound on): levitate the particle, confirm it in the stereo preview and press Enter."
+$psuTarget = Get-PsuTargetArgs -Usb:$PsuUsb -Resource $PsuResource -HostName $PsuHost
+$psuLogger = Start-PsuLogger -Python $python -OutputDir $OutputDir -TargetArgs $psuTarget -IntervalSec $PsuIntervalSec
+if ($null -ne $psuLogger) { $recordArgs += @("--psu-log", $psuLogger.Log) }
+try {
+    & $python .\acoustools_stereo_eventcam_3d_recording_auto.py @recordArgs --acknowledge-step-response-risk
+    $code = $LASTEXITCODE
+}
+finally {
+    Stop-PsuLogger $psuLogger
+    Write-PsuReport -Python $python -OutputDir $OutputDir -Logger $psuLogger
+}
 if ($code -eq 0) {
     Write-Host "[THERMAL] All groups were recorded. Output: $OutputDir"
 }

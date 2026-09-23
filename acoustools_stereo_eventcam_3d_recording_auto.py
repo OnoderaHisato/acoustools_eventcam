@@ -23,6 +23,7 @@ from stereo_acoustools_3d_auto_common import (
     select_conditions,
     write_preview_set,
 )
+from psu_run_link import attach_supply_record
 from stereo_acoustools_3d_common import PROCESSING_CONFIG_FIELDS, atomic_write_json
 from stereo_acoustools_3d_hf_common import (
     hf_run_selections,
@@ -38,6 +39,7 @@ from stereo_acoustools_3d_recording_core import (
     build_recording_parser,
     open_recording_hardware_session,
     precompute_hologram_playback,
+    run_particle_preview,
     run_recording,
     safe_run_dir_base,
     shutdown_recording_hardware_session,
@@ -47,6 +49,17 @@ from stereo_acoustools_3d_recording_core import (
 DEFAULT_AUTOMATIC_CAPTURE_RETRIES = 2
 MAX_AUTOMATIC_CAPTURE_RETRIES = 10
 SCHEDULE_STATUS_INTERVAL_SEC = 30.0
+
+
+def record_supply_in_manifest(run_dir: Path, supply: dict[str, Any]) -> None:
+    """Add the supply summary to a run this session just recorded (never fails the run)."""
+    manifest_path = run_dir / "pipeline_manifest.json"
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        manifest["supply"] = supply
+        atomic_write_json(manifest_path, manifest)
+    except Exception as exc:  # noqa: BLE001
+        print(f"[AUTO][PSU][WARN] could not add the supply summary to {manifest_path}: {exc}")
 
 
 def voltage_tag(volts: float) -> str:
@@ -257,6 +270,18 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
             "recorded in every run and appended to the run directory name "
             "(for example 15 -> ..._scale100_V15_<time>) so that runs at different "
             "voltages are never mixed. The voltage itself is set on the power supply."
+        ),
+    )
+    parser.add_argument(
+        "--psu-log",
+        type=Path,
+        default=None,
+        metavar="CSV",
+        help=(
+            "Supply log being written by pwr01_logger.py. When a run finishes, the rows that "
+            "cover it are copied to <run>/supply_log.csv and summarised in pipeline_manifest.json "
+            "(\"supply\": means, extremes, output state, current drops such as a fuse trip). Only "
+            "the CSV is read; the supply itself is not contacted."
         ),
     )
     parser.add_argument(
@@ -1179,6 +1204,7 @@ def main(argv: list[str] | None = None) -> int:
             session["prompt_on_capture_failure"] = prompt_on_capture_failure
             session["supply_voltage_V"] = supply_voltage
             session["run_label_tag"] = run_tag
+            session["psu_log"] = "" if args.psu_log is None else str(args.psu_log.resolve())
             session["schedule"] = (
                 {
                     "interval_sec": schedule_interval_sec,
@@ -1246,6 +1272,44 @@ def main(argv: list[str] | None = None) -> int:
             unattended_run_number = 0
             run_index = -1
             sound_on_wall_ns = getattr(hardware_session, "active_output_started_wall_ns", None)
+            if unattended and (schedule_offsets is not None or schedule_interval_sec is not None):
+                # With a timed schedule the first run may be many minutes away; confirm the
+                # particle now, before the clock is spent waiting, and let the runs start on
+                # time without anyone at the keyboard.
+                print(
+                    "\n[AUTO][SCHEDULE] PAT output is on and the clock has started. Levitate the "
+                    "particle, confirm it in the stereo preview and press Enter. Q/Esc aborts "
+                    "the session before anything is recorded.",
+                    flush=True,
+                )
+                try:
+                    accepted = run_particle_preview(args)
+                except KeyboardInterrupt:
+                    accepted = False
+                checked_at = time.time()
+                session["initial_particle_checkpoint"] = {
+                    "accepted": bool(accepted),
+                    "at": dt.datetime.fromtimestamp(checked_at).isoformat(timespec="seconds"),
+                    "minutes_after_sound_on": (
+                        None if sound_on_wall_ns is None
+                        else round((checked_at - sound_on_wall_ns / 1e9) / 60.0, 2)
+                    ),
+                }
+                atomic_write_json(session_path, session)
+                if not accepted:
+                    session["status"] = "interrupted"
+                    session["finished_at"] = dt.datetime.now().isoformat(timespec="milliseconds")
+                    atomic_write_json(session_path, session)
+                    print("[AUTO] Particle check aborted; nothing was recorded.")
+                    return 130
+                first_checkpoint_pending = False
+                print(
+                    "[AUTO][SCHEDULE] Particle confirmed "
+                    f"{session['initial_particle_checkpoint']['minutes_after_sound_on']} min after "
+                    "sound on. The runs now start on the schedule without further prompts "
+                    "(except any --checkpoint-run-numbers).",
+                    flush=True,
+                )
             for condition in conditions:
                 for repeat_index in range(condition.repeat):
                     run_index += 1
@@ -1477,6 +1541,20 @@ def main(argv: list[str] | None = None) -> int:
                     prepared_playback = None
                     if code == 0:
                         first_checkpoint_pending = False
+                    supply_record = None
+                    if args.psu_log is not None:
+                        supply_record = attach_supply_record(
+                            run_dir if code == 0 else None,
+                            args.psu_log,
+                            run_started_wall,
+                            time.time(),
+                            None if sound_on_wall_ns is None else sound_on_wall_ns / 1e9,
+                        )
+                        if code == 0 and run_dir is not None:
+                            record_supply_in_manifest(Path(run_dir), supply_record)
+                        for event in supply_record.get("events", []):
+                            if event["kind"] in {"output_off", "current_drop", "log_gap"}:
+                                print(f"[AUTO][PSU][WARN] {condition.label}: {event}")
                     session["runs"].append(
                         {
                             **run_automation_metadata,
@@ -1494,6 +1572,7 @@ def main(argv: list[str] | None = None) -> int:
                                 ).items()
                             },
                             "finished_at": dt.datetime.now().isoformat(timespec="milliseconds"),
+                            **({} if supply_record is None else {"supply": supply_record}),
                         }
                     )
                     atomic_write_json(session_path, session)

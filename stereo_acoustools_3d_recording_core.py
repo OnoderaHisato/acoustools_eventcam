@@ -420,6 +420,22 @@ def set_recording_drive_amplitude(
     print(f"[PAT] Drive amplitude scale set to {scale:.3f} before preview/capture.")
 
 
+def run_particle_preview(args: argparse.Namespace, instruction_text: str = "") -> bool:
+    """Show the stereo preview on its own (PAT keeps the particle at the current trap).
+
+    The same preview a run shows before capture; used by the auto entry to confirm the
+    particle right after sound on, before a timed schedule starts waiting.
+    """
+    return bool(stereo_record.run_preview(
+        left_serial=str(args.left_serial), right_serial=str(args.right_serial),
+        sensor_width=1280, sensor_height=720,
+        delta_t_us=int(args.preview_delta_t_us), display_scale=float(args.preview_scale),
+        point_size=1, reopen_wait_sec=1.0,
+        instruction_text=instruction_text
+        or "Enter: particle is levitated and visible in both cameras    R: refresh    Q/Esc: abort",
+    ))
+
+
 def open_recording_hardware_session(
     *,
     initial_hologram: torch.Tensor | None = None,

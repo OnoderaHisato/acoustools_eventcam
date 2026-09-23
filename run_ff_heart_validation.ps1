@@ -85,10 +85,18 @@ param(
     # Keep the files of a failed capture (LED count plot, recorder metadata) for diagnosis.
     [switch]$KeepFailedCaptures,
     [switch]$Regenerate,
+    # Log the PAT supply (Kikusui PWR801L) during the session: -PsuUsb finds it on USB (needs a
+    # VISA library such as KI-VISA), -PsuResource names a VISA resource, -PsuHost uses the LAN.
+    # The logger is read-only and is started before PAT opens. See PSU_LOGGING_JP.md.
+    [switch]$PsuUsb,
+    [string]$PsuResource = "",
+    [string]$PsuHost = "",
+    [double]$PsuIntervalSec = 1.0,
     [switch]$DryRunOnly
 )
 
 $ErrorActionPreference = "Stop"
+. (Join-Path $PSScriptRoot "psu_logging.ps1")
 Set-Location -LiteralPath $PSScriptRoot
 
 $python = ".\venv\Scripts\python.exe"
@@ -334,8 +342,17 @@ if ($ConfirmEachRun) {
 else {
     Write-Host "[FF] Opening PAT and cameras. Confirm the FIRST run in the stereo preview and press Enter; the rest start automatically."
 }
-& $python .\acoustools_stereo_eventcam_3d_recording_auto.py @recordArgs @ackArgs
-$code = $LASTEXITCODE
+$psuTarget = Get-PsuTargetArgs -Usb:$PsuUsb -Resource $PsuResource -HostName $PsuHost
+$psuLogger = Start-PsuLogger -Python $python -OutputDir $OutputDir -TargetArgs $psuTarget -IntervalSec $PsuIntervalSec
+if ($null -ne $psuLogger) { $recordArgs += @("--psu-log", $psuLogger.Log) }
+try {
+    & $python .\acoustools_stereo_eventcam_3d_recording_auto.py @recordArgs @ackArgs
+    $code = $LASTEXITCODE
+}
+finally {
+    Stop-PsuLogger $psuLogger
+    Write-PsuReport -Python $python -OutputDir $OutputDir -Logger $psuLogger
+}
 if ($code -eq 0) {
     Write-Host "[FF] All selected runs were recorded. Output: $OutputDir"
 }

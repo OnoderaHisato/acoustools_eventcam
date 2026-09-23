@@ -76,13 +76,15 @@ def write_export(root: Path) -> Path:
     return root / "export"
 
 
-def run_main(argv: list[str], clock: FakeClock | None = None, run_seconds: float = 50.0):
+def run_main(argv: list[str], clock: FakeClock | None = None, run_seconds: float = 50.0,
+             preview_accepted: bool = True):
     events = mock.Mock()
     session = SimpleNamespace(
         current_pos=(0.0, 0.0, 0.0),
         active_output_started_wall_ns=int(SOUND_ON_SEC * 1e9),
     )
     events.open_hw.return_value = session
+    events.preview.return_value = preview_accepted
     events.precompute.return_value = SimpleNamespace(name="first-run-playback")
     starts: list[float] = []
 
@@ -98,6 +100,7 @@ def run_main(argv: list[str], clock: FakeClock | None = None, run_seconds: float
         mock.patch.object(auto_record, "shutdown_recording_hardware_session", events.close_hw),
         mock.patch.object(auto_record, "precompute_hologram_playback", events.precompute),
         mock.patch.object(auto_record, "run_recording", events.record),
+        mock.patch.object(auto_record, "run_particle_preview", events.preview),
     ]
     if clock is not None:
         patches.append(mock.patch.object(auto_record, "time", clock))
@@ -161,9 +164,9 @@ class ScheduledSessionTests(unittest.TestCase):
                 self.assertAlmostEqual(
                     metadata["seconds_since_sound_on_at_run_start"], offsets[index], places=1
                 )
-            # Only the first run keeps the preview and Enter.
-            self.assertTrue(calls[0].kwargs["prompt_before_capture"])
-            self.assertFalse(any(c.kwargs["prompt_before_capture"] for c in calls[1:]))
+            # With a schedule the particle is confirmed once, right after sound on, and no run stops.
+            events.preview.assert_called_once()
+            self.assertFalse(any(c.kwargs["prompt_before_capture"] for c in calls))
 
             session = json.loads(
                 next(output_root.glob("auto_recording_session_*.json")).read_text(encoding="utf-8")

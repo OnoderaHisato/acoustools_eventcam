@@ -1,5 +1,30 @@
 # Project handoff
 
+## 2026-09-24: 時刻表つきの計測は、音を出した直後に粒子を確認してから待つ
+
+- **規模拡大セッションにも暖機を追加**（ユーザーの指摘。元は14 mmセッションの直後に続けて撮る前提で待ちが無かった）: `run_scaleup_20260924.ps1` に `-WarmupMin`（既定40）と `-SkipWarmupChecks`。既定では冷えた状態から、音を出した直後に粒子を確認し、5〜35分にkcheck x/z（14本）、40分からkcheck x/y/z →§3の順番（計45 run、確認は19本目のXL30と38本目の最初のa23）。`-SkipWarmupChecks` は31 runで最初が40分、`-WarmupMin 0` は従来どおり時刻表なしで最初のrunの前に確認。3通りのdry-runを確認。
+- ユーザーの指摘: 時刻表つき（`--schedule-offsets-sec`／`--schedule-interval-sec`）では、最初のrunが5分後（14 mmセッション）や40分後（`-SkipWarmupChecks`）なので、そのrunの前のプレビューまで粒子の確認ができず、浮いていなくても熱の時計だけが進んでいた。
+- 対応: 記録コアに `run_particle_preview(args)`（runの前と同じステレオプレビューを単独で出す）を追加。auto入口は、無人モードで時刻表があるとき、**PATを開いた直後にプレビューとEnterを出してから**待ちに入る。確認が済めば最初のrunの確認は省く（その時刻に人がいなくても進む。`--checkpoint-run-numbers` の追加の確認は従来どおり）。Q/Escで中止すると何も撮らずに終了コード130、sessionは `interrupted`。session JSONに `initial_particle_checkpoint`（`accepted`、時刻、音を出してからの分）。時刻表の無い一括スクリプト（規模拡大など）は従来どおり最初のrunの前で確認する。
+- `run_ff_heart_15v_session.ps1` と `run_thermal_hold_test.ps1` の案内文を更新。テスト: 新規2件（音を出して30秒で確認→5分の最初のrunまで待つ、中止なら記録しない）と、既存の時刻表テストの期待値を「どのrunも止まらない」に更新。対象スイート238件が成功。15 Vセッションのdry-run成功。PAT・カメラは開いていない。コミット・pushは行っていない。
+
+## 2026-09-24: 電源の記録を軌道計測と連携（runへの同梱、落ちたときの検出、定常の判定）
+
+- ユーザーとの相談の結果、**記録は別プロセスのまま、結果だけを各runへ添える**形にした（記録プロセス自身が電源へ問い合わせると、USBとKI-VISAの不具合を撮影のタイミングの厳しい処理へ持ち込むため。カメラ・PATとのミリ秒単位の同期も、電源の更新が25 msごと・読み取りが1 s・位相だけのホログラムで電流が軌道に依らないため不要）。用途は、計測中に落ちたときの事後検査と、電流が時間方向に定常になったかの確認。
+- 新規 `psu_run_link.py`: `load_psu_rows`（書き込み途中の最終行は無視）、`detect_events`（`current_drop` = **出力ONのまま**電流が直前30 sの中央値の半分未満。PAT基板のヒューズが働くと電源出力は切れず電流だけ落ちるため。`output_off`、5 s超の `log_gap`、`read_error`）、`summarize`、`attach_supply_record`（runの時間帯±5 sを `<run>/supply_log.csv` へ切り出し要約を返す。例外を出さない）、`steadiness`（5分平均。最後の30分の変化率と、以後ずっと最終値±1%に収まる時刻。ドロップ直後と出力OFFは除外）。
+- auto入口に `--psu-log`（CSVを読むだけ）。run終了時に要約を `pipeline_manifest.json` の `supply` と session JSONの各runへ（失敗して消えたrunもsession側に残す）、異常は `[AUTO][PSU][WARN]`。session JSONに `psu_log`。今後撮るrunにだけ書き、既存の計測成果物は触らない。
+- 新規 `psu_log_report.py`: セッションの図（電流・電圧 対 音を出してからの分、runの時間帯、異常の縦線、5分平均、落ち着いた時刻）と `.json`。上書きしない。4本の一括スクリプトは `-Psu…` 指定時に `--psu-log` を渡し、終了時（失敗含む）に `Write-PsuReport` で自動作成する。
+- 検証: 新規 `test_psu_run_link` 9件（ヒューズ相当の電流低下、出力OFFと途切れ、書き込み途中の行、落ち着く時刻と変化率、ドロップを定常判定から除くこと、runへの切り出しと要約、ログ無しでも例外にならないこと、auto入口で各runのmanifestとsession JSONに入ること、報告図と上書き防止）。実機の10秒ログから報告図を作成。PowerShellの構文検査。対象スイート236件が成功。`PSU_LOGGING_JP.md` に追記。PAT・カメラは開いていない。コミット・pushは行っていない。
+
+## 2026-09-24: PAT電源（菊水 PWR801L）の電圧・電流をUSBで自動記録
+
+- ユーザー要望（USB接続を希望）。通信仕様は PWR-01 Interface Manual で確認した: USBはUSBTMCで、VISAライブラリ（KI-VISA／NI-VISA／Keysight VISA）が必要（ドライバもそれが入れる、p.23）。PWR801Lは VID 0x0B3E／PID 0x104A。LANは SCPI-RAW でポート5025固定。`MEAS:ALL?` は「電流,電圧」をNR3で返し、電源は25 msごとに電圧と電流を交互に更新する（p.81）。リモート中はLOCAL以外のキーがロックされ、`SYST:COMM:RLST LOC` で戻る（p.175）。通信監視タイマー `OUTP:PROT:WDOG` は既定オフで、有効だと通信が途切れたとき出力が切れる（p.96）。
+- 新規 `pwr01_logger.py`: `--usb`（VISAでPWR-01を自動検出）／`--resource`／`--host`（LAN）、`--once`（接続確認）、`--list`、`--output`、`--interval`（既定1 s、最小0.1 s）、`--settings-interval`（出力状態・設定値を読む間隔、既定30 s）、`--stop-file`、`--duration`。**送れるのは許可リストの読み取りコマンドと `SYST:COMM:RLST LOC` だけ**（電圧・出力を変えるコマンドは送信前に拒否）。読むたびにパネルをLOCALへ戻す。起動時にWDOGを読み、有効なら起動しない。読み取り失敗は `error` 列に残して再接続し、記録を続ける。CSVの隣に `.meta.json`（機器名など）。
+- 新規 `psu_logging.ps1`（`Get-PsuTargetArgs`／`Start-PsuLogger`／`Stop-PsuLogger`）を、`run_thermal_hold_test.ps1`、`run_ff_heart_15v_session.ps1`、`run_scaleup_20260924.ps1`、`run_ff_heart_validation.ps1` からdot-sourceし、`-PsuUsb`／`-PsuResource`／`-PsuHost`／`-PsuIntervalSec` を追加した。PATを開く前に接続確認（`--once`、失敗ならPATを開かずに止まる）→ロガーを別プロセスで起動→記録の `try/finally` で停止ファイルを置いて終了させる。`-DryRunOnly` では電源に触れない。ログは出力先の `psu_log_<時刻>.csv`。
+- `thermal_log_prefill.py` は同じフォルダの `psu_log_*.csv`（または `--psu-log`）を読み、各runの `supply_V`／`supply_A` を「runフォルダの時刻からrun終了まで」の平均で埋め、1行目の備考に音を出した直後の電流、出力がON→OFFになった記録があれば `last_trip_at` を入れる。
+- venvへ `pyvisa` 1.16.2 を導入した。**ユーザーがKI-VISA 5.5.0.275（x64）をインストールし、実機のUSB接続を確認した**（読み取りのみ）: `USB0::0x0B3E::0x104A::CU000603::0::INSTR`、`KIKUSUI,PWR801L,CU000603,VER01.25 BLD0057`、PATが止まった状態で 14.9967 V・0.0496 A、出力ON、設定 15.000 V／49.2 A、WDOGオフ。10秒の試験記録と、`psu_logging.ps1` の開始・停止の通し（8行・エラー0・プロセスの残りなし）も成功した。
+- **KI-VISAの癖2つに対処**: (1) インストール前から動いているプロセスには `VXIPNPPATH` などの環境変数とPATHが届かず、VISAの初期化が `VI_ERROR_INV_OBJECT` で失敗する → `load_windows_visa_environment()` がレジストリのマシン環境から読み直す。(2) **KI-VISA 5.5.0.275（x64）はセッション番号が 2^31 以上だと必ず失敗し、未満なら必ず成功する**（ルーター経由でも `kivisa32.dll` 直接でも同じ。番号はプロセスごとにランダムで、プロセス内では不変。計28回の試行で例外なし）→ USBのときは子プロセス（`--visa-child`）で動かし、番号が悪ければ終了コード75で抜けて親が開き直す（最大20回）。一度つながれば同じプロセスでずっと使える。停止処理は `taskkill /T` で子ごと止める。テストを5件追加（高い番号の拒否、通常の番号、子プロセスでの再試行、他の失敗は再試行しない、LANは子を作らない）し、対象スイート227件が成功。
+- 検証: 新規 `test_pwr01_logger` 8件（応答の順序、許可リスト外の拒否、localhostの偽PWR-01を相手に `--once` とCSV記録・停止ファイル・送信コマンドが許可リスト内であること・最後にLOCALへ戻すこと、WDOG有効時の拒否、USB検出で菊水PWR-01だけを拾うこと、VISA不在時のエラー、記録用紙への電源値の統合）。PowerShell 5.1で偽サーバー相手に `Start-PsuLogger`／`Stop-PsuLogger` を実行（0.5 s間隔で12行、正常終了、停止ファイルの後片付け）、4本の一括スクリプトのdry-run、PSU指定の重複の拒否を確認。対象スイート222件が成功。手順書 `PSU_LOGGING_JP.md`、`THERMAL_15V_MEASUREMENT_JP.md` に追記。PAT・カメラは開いていない。電源へは読み取りの問い合わせだけを送った。コミット・pushは行っていない。
+
 ## 2026-09-24: 14 mm検証（15 V）の取り込みと、安全上限の引き上げ
 
 - **依頼元**: 解析側セッション（Macの「OptiTrap→PINNいけるか」）からのセッション間メッセージ。(A) 15 Vでの14 mm検証セッションの準備、(B) 規模拡大に向けた安全上限の引き上げとdry-run。**ユーザーが両方を承認したうえで実施**（他セッションの「ユーザー了承済み」は承認として扱っていない）。正本はG:の `Experiment/20260923/measurement_plan/ff_heart_15V/README_15V_SESSION.md` と `Experiment/20260924/SCALE_UP_PLAN_20260924.md`。

@@ -92,7 +92,10 @@ powershell -ExecutionPolicy Bypass -File .\run_ff_heart_15v_session.ps1 -DryRunO
 powershell -ExecutionPolicy Bypass -File .\run_ff_heart_15v_session.ps1
 ```
 
-- 冷えた状態（休止45分以上）から始め、電源は15 Vにしておきます。最初のrunだけpreviewとEnterです。
+- 冷えた状態（休止45分以上）から始め、電源は15 Vにしておきます。**PATを開いた直後（音を出した瞬間）に
+  プレビューが出るので、粒子を浮かせて両カメラに写っているのを確かめてEnter**を押します。以後は時刻表どおりに
+  自動で進み、runの前では止まりません（最初のrunが5分後でも、その時刻に人がいる必要はありません）。
+  プレビューをQ/Escで中止すると、何も撮らずに終了します。（2026-09-24変更。以前は最初のrunの前に確認していた）
 - 時計は音を出した瞬間から。各組は 5〜35分（暖機のkcheck x/z）、40分（kcheck x/y/z）、43分（走査1回目）、
   46分（ハート10 Hz 7本）、56分、58分（カーディオイド10 Hz 7本）、68分、70分（ハート7 Hz 5本）、
   77分（カーディオイド7 Hz 3本）、82分、85分（走査2回目）、95分 に始まります。合計52 run・約78 GB。
@@ -101,6 +104,12 @@ powershell -ExecutionPolicy Bypass -File .\run_ff_heart_15v_session.ps1
 - **フォルダ名**: 長さ制限（記述部28文字）のため、run名は短縮形です。解析側が使う目印は残しています。
   例 `feedforward_validation_017_cardioid_a5p4_f10_C_Ws4_scale100_V15_<時刻>`。完全な設計名は
   `pipeline_manifest.json` の `feedforward_design.design`（例 `C_delay_inverse_Ws4`）にあります。
+
+## 電源の電圧・電流の自動記録（2026-09-24追加）
+
+どのコマンドにも `-PsuUsb` を足すと、PAT電源（PWR801L）の電圧・電流をUSBで1秒ごとに記録し、
+`thermal_log_prefill.py` が各runの `supply_V`／`supply_A` を自動で埋めます。初回はKI-VISAの導入が必要です。
+手順は `PSU_LOGGING_JP.md` を参照してください。
 
 ## 注意
 

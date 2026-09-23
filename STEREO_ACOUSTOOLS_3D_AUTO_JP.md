@@ -152,7 +152,10 @@ powershell -ExecutionPolicy Bypass -File .\run_scaleup_20260924.ps1
 ```
 
 - 順番は計画書§3のとおり（kcheck → XL25 →（確認）XL30 → R28走査 → kcheck → a10の5本 → a17の5本 →
-  kcheck →（確認）a23の5本 → kcheck）。落ち着いてから（15 Vで約40分稼働後）始めます。
+  kcheck →（確認）a23の5本 → kcheck）。
+- **暖機（既定40分）**: 冷えた状態から始め、PATを開いた直後に粒子を確認してEnter、その後 `-WarmupMin`（既定40）分
+  待ってから§3の順番を始めます。暖機中は5分ごとにkcheck x/zを撮ります（`-SkipWarmupChecks` で省略）。
+  14 mmセッションの直後で板が温まっているときは `-WarmupMin 0` ですぐ始めます（最初のrunの前で確認）。
 - `--checkpoint-run-numbers`（新規）で、無人モードでも指定したrunの前だけpreviewとEnterを入れます。
   既定では**3.0 mmステップの前**と**60 mmカーディオイドの前**で止まります。
 - `-Sizes`、`-SkipLargeSteps`、`-SkipScan`、`-IncludeExtraDesigns`（A_delayとOT_identも撮る）。
