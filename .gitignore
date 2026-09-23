@@ -87,6 +87,22 @@
 !/ff_heart_20260918/*.md
 !/ff_heart_20260918/*.json
 
+# 14 mm session at the 15 V operating point (2026-09-24). Same rule: the plan and the
+# notes are tracked, source/*.npz and export_ff_heart_15v/ stay ignored.
+!/ff_heart_15v_20260923/
+!/ff_heart_15v_20260923/*.py
+!/ff_heart_15v_20260923/*.md
+!/ff_heart_15v_20260923/*.json
+
+# Scale-up campaign (2026-09-24): 26 / 44 / 60 mm cardioids, the 28 mm scan and the
+# 2.5 / 3.0 mm steps. Plan and notes tracked; source/*.npz and the exports stay ignored.
+!/scaleup_20260924/
+!/scaleup_20260924/*.py
+!/scaleup_20260924/*.md
+!/scaleup_20260924/*.json
+!/large_step_20260924/
+!/large_step_20260924/*.md
+
 # Standalone camera-only code and instructions; keep SDKs/captures/calibration outputs ignored.
 !/eventcam_standalone/
 !/eventcam_standalone/.gitignore

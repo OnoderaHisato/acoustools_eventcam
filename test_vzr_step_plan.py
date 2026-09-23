@@ -150,10 +150,22 @@ class MultiAxisStaircaseGenerationTests(unittest.TestCase):
             hf.generate_trajectory(_spec(SMALL_BLOCK), _defaults(max_offset_mm=1.2, max_step_mm=0.85))
         hf.generate_trajectory(_spec(SMALL_BLOCK), _defaults(max_offset_mm=0.95, max_step_mm=0.95))
 
-    def test_escape_boundary_applies_to_diagonal_jumps(self) -> None:
-        levels = [[1.6, 0.0, 1.5], [0.0, 0.0, 0.0]]
-        with self.assertRaisesRegex(ValueError, "escape boundary"):
-            hf.generate_trajectory(_spec(levels), _defaults(max_offset_mm=3.0, max_step_mm=3.0))
+    def test_the_jump_cap_applies_to_the_diagonal_magnitude(self) -> None:
+        """The check uses the vector magnitude, not the per-axis step (cap raised 2026-09-24)."""
+        # sqrt(1.6^2 + 1.5^2) = 2.193 mm: past lambda/4, reported but no longer rejected.
+        _offset, metadata = hf.generate_trajectory(
+            _spec([[1.6, 0.0, 1.5], [0.0, 0.0, 0.0]]),
+            _defaults(max_offset_mm=3.0, max_step_mm=3.0),
+        )
+        safety = metadata["generation_detail"]["safety"]
+        self.assertAlmostEqual(safety["max_step_mm"], (1.6 ** 2 + 1.5 ** 2) ** 0.5, places=6)
+        self.assertTrue(safety["escape_boundary_exceeded"])
+        # sqrt(2.4^2 + 2.2^2) = 3.256 mm is past the 3.2 mm hard cap.
+        with self.assertRaisesRegex(ValueError, "exceeds the hard cap"):
+            hf.generate_trajectory(
+                _spec([[2.4, 0.0, 2.2], [0.0, 0.0, 0.0]]),
+                _defaults(max_offset_mm=3.4, max_step_mm=3.4),
+            )
 
     def test_invalid_level_sequences_are_rejected(self) -> None:
         cases = {

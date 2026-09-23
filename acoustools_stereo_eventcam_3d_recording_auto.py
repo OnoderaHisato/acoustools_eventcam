@@ -62,6 +62,33 @@ def tag_trajectory_label(trajectory: Any, tag: str) -> Any:
     return dataclasses.replace(trajectory, run_label=f"{trajectory.run_label}_{tag}")
 
 
+def parse_schedule_offsets(text: str, run_count: int) -> list[float | None]:
+    """Parse --schedule-offsets-sec: one entry per run, blank meaning 'no wait'."""
+    entries = [item.strip() for item in str(text).split(",")]
+    if len(entries) != run_count:
+        raise ValueError(
+            f"--schedule-offsets-sec has {len(entries)} entr(ies) but {run_count} run(s) "
+            "are selected; give one value per run (an empty entry means no wait)"
+        )
+    offsets: list[float | None] = []
+    previous = -math.inf
+    for index, entry in enumerate(entries):
+        if not entry:
+            offsets.append(None)
+            continue
+        value = float(entry)
+        if not math.isfinite(value) or value < 0.0:
+            raise ValueError(f"--schedule-offsets-sec entry {index + 1} must be finite and >= 0")
+        if value < previous:
+            raise ValueError(
+                f"--schedule-offsets-sec entry {index + 1} ({value:g} s) is earlier than an "
+                "earlier entry; the offsets must not go backwards"
+            )
+        previous = value
+        offsets.append(value)
+    return offsets
+
+
 def scheduled_group_offset_sec(
     run_index: int, group_size: int, interval_sec: float
 ) -> float | None:
@@ -250,6 +277,29 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default=1,
         metavar="N",
         help="Number of consecutive runs per scheduled group (default 1).",
+    )
+    parser.add_argument(
+        "--checkpoint-run-numbers",
+        default="",
+        metavar="LIST",
+        help=(
+            "With --unattended-after-first-checkpoint: also stop for a stereo preview and Enter "
+            "before these runs, given as 1-based positions in the selected order (for example "
+            "'5,17'). Use it where the plan says to confirm that the particle survived before "
+            "the next, larger command."
+        ),
+    )
+    parser.add_argument(
+        "--schedule-offsets-sec",
+        default=None,
+        metavar="LIST",
+        help=(
+            "With --unattended-after-first-checkpoint: an explicit start time per selected "
+            "run, in seconds after PAT output started (sound on), comma separated and in the "
+            "run order. An empty entry starts that run as soon as the previous one finishes "
+            "(for example '0,,,2400,,'). Use this for a schedule with uneven gaps; "
+            "--schedule-interval-sec covers the evenly spaced case."
+        ),
     )
     parser.add_argument(
         "--automatic-capture-retries",
@@ -735,6 +785,42 @@ def main(argv: list[str] | None = None) -> int:
             )
         schedule_interval_sec: float | None = None
         schedule_group_size = int(args.schedule_group_size)
+        checkpoint_run_numbers: set[int] = set()
+        if str(args.checkpoint_run_numbers).strip():
+            if not unattended:
+                raise ValueError(
+                    "--checkpoint-run-numbers requires --unattended-after-first-checkpoint"
+                )
+            for item in str(args.checkpoint_run_numbers).split(","):
+                if not item.strip():
+                    continue
+                number = int(item)
+                if not 1 <= number <= len(conditions):
+                    raise ValueError(
+                        f"--checkpoint-run-numbers: {number} is outside 1..{len(conditions)}"
+                    )
+                checkpoint_run_numbers.add(number)
+            print(
+                "[AUTO] Extra preview/Enter checkpoints before run(s) "
+                + ", ".join(str(number) for number in sorted(checkpoint_run_numbers))
+            )
+        schedule_offsets: list[float | None] | None = None
+        if args.schedule_offsets_sec is not None:
+            if not unattended:
+                raise ValueError(
+                    "--schedule-offsets-sec requires --unattended-after-first-checkpoint"
+                )
+            if args.schedule_interval_sec is not None:
+                raise ValueError(
+                    "--schedule-offsets-sec cannot be combined with --schedule-interval-sec"
+                )
+            schedule_offsets = parse_schedule_offsets(args.schedule_offsets_sec, len(conditions))
+            timed = [value for value in schedule_offsets if value is not None]
+            print(
+                f"[AUTO][SCHEDULE] {len(timed)} of {len(conditions)} run(s) start at a fixed time "
+                f"after PAT output starts (sound on); the last one at "
+                f"{(max(timed) / 60.0 if timed else 0.0):.1f} min. The others follow immediately."
+            )
         if args.schedule_interval_sec is not None:
             if not unattended:
                 raise ValueError(
@@ -1094,13 +1180,18 @@ def main(argv: list[str] | None = None) -> int:
             session["supply_voltage_V"] = supply_voltage
             session["run_label_tag"] = run_tag
             session["schedule"] = (
-                None
-                if schedule_interval_sec is None
-                else {
+                {
                     "interval_sec": schedule_interval_sec,
                     "group_size": schedule_group_size,
                     "anchor": "PAT output start (sound on, active_output_started_wall_ns)",
                 }
+                if schedule_interval_sec is not None
+                else {
+                    "start_offsets_sec": schedule_offsets,
+                    "anchor": "PAT output start (sound on, active_output_started_wall_ns)",
+                }
+                if schedule_offsets is not None
+                else None
             )
             session["hf_run_requests"] = [
                 {"label": condition.label, "command_scale": float(condition.command_scale)}
@@ -1158,19 +1249,24 @@ def main(argv: list[str] | None = None) -> int:
             for condition in conditions:
                 for repeat_index in range(condition.repeat):
                     run_index += 1
-                    scheduled_offset = (
-                        None
-                        if schedule_interval_sec is None
-                        else scheduled_group_offset_sec(
+                    if schedule_offsets is not None:
+                        scheduled_offset = schedule_offsets[run_index]
+                    elif schedule_interval_sec is not None:
+                        scheduled_offset = scheduled_group_offset_sec(
                             run_index, schedule_group_size, schedule_interval_sec
                         )
-                    )
+                    else:
+                        scheduled_offset = None
                     if scheduled_offset is not None and sound_on_wall_ns is not None:
                         try:
                             wait_until_wall_time(
                                 sound_on_wall_ns / 1e9 + scheduled_offset,
-                                f"group {run_index // schedule_group_size} "
-                                f"(t = {scheduled_offset / 60.0:.1f} min after sound on)",
+                                (
+                                    f"run {run_index + 1}"
+                                    if schedule_offsets is not None
+                                    else f"group {run_index // schedule_group_size}"
+                                )
+                                + f" (t = {scheduled_offset / 60.0:.1f} min after sound on)",
                             )
                         except KeyboardInterrupt:
                             session["status"] = "interrupted"
@@ -1224,6 +1320,8 @@ def main(argv: list[str] | None = None) -> int:
                             run_automation_metadata["scheduled_group_offset_sec"] = (
                                 (run_index // schedule_group_size) * schedule_interval_sec
                             )
+                        elif schedule_offsets is not None:
+                            run_automation_metadata["scheduled_start_offset_sec"] = scheduled_offset
                     else:
                         # Every automatic condition returns to the PAT origin,
                         # so JSON trajectories are resolved in that stable
@@ -1255,8 +1353,12 @@ def main(argv: list[str] | None = None) -> int:
                         or ff_checkpoint
                     )
                     if unattended:
-                        # Only the very first run keeps the forced preview/Enter checkpoint.
-                        operator_checkpoint = first_checkpoint_pending
+                        # Only the very first run keeps the forced preview/Enter checkpoint,
+                        # plus any run the operator asked to confirm explicitly.
+                        operator_checkpoint = (
+                            first_checkpoint_pending
+                            or (run_index + 1) in checkpoint_run_numbers
+                        )
                         unattended_run_number += 1
                         run_automation_metadata["unattended_after_first_checkpoint"] = True
                         run_automation_metadata["automatic_capture_retry_limit"] = (

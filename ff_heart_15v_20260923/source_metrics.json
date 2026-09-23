@@ -1,0 +1,359 @@
+{
+ "heart_s7_f10_OFF": {
+  "samples": 80000,
+  "sample_hz": 10000.0,
+  "duration_sec": 8.0,
+  "max_offset_mm": 9.153846153846153,
+  "max_speed_mm_s": 744.984754058848,
+  "max_accel_mm_s2": 93401.36847492517,
+  "max_u_minus_r_mm": 0.0,
+  "positions_sha256": "46c631c8cb6163a62defc3db48dbfee9a908559f4df45e2cccd09546ffe2a50a",
+  "endpoint_offset_mm": 0.0,
+  "axes_moved": "xz",
+  "keys": [
+   "positions_mm",
+   "reference_mm",
+   "time_pat_sec",
+   "time_cam_expected_sec",
+   "sample_hz",
+   "design",
+   "params"
+  ]
+ },
+ "heart_s7_f10_OFF_Ws4": {
+  "samples": 80000,
+  "sample_hz": 10000.0,
+  "duration_sec": 8.0,
+  "max_offset_mm": 9.115132222949871,
+  "max_speed_mm_s": 741.358551080642,
+  "max_accel_mm_s2": 93315.33574159566,
+  "max_u_minus_r_mm": 0.17812838803825215,
+  "positions_sha256": "fc5af96ec9f3ca6768f2f7b610758c1ecd0ef159ee9ede0f46664c3493fa482c",
+  "endpoint_offset_mm": 0.0,
+  "axes_moved": "xz",
+  "keys": [
+   "positions_mm",
+   "reference_mm",
+   "time_pat_sec",
+   "time_cam_expected_sec",
+   "sample_hz",
+   "design",
+   "params"
+  ]
+ },
+ "heart_s7_f10_C_delay_inverse": {
+  "samples": 80000,
+  "sample_hz": 10000.0,
+  "duration_sec": 8.0,
+  "max_offset_mm": 9.127274147279746,
+  "max_speed_mm_s": 709.1426723826802,
+  "max_accel_mm_s2": 92345.95990012931,
+  "max_u_minus_r_mm": 0.8495162369428144,
+  "positions_sha256": "08cdb5e4336fb23753416ed16561f1b96921f3590ad1196cdbcd3ffd50e6205b",
+  "endpoint_offset_mm": 0.00024076487816449514,
+  "axes_moved": "xz",
+  "keys": [
+   "positions_mm",
+   "reference_mm",
+   "time_pat_sec",
+   "time_cam_expected_sec",
+   "sample_hz",
+   "design",
+   "params"
+  ]
+ },
+ "heart_s7_f10_C_delay_inverse_Ws4": {
+  "samples": 80000,
+  "sample_hz": 10000.0,
+  "duration_sec": 8.0,
+  "max_offset_mm": 9.089194588823363,
+  "max_speed_mm_s": 701.726695653189,
+  "max_accel_mm_s2": 91998.18373604887,
+  "max_u_minus_r_mm": 0.8738509892584884,
+  "positions_sha256": "38fc8914d249c6dc3836d7883afd9b7dba33ee75d4afcd3d8089d3604924ed41",
+  "endpoint_offset_mm": 0.00024076487816449514,
+  "axes_moved": "xz",
+  "keys": [
+   "positions_mm",
+   "reference_mm",
+   "time_pat_sec",
+   "time_cam_expected_sec",
+   "sample_hz",
+   "design",
+   "params"
+  ]
+ },
+ "heart_s7_f10_C_delay_inverse_Ws": {
+  "samples": 80000,
+  "sample_hz": 10000.0,
+  "duration_sec": 8.0,
+  "max_offset_mm": 9.058220760957427,
+  "max_speed_mm_s": 720.8790104102228,
+  "max_accel_mm_s2": 94146.4487141046,
+  "max_u_minus_r_mm": 0.8403017416098926,
+  "positions_sha256": "0dcd6e2873b91bad58be7c3d398bd99dfcac44275ecbae6a3c583a26bbe974a9",
+  "endpoint_offset_mm": 0.00024076487816449514,
+  "axes_moved": "xz",
+  "keys": [
+   "positions_mm",
+   "reference_mm",
+   "time_pat_sec",
+   "time_cam_expected_sec",
+   "sample_hz",
+   "design",
+   "params"
+  ]
+ },
+ "heart_s7_f7_OFF": {
+  "samples": 80000,
+  "sample_hz": 10000.0,
+  "duration_sec": 8.0,
+  "max_offset_mm": 9.153846153846153,
+  "max_speed_mm_s": 521.4955858572957,
+  "max_accel_mm_s2": 45769.69902326849,
+  "max_u_minus_r_mm": 0.0,
+  "positions_sha256": "ffb35479218d51e91986ba1ac43ec67b9caf8dada6e1675059e05733c17c3aea",
+  "endpoint_offset_mm": 0.0,
+  "axes_moved": "xz",
+  "keys": [
+   "positions_mm",
+   "reference_mm",
+   "time_pat_sec",
+   "time_cam_expected_sec",
+   "sample_hz",
+   "design",
+   "params"
+  ]
+ },
+ "heart_s7_f7_C_delay_inverse": {
+  "samples": 80000,
+  "sample_hz": 10000.0,
+  "duration_sec": 8.0,
+  "max_offset_mm": 9.140827001483636,
+  "max_speed_mm_s": 509.13470762302103,
+  "max_accel_mm_s2": 50376.585522634865,
+  "max_u_minus_r_mm": 0.5609157868916751,
+  "positions_sha256": "11cf7987ee3649fd10875a3ba38298c682ea03001707f2e3a9a2e595ee6f6031",
+  "endpoint_offset_mm": 0.00023847260050307634,
+  "axes_moved": "xz",
+  "keys": [
+   "positions_mm",
+   "reference_mm",
+   "time_pat_sec",
+   "time_cam_expected_sec",
+   "sample_hz",
+   "design",
+   "params"
+  ]
+ },
+ "heart_s7_f7_C_delay_inverse_Ws4": {
+  "samples": 80000,
+  "sample_hz": 10000.0,
+  "duration_sec": 8.0,
+  "max_offset_mm": 9.102765743426268,
+  "max_speed_mm_s": 504.86089109157354,
+  "max_accel_mm_s2": 50594.07988248931,
+  "max_u_minus_r_mm": 0.5910710414871024,
+  "positions_sha256": "d4460c425fb8646ed198f271e5f0c732e92ccfbdb2a6fddcb1c09f6e4b52c921",
+  "endpoint_offset_mm": 0.00023847260050307634,
+  "axes_moved": "xz",
+  "keys": [
+   "positions_mm",
+   "reference_mm",
+   "time_pat_sec",
+   "time_cam_expected_sec",
+   "sample_hz",
+   "design",
+   "params"
+  ]
+ },
+ "heart_s7_f7_C_delay_inverse_Ws": {
+  "samples": 80000,
+  "sample_hz": 10000.0,
+  "duration_sec": 8.0,
+  "max_offset_mm": 9.079730977538148,
+  "max_speed_mm_s": 526.7120085748442,
+  "max_accel_mm_s2": 53971.83567247846,
+  "max_u_minus_r_mm": 0.6121821079610373,
+  "positions_sha256": "5386bba777cab55c99dcb0df0e6fe01b958bd02241507418e149e881da723c27",
+  "endpoint_offset_mm": 0.00023847260050307634,
+  "axes_moved": "xz",
+  "keys": [
+   "positions_mm",
+   "reference_mm",
+   "time_pat_sec",
+   "time_cam_expected_sec",
+   "sample_hz",
+   "design",
+   "params"
+  ]
+ },
+ "cardioid_a5p4_f10_OFF": {
+  "samples": 80000,
+  "sample_hz": 10000.0,
+  "duration_sec": 8.0,
+  "max_offset_mm": 7.2175496064761715,
+  "max_speed_mm_s": 678.5728509941894,
+  "max_accel_mm_s2": 64072.10326356448,
+  "max_u_minus_r_mm": 0.0,
+  "positions_sha256": "66f085753f3394a387097652055f08761522a8e4d3e05b8e553b7f0c767a4dcf",
+  "endpoint_offset_mm": 0.0,
+  "axes_moved": "xz",
+  "keys": [
+   "positions_mm",
+   "reference_mm",
+   "time_pat_sec",
+   "time_cam_expected_sec",
+   "sample_hz",
+   "design",
+   "params"
+  ]
+ },
+ "cardioid_a5p4_f10_OFF_Ws4": {
+  "samples": 80000,
+  "sample_hz": 10000.0,
+  "duration_sec": 8.0,
+  "max_offset_mm": 7.180624311841107,
+  "max_speed_mm_s": 673.8222601697823,
+  "max_accel_mm_s2": 64247.3623519345,
+  "max_u_minus_r_mm": 0.14638677531181019,
+  "positions_sha256": "1134954e6d6810610c48c89b84db538c06cca3e7c22cfc5faf1a2dd4e3591f7d",
+  "endpoint_offset_mm": 0.0,
+  "axes_moved": "xz",
+  "keys": [
+   "positions_mm",
+   "reference_mm",
+   "time_pat_sec",
+   "time_cam_expected_sec",
+   "sample_hz",
+   "design",
+   "params"
+  ]
+ },
+ "cardioid_a5p4_f10_C_delay_inverse": {
+  "samples": 80000,
+  "sample_hz": 10000.0,
+  "duration_sec": 8.0,
+  "max_offset_mm": 7.1331688367057575,
+  "max_speed_mm_s": 650.3955891406911,
+  "max_accel_mm_s2": 75742.1242382178,
+  "max_u_minus_r_mm": 0.838859406855159,
+  "positions_sha256": "9625211353d66259a7b81fec0be4ac501da579bd382bdfcd73f78e5d606fdf33",
+  "endpoint_offset_mm": 0.0008793337121840414,
+  "axes_moved": "xz",
+  "keys": [
+   "positions_mm",
+   "reference_mm",
+   "time_pat_sec",
+   "time_cam_expected_sec",
+   "sample_hz",
+   "design",
+   "params"
+  ]
+ },
+ "cardioid_a5p4_f10_C_delay_inverse_Ws4": {
+  "samples": 80000,
+  "sample_hz": 10000.0,
+  "duration_sec": 8.0,
+  "max_offset_mm": 7.075943595118873,
+  "max_speed_mm_s": 648.326268706763,
+  "max_accel_mm_s2": 75865.77598456683,
+  "max_u_minus_r_mm": 0.8997706117833675,
+  "positions_sha256": "037c409023fe12793aaa7384e4c463c305df2972d9631bc99363d50c83e9d280",
+  "endpoint_offset_mm": 0.0008793337121840414,
+  "axes_moved": "xz",
+  "keys": [
+   "positions_mm",
+   "reference_mm",
+   "time_pat_sec",
+   "time_cam_expected_sec",
+   "sample_hz",
+   "design",
+   "params"
+  ]
+ },
+ "cardioid_a5p4_f10_C_delay_inverse_Ws": {
+  "samples": 80000,
+  "sample_hz": 10000.0,
+  "duration_sec": 8.0,
+  "max_offset_mm": 7.067945544407627,
+  "max_speed_mm_s": 683.0627468164206,
+  "max_accel_mm_s2": 74213.06709072243,
+  "max_u_minus_r_mm": 0.8939738676123673,
+  "positions_sha256": "4062c0dc4571910cea060d66bc5d496a7fa8a584c6ec57aa789731a2700a865b",
+  "endpoint_offset_mm": 0.0008793337121840414,
+  "axes_moved": "xz",
+  "keys": [
+   "positions_mm",
+   "reference_mm",
+   "time_pat_sec",
+   "time_cam_expected_sec",
+   "sample_hz",
+   "design",
+   "params"
+  ]
+ },
+ "cardioid_a5p4_f7_C_delay_inverse": {
+  "samples": 80000,
+  "sample_hz": 10000.0,
+  "duration_sec": 8.0,
+  "max_offset_mm": 7.178112436732193,
+  "max_speed_mm_s": 464.5605769788421,
+  "max_accel_mm_s2": 31282.977459939782,
+  "max_u_minus_r_mm": 0.5541746539641942,
+  "positions_sha256": "8011f4d2a5381f8ed96768e39556982d442f6dad5678ae62ee31048b50c97212",
+  "endpoint_offset_mm": 0.0007241184550670889,
+  "axes_moved": "xz",
+  "keys": [
+   "positions_mm",
+   "reference_mm",
+   "time_pat_sec",
+   "time_cam_expected_sec",
+   "sample_hz",
+   "design",
+   "params"
+  ]
+ },
+ "cardioid_a5p4_f7_C_delay_inverse_Ws4": {
+  "samples": 80000,
+  "sample_hz": 10000.0,
+  "duration_sec": 8.0,
+  "max_offset_mm": 7.128081316149651,
+  "max_speed_mm_s": 460.47965244407584,
+  "max_accel_mm_s2": 31323.505043880115,
+  "max_u_minus_r_mm": 0.6153418506204426,
+  "positions_sha256": "fd6d346f3ae8ec18c6207f68b4fdf5586a59066cbcb67c4395aa1dfa355ab148",
+  "endpoint_offset_mm": 0.0007241184550670889,
+  "axes_moved": "xz",
+  "keys": [
+   "positions_mm",
+   "reference_mm",
+   "time_pat_sec",
+   "time_cam_expected_sec",
+   "sample_hz",
+   "design",
+   "params"
+  ]
+ },
+ "cardioid_a5p4_f7_C_delay_inverse_Ws": {
+  "samples": 80000,
+  "sample_hz": 10000.0,
+  "duration_sec": 8.0,
+  "max_offset_mm": 7.105504767619678,
+  "max_speed_mm_s": 526.8009632953425,
+  "max_accel_mm_s2": 51939.848184653565,
+  "max_u_minus_r_mm": 0.6827723008600379,
+  "positions_sha256": "121e1d4bb92622aa91abb5264108adc9c1def203df251646ac9105919628fc38",
+  "endpoint_offset_mm": 0.0007241184550670889,
+  "axes_moved": "xz",
+  "keys": [
+   "positions_mm",
+   "reference_mm",
+   "time_pat_sec",
+   "time_cam_expected_sec",
+   "sample_hz",
+   "design",
+   "params"
+  ]
+ }
+}

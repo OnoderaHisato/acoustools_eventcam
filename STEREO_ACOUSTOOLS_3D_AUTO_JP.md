@@ -124,6 +124,41 @@ powershell -ExecutionPolicy Bypass -File .\run_large_step_all.ps1
 powershell -ExecutionPolicy Bypass -File .\run_thermal_hold_test.ps1 -SupplyVoltage 15 -DryRunOnly
 ```
 
+## 14 mm検証セッションと安全上限の引き上げ（2026-09-24）
+
+- `--schedule-offsets-sec`（無人モードのみ）: runごとに「音を出してから何秒で始めるか」をコンマ区切りで
+  与えます（空欄は前のrunの直後）。間隔が不均一な時刻表用で、均等なら `--schedule-interval-sec` を使います。
+  `--schedule-interval-sec` との併用は拒否します。
+- `run_ff_heart_15v_session.ps1`: 15 Vの動作点で撮る14 mmの検証セッション（52 run・約95分）。
+  手順は `THERMAL_15V_MEASUREMENT_JP.md` を参照してください。
+- **staircaseの1ジャンプ上限を 2.144 mm（推定脱出境界 λ/4）から 3.2 mm へ引き上げました**（ユーザー承認、
+  規模拡大の2.5／3.0 mmステップのため）。λ/4を超えたことは従来どおりmetadataの `escape_boundary_exceeded`
+  に残り、`staircase_max_jump_limit_mm` に実際の上限を記録します。**この境界は粒子を保持できる範囲の目安で、
+  超えると粒子を落とす可能性があります。**
+- オフセット・速度・加速度・\|u−r\| の上限はコードではなくplanの `defaults.safety_limits` です。規模拡大の
+  planでは **`max_offset_mm` 35 mm**（依頼は30 mmだったが `cardioid_a23` の実測が30.741 mmで弾かれるため、
+  ユーザーの指示で35 mmへ）／3500 mm/s／350,000 mm/s²／\|u−r\| 4 mm／端点0.01 mm を使います。この値で
+  20260924の指令17本すべてが検査を通ることを確認済みです。
+
+## 規模拡大（2026-09-24、`scaleup_20260924/`）
+
+`SCALE_UP_PLAN_20260924.md` の一式を、planとexportとして取り込みました（22 run）。26／44／60 mmの
+カーディオイド（10 Hz、OFF／A_delay／C_delay／C_nl／OT_ident）、半径28 mm・24 sの走査、2.5／3.0 mmの
+水平ステップ、kcheckです。取り込み指令はG:の配列とビット一致、2本のステップは解析側exportとビット一致します。
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\run_scaleup_20260924.ps1 -DryRunOnly
+powershell -ExecutionPolicy Bypass -File .\run_scaleup_20260924.ps1
+```
+
+- 順番は計画書§3のとおり（kcheck → XL25 →（確認）XL30 → R28走査 → kcheck → a10の5本 → a17の5本 →
+  kcheck →（確認）a23の5本 → kcheck）。落ち着いてから（15 Vで約40分稼働後）始めます。
+- `--checkpoint-run-numbers`（新規）で、無人モードでも指定したrunの前だけpreviewとEnterを入れます。
+  既定では**3.0 mmステップの前**と**60 mmカーディオイドの前**で止まります。
+- `-Sizes`、`-SkipLargeSteps`、`-SkipScan`、`-IncludeExtraDesigns`（A_delayとOT_identも撮る）。
+- **粒子を落とす可能性があります**（60 mmで中心から30.7 mm・2890 mm/s、水平ステップは鉛直のλ/4推定の外側）。
+  previewで粒子が無ければCtrl+Cで止めてください。
+
 ## 構成
 
 3D自動計測は、単発計測と同じrecording/postprocessコアを使用します。自動化スクリプトに、粒子追跡や三角測量の実装を重複させていません。

@@ -1,0 +1,847 @@
+{
+ "schema_version": 1,
+ "purpose": "Scale-up session at the 15 V operating point (SCALE_UP_PLAN_20260924.md): cardioids of 26 / 44 / 60 mm at 10 Hz with five feedforward designs each, a 28 mm radius w scan, and the 2.5 / 3.0 mm horizontal steps. The limits below were raised on 2026-09-24 with the user's approval; 35 mm is needed because the 60 mm cardioid reaches 30.741 mm from the centre although it stays inside the |x|, |z| <= 30 mm camera box.",
+ "defaults": {
+  "sample_hz": 10000,
+  "duration_sec": 8.0,
+  "ramp_sec": 0.5,
+  "safety_limits": {
+   "max_offset_mm": 35.0,
+   "max_speed_mm_s": 3500.0,
+   "max_acceleration_mm_s2": 350000.0,
+   "max_endpoint_offset_mm": 0.01,
+   "max_command_reference_distance_mm": 4.0
+  }
+ },
+ "experiments": [
+  {
+   "name": "kcheck_x_S105_6jumps",
+   "kind": "staircase",
+   "tier": "C",
+   "axis": "x",
+   "duration_sec": 14.0,
+   "hold_sec": 2.0,
+   "initial_hold_sec": 2.0,
+   "final_hold_sec": 2.0,
+   "amplitudes_mm": [
+    1.05
+   ],
+   "directions": [
+    1,
+    -1,
+    1
+   ],
+   "repeats_within_run": 1,
+   "repeats": 1,
+   "safety_limits": {
+    "max_offset_mm": 1.05,
+    "max_step_mm": 1.05,
+    "max_speed_mm_s": 100.0,
+    "max_acceleration_mm_s2": 28000.0
+   },
+   "campaign": "scaleup_20260924",
+   "condition": "stiffness_check_x",
+   "note": "Stiffness check at the 15 V operating point: x steps 0 -> +1.05 -> 0 -> -1.05 -> 0 -> +1.05 -> 0 mm, 7 holds of 2.0 s, 6 jumps, 14.0 s. Same command as ff_heart_20260918 so the stiffness values compare across sessions.",
+   "enabled": true
+  },
+  {
+   "name": "kcheck_y_S105_6jumps",
+   "kind": "staircase",
+   "tier": "C",
+   "axis": "y",
+   "duration_sec": 14.0,
+   "hold_sec": 2.0,
+   "initial_hold_sec": 2.0,
+   "final_hold_sec": 2.0,
+   "amplitudes_mm": [
+    1.05
+   ],
+   "directions": [
+    1,
+    -1,
+    1
+   ],
+   "repeats_within_run": 1,
+   "repeats": 1,
+   "safety_limits": {
+    "max_offset_mm": 1.05,
+    "max_step_mm": 1.05,
+    "max_speed_mm_s": 100.0,
+    "max_acceleration_mm_s2": 28000.0
+   },
+   "campaign": "scaleup_20260924",
+   "condition": "stiffness_check_y",
+   "note": "Stiffness check at the 15 V operating point: y steps 0 -> +1.05 -> 0 -> -1.05 -> 0 -> +1.05 -> 0 mm, 7 holds of 2.0 s, 6 jumps, 14.0 s. Same command as ff_heart_20260918 so the stiffness values compare across sessions.",
+   "enabled": true
+  },
+  {
+   "name": "kcheck_z_S105_6jumps",
+   "kind": "staircase",
+   "tier": "C",
+   "axis": "z",
+   "duration_sec": 14.0,
+   "hold_sec": 2.0,
+   "initial_hold_sec": 2.0,
+   "final_hold_sec": 2.0,
+   "amplitudes_mm": [
+    1.05
+   ],
+   "directions": [
+    1,
+    -1,
+    1
+   ],
+   "repeats_within_run": 1,
+   "repeats": 1,
+   "safety_limits": {
+    "max_offset_mm": 1.05,
+    "max_step_mm": 1.05,
+    "max_speed_mm_s": 100.0,
+    "max_acceleration_mm_s2": 28000.0
+   },
+   "campaign": "scaleup_20260924",
+   "condition": "stiffness_check_z",
+   "note": "Stiffness check at the 15 V operating point: z steps 0 -> +1.05 -> 0 -> -1.05 -> 0 -> +1.05 -> 0 mm, 7 holds of 2.0 s, 6 jumps, 14.0 s. Same command as ff_heart_20260918 so the stiffness values compare across sessions.",
+   "enabled": true
+  },
+  {
+   "name": "vzrstep_XL25",
+   "kind": "staircase",
+   "tier": "G",
+   "axis": "x",
+   "duration_sec": 5.4,
+   "hold_sec": 0.4,
+   "initial_hold_sec": 0.5,
+   "final_hold_sec": 0.5,
+   "amplitudes_mm": [
+    2.5
+   ],
+   "directions": [
+    1,
+    -1
+   ],
+   "repeats_within_run": 3,
+   "repeats": 1,
+   "safety_limits": {
+    "max_offset_mm": 2.55,
+    "max_step_mm": 2.55,
+    "max_speed_mm_s": 100.0,
+    "max_acceleration_mm_s2": 28000.0
+   },
+   "campaign": "scaleup_20260924",
+   "condition": "horizontal_saturation_x",
+   "reference": {
+    "plan": "SCALE_UP_PLAN_20260924.md section 3",
+    "stage": "XL25",
+    "step_mm": 2.5,
+    "source_export": "export_large_step_25_30"
+   },
+   "note": "Large horizontal step for the force shape: x only, 0 -> +2.5 -> 0 -> -2.5 -> 0 mm, 3 cycles, 12 jumps, 0.4 s holds (0.5 s at both ends), 5.4 s. Separates a_r and v_xr, which the product k alone leaves degenerate. Horizontal step; the vertical lambda/4 criterion does not apply. The horizontal restoring force is F_r = a_r sin(v_xr d) with v_xr <~ 0.5 /mm, so the force keeps growing out to d = pi/(2 v_xr) >= 3.1 mm and still restores to about 6 mm (analysis side, 2026-09-24). Record 2.5 mm first and confirm the particle is retained before 3.0 mm.",
+   "enabled": true
+  },
+  {
+   "name": "vzrstep_XL30",
+   "kind": "staircase",
+   "tier": "G",
+   "axis": "x",
+   "duration_sec": 5.4,
+   "hold_sec": 0.4,
+   "initial_hold_sec": 0.5,
+   "final_hold_sec": 0.5,
+   "amplitudes_mm": [
+    3.0
+   ],
+   "directions": [
+    1,
+    -1
+   ],
+   "repeats_within_run": 3,
+   "repeats": 1,
+   "safety_limits": {
+    "max_offset_mm": 3.05,
+    "max_step_mm": 3.05,
+    "max_speed_mm_s": 100.0,
+    "max_acceleration_mm_s2": 28000.0
+   },
+   "campaign": "scaleup_20260924",
+   "condition": "horizontal_saturation_x",
+   "reference": {
+    "plan": "SCALE_UP_PLAN_20260924.md section 3",
+    "stage": "XL30",
+    "step_mm": 3.0,
+    "source_export": "export_large_step_25_30"
+   },
+   "note": "Large horizontal step for the force shape: x only, 0 -> +3.0 -> 0 -> -3.0 -> 0 mm, 3 cycles, 12 jumps, 0.4 s holds (0.5 s at both ends), 5.4 s. Separates a_r and v_xr, which the product k alone leaves degenerate. Horizontal step; the vertical lambda/4 criterion does not apply. The horizontal restoring force is F_r = a_r sin(v_xr d) with v_xr <~ 0.5 /mm, so the force keeps growing out to d = pi/(2 v_xr) >= 3.1 mm and still restores to about 6 mm (analysis side, 2026-09-24). Record 2.5 mm first and confirm the particle is retained before 3.0 mm.",
+   "enabled": true
+  },
+  {
+   "name": "wscan_XZ_R28_a",
+   "kind": "imported",
+   "source_npz": "source/wscan_XZ_R28_a.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "efcec4fb4c99812c969b2d2ccc74242cf75b113c09faa74208df6e48b94a1383",
+   "duration_sec": 24.0,
+   "campaign": "scaleup_20260924",
+   "measurement_family": "feedforward_validation",
+   "condition": "w_scan_xz_r28_a",
+   "note": "Wide surface scan of the equilibrium-shift field w at 15 V: spiral centre -> 28 mm -> centre in the XZ plane, counter-clockwise, 24 s, no compensation (u = r). Gives the calibration residual (rotation and scale) and w over the whole camera box, and feeds the _Ws4 compensation for the large cardioids.",
+   "feedforward_design": {
+    "design": "WSCAN",
+    "command_differs_from_reference": false,
+    "description": "u(t) = r(t)",
+    "plane": "XZ",
+    "direction": "counter-clockwise",
+    "radius_mm": 28.0,
+    "plane_offset_mm": 0.0
+   },
+   "enabled": true
+  },
+  {
+   "name": "wscan_XZ_R28_b",
+   "kind": "imported",
+   "source_npz": "source/wscan_XZ_R28_b.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "9d19cf2f124a2f72c6b355c278a10efe8a0990c6a2ad221e80bacdeca0572824",
+   "duration_sec": 24.0,
+   "campaign": "scaleup_20260924",
+   "measurement_family": "feedforward_validation",
+   "condition": "w_scan_xz_r28_b",
+   "note": "Wide surface scan of the equilibrium-shift field w at 15 V: spiral centre -> 28 mm -> centre in the XZ plane, clockwise, 24 s, no compensation (u = r). Gives the calibration residual (rotation and scale) and w over the whole camera box, and feeds the _Ws4 compensation for the large cardioids.",
+   "feedforward_design": {
+    "design": "WSCAN",
+    "command_differs_from_reference": false,
+    "description": "u(t) = r(t)",
+    "plane": "XZ",
+    "direction": "clockwise",
+    "radius_mm": 28.0,
+    "plane_offset_mm": 0.0
+   },
+   "enabled": true
+  },
+  {
+   "name": "cardioid_a10_f10_OFF",
+   "kind": "imported",
+   "source_npz": "source/cardioid_a10_f10_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "b8a05b35fb037b367ef327e2e46187d08567eddb7e6ef440f7df736694379cbc",
+   "duration_sec": 8.0,
+   "campaign": "scaleup_20260924",
+   "measurement_family": "feedforward_validation",
+   "condition": "cardioid_a10_f10_off",
+   "note": "Scale-up cardioid, width 26 mm, 10 Hz, design OFF (u = r (no feedforward)). 15 V operating point (k 0.208/0.198/2.48 1/ms^2, tau0 0.9 ms). Peak speed 1257 mm/s, peak acceleration 118652 mm/s^2, max |u-r| 0.000 mm. The point of the series is whether the non-linear inverse model C_nl beats the linear C once the required force approaches the limit.",
+   "feedforward_design": {
+    "design": "OFF",
+    "command_differs_from_reference": false,
+    "shape": "cardioid",
+    "size_mm": 26,
+    "loop_frequency_hz": 10.0,
+    "w_compensation": "none",
+    "identified_model": {
+     "k_1_per_ms2": {
+      "x": 0.208,
+      "y": 0.198,
+      "z": 2.48
+     },
+     "gamma_1_per_ms": {
+      "x": 0.0372,
+      "y": 0.0319,
+      "z": 0.0237
+     },
+     "tau0_ms": 0.9,
+     "supply_voltage_V": 15.0
+    },
+    "source_file": "cardioid_a10_f10_OFF.npz"
+   },
+   "enabled": true
+  },
+  {
+   "name": "cardioid_a10_f10_A_delay",
+   "kind": "imported",
+   "source_npz": "source/cardioid_a10_f10_A_delay.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "5fbc8557f0ee00e908ac4dbc3082feef0eb412651a4b498438ca9a871fac404e",
+   "duration_sec": 8.0,
+   "campaign": "scaleup_20260924",
+   "measurement_family": "feedforward_validation",
+   "condition": "cardioid_a10_f10_a_delay",
+   "note": "Scale-up cardioid, width 26 mm, 10 Hz, design A_delay (lookahead only). 15 V operating point (k 0.208/0.198/2.48 1/ms^2, tau0 0.9 ms). Peak speed 1257 mm/s, peak acceleration 118652 mm/s^2, max |u-r| 1.131 mm. The point of the series is whether the non-linear inverse model C_nl beats the linear C once the required force approaches the limit.",
+   "feedforward_design": {
+    "design": "A_delay",
+    "command_differs_from_reference": true,
+    "shape": "cardioid",
+    "size_mm": 26,
+    "loop_frequency_hz": 10.0,
+    "w_compensation": "none",
+    "identified_model": {
+     "k_1_per_ms2": {
+      "x": 0.208,
+      "y": 0.198,
+      "z": 2.48
+     },
+     "gamma_1_per_ms": {
+      "x": 0.0372,
+      "y": 0.0319,
+      "z": 0.0237
+     },
+     "tau0_ms": 0.9,
+     "supply_voltage_V": 15.0
+    },
+    "source_file": "cardioid_a10_f10_A_delay.npz"
+   },
+   "enabled": true
+  },
+  {
+   "name": "cardioid_a10_f10_C_delay",
+   "kind": "imported",
+   "source_npz": "source/cardioid_a10_f10_C_delay_inverse.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "f24805a88c105b622c9ba849c0825f37b9c5bef18722cfd10bb6ed1d57ef8dc9",
+   "duration_sec": 8.0,
+   "campaign": "scaleup_20260924",
+   "measurement_family": "feedforward_validation",
+   "condition": "cardioid_a10_f10_c_delay",
+   "note": "Scale-up cardioid, width 26 mm, 10 Hz, design C_delay_inverse (lookahead + linear inverse model). 15 V operating point (k 0.208/0.198/2.48 1/ms^2, tau0 0.9 ms). Peak speed 1204 mm/s, peak acceleration 140263 mm/s^2, max |u-r| 1.553 mm. The point of the series is whether the non-linear inverse model C_nl beats the linear C once the required force approaches the limit.",
+   "feedforward_design": {
+    "design": "C_delay_inverse",
+    "command_differs_from_reference": true,
+    "shape": "cardioid",
+    "size_mm": 26,
+    "loop_frequency_hz": 10.0,
+    "w_compensation": "none",
+    "identified_model": {
+     "k_1_per_ms2": {
+      "x": 0.208,
+      "y": 0.198,
+      "z": 2.48
+     },
+     "gamma_1_per_ms": {
+      "x": 0.0372,
+      "y": 0.0319,
+      "z": 0.0237
+     },
+     "tau0_ms": 0.9,
+     "supply_voltage_V": 15.0
+    },
+    "source_file": "cardioid_a10_f10_C_delay_inverse.npz"
+   },
+   "enabled": true
+  },
+  {
+   "name": "cardioid_a10_f10_C_nl",
+   "kind": "imported",
+   "source_npz": "source/cardioid_a10_f10_C_nl_inverse.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "c0a1c29c544a126c80c3831c5e3e30b09eea44a1ca4765a09073a7d8e0c7e5a4",
+   "duration_sec": 8.0,
+   "campaign": "scaleup_20260924",
+   "measurement_family": "feedforward_validation",
+   "condition": "cardioid_a10_f10_c_nl",
+   "note": "Scale-up cardioid, width 26 mm, 10 Hz, design C_nl_inverse (lookahead + non-linear inverse model (OptiTrap force shape)). 15 V operating point (k 0.208/0.198/2.48 1/ms^2, tau0 0.9 ms). Peak speed 1203 mm/s, peak acceleration 140287 mm/s^2, max |u-r| 1.560 mm. The point of the series is whether the non-linear inverse model C_nl beats the linear C once the required force approaches the limit.",
+   "feedforward_design": {
+    "design": "C_nl_inverse",
+    "command_differs_from_reference": true,
+    "shape": "cardioid",
+    "size_mm": 26,
+    "loop_frequency_hz": 10.0,
+    "w_compensation": "none",
+    "identified_model": {
+     "k_1_per_ms2": {
+      "x": 0.208,
+      "y": 0.198,
+      "z": 2.48
+     },
+     "gamma_1_per_ms": {
+      "x": 0.0372,
+      "y": 0.0319,
+      "z": 0.0237
+     },
+     "tau0_ms": 0.9,
+     "supply_voltage_V": 15.0
+    },
+    "source_file": "cardioid_a10_f10_C_nl_inverse.npz"
+   },
+   "enabled": true
+  },
+  {
+   "name": "cardioid_a10_f10_OT_ident",
+   "kind": "imported",
+   "source_npz": "source/cardioid_a10_f10_OT_ident_nodelay.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "278d014283e6e5964e01a250847562d007bf97a69881e5389683ce84768f80c8",
+   "duration_sec": 8.0,
+   "campaign": "scaleup_20260924",
+   "measurement_family": "feedforward_validation",
+   "condition": "cardioid_a10_f10_ot_ident",
+   "note": "Scale-up cardioid, width 26 mm, 10 Hz, design OT_ident_nodelay (OptiTrap-style linear inverse model, no lookahead). 15 V operating point (k 0.208/0.198/2.48 1/ms^2, tau0 0.9 ms). Peak speed 1204 mm/s, peak acceleration 140263 mm/s^2, max |u-r| 0.612 mm. The point of the series is whether the non-linear inverse model C_nl beats the linear C once the required force approaches the limit.",
+   "feedforward_design": {
+    "design": "OT_ident_nodelay",
+    "command_differs_from_reference": true,
+    "shape": "cardioid",
+    "size_mm": 26,
+    "loop_frequency_hz": 10.0,
+    "w_compensation": "none",
+    "identified_model": {
+     "k_1_per_ms2": {
+      "x": 0.208,
+      "y": 0.198,
+      "z": 2.48
+     },
+     "gamma_1_per_ms": {
+      "x": 0.0372,
+      "y": 0.0319,
+      "z": 0.0237
+     },
+     "tau0_ms": 0.9,
+     "supply_voltage_V": 15.0
+    },
+    "source_file": "cardioid_a10_f10_OT_ident_nodelay.npz"
+   },
+   "enabled": true
+  },
+  {
+   "name": "cardioid_a17_f10_OFF",
+   "kind": "imported",
+   "source_npz": "source/cardioid_a17_f10_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "254d57e34d9bd587a00b7cb176f7cff2be9498cf6111fb394eeef6408f9325eb",
+   "duration_sec": 8.0,
+   "campaign": "scaleup_20260924",
+   "measurement_family": "feedforward_validation",
+   "condition": "cardioid_a17_f10_off",
+   "note": "Scale-up cardioid, width 44 mm, 10 Hz, design OFF (u = r (no feedforward)). 15 V operating point (k 0.208/0.198/2.48 1/ms^2, tau0 0.9 ms). Peak speed 2136 mm/s, peak acceleration 201708 mm/s^2, max |u-r| 0.000 mm. The point of the series is whether the non-linear inverse model C_nl beats the linear C once the required force approaches the limit.",
+   "feedforward_design": {
+    "design": "OFF",
+    "command_differs_from_reference": false,
+    "shape": "cardioid",
+    "size_mm": 44,
+    "loop_frequency_hz": 10.0,
+    "w_compensation": "none",
+    "identified_model": {
+     "k_1_per_ms2": {
+      "x": 0.208,
+      "y": 0.198,
+      "z": 2.48
+     },
+     "gamma_1_per_ms": {
+      "x": 0.0372,
+      "y": 0.0319,
+      "z": 0.0237
+     },
+     "tau0_ms": 0.9,
+     "supply_voltage_V": 15.0
+    },
+    "source_file": "cardioid_a17_f10_OFF.npz"
+   },
+   "enabled": true
+  },
+  {
+   "name": "cardioid_a17_f10_A_delay",
+   "kind": "imported",
+   "source_npz": "source/cardioid_a17_f10_A_delay.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "0ab4f3ad010ab9bb6325db077c79f2bda3550a32766018a0dce30b071a180404",
+   "duration_sec": 8.0,
+   "campaign": "scaleup_20260924",
+   "measurement_family": "feedforward_validation",
+   "condition": "cardioid_a17_f10_a_delay",
+   "note": "Scale-up cardioid, width 44 mm, 10 Hz, design A_delay (lookahead only). 15 V operating point (k 0.208/0.198/2.48 1/ms^2, tau0 0.9 ms). Peak speed 2136 mm/s, peak acceleration 201708 mm/s^2, max |u-r| 1.922 mm. The point of the series is whether the non-linear inverse model C_nl beats the linear C once the required force approaches the limit.",
+   "feedforward_design": {
+    "design": "A_delay",
+    "command_differs_from_reference": true,
+    "shape": "cardioid",
+    "size_mm": 44,
+    "loop_frequency_hz": 10.0,
+    "w_compensation": "none",
+    "identified_model": {
+     "k_1_per_ms2": {
+      "x": 0.208,
+      "y": 0.198,
+      "z": 2.48
+     },
+     "gamma_1_per_ms": {
+      "x": 0.0372,
+      "y": 0.0319,
+      "z": 0.0237
+     },
+     "tau0_ms": 0.9,
+     "supply_voltage_V": 15.0
+    },
+    "source_file": "cardioid_a17_f10_A_delay.npz"
+   },
+   "enabled": true
+  },
+  {
+   "name": "cardioid_a17_f10_C_delay",
+   "kind": "imported",
+   "source_npz": "source/cardioid_a17_f10_C_delay_inverse.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "63f06a9994382c367eace2c48b6f1dd49fbf0418ac231e808a641cb7dce23aec",
+   "duration_sec": 8.0,
+   "campaign": "scaleup_20260924",
+   "measurement_family": "feedforward_validation",
+   "condition": "cardioid_a17_f10_c_delay",
+   "note": "Scale-up cardioid, width 44 mm, 10 Hz, design C_delay_inverse (lookahead + linear inverse model). 15 V operating point (k 0.208/0.198/2.48 1/ms^2, tau0 0.9 ms). Peak speed 2048 mm/s, peak acceleration 238447 mm/s^2, max |u-r| 2.641 mm. The point of the series is whether the non-linear inverse model C_nl beats the linear C once the required force approaches the limit.",
+   "feedforward_design": {
+    "design": "C_delay_inverse",
+    "command_differs_from_reference": true,
+    "shape": "cardioid",
+    "size_mm": 44,
+    "loop_frequency_hz": 10.0,
+    "w_compensation": "none",
+    "identified_model": {
+     "k_1_per_ms2": {
+      "x": 0.208,
+      "y": 0.198,
+      "z": 2.48
+     },
+     "gamma_1_per_ms": {
+      "x": 0.0372,
+      "y": 0.0319,
+      "z": 0.0237
+     },
+     "tau0_ms": 0.9,
+     "supply_voltage_V": 15.0
+    },
+    "source_file": "cardioid_a17_f10_C_delay_inverse.npz"
+   },
+   "enabled": true
+  },
+  {
+   "name": "cardioid_a17_f10_C_nl",
+   "kind": "imported",
+   "source_npz": "source/cardioid_a17_f10_C_nl_inverse.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "9f0be5169cf0d274e257463fd0cb9046a1bab0fcad7cd91616cee1d700455c78",
+   "duration_sec": 8.0,
+   "campaign": "scaleup_20260924",
+   "measurement_family": "feedforward_validation",
+   "condition": "cardioid_a17_f10_c_nl",
+   "note": "Scale-up cardioid, width 44 mm, 10 Hz, design C_nl_inverse (lookahead + non-linear inverse model (OptiTrap force shape)). 15 V operating point (k 0.208/0.198/2.48 1/ms^2, tau0 0.9 ms). Peak speed 2042 mm/s, peak acceleration 238573 mm/s^2, max |u-r| 2.675 mm. The point of the series is whether the non-linear inverse model C_nl beats the linear C once the required force approaches the limit.",
+   "feedforward_design": {
+    "design": "C_nl_inverse",
+    "command_differs_from_reference": true,
+    "shape": "cardioid",
+    "size_mm": 44,
+    "loop_frequency_hz": 10.0,
+    "w_compensation": "none",
+    "identified_model": {
+     "k_1_per_ms2": {
+      "x": 0.208,
+      "y": 0.198,
+      "z": 2.48
+     },
+     "gamma_1_per_ms": {
+      "x": 0.0372,
+      "y": 0.0319,
+      "z": 0.0237
+     },
+     "tau0_ms": 0.9,
+     "supply_voltage_V": 15.0
+    },
+    "source_file": "cardioid_a17_f10_C_nl_inverse.npz"
+   },
+   "enabled": true
+  },
+  {
+   "name": "cardioid_a17_f10_OT_ident",
+   "kind": "imported",
+   "source_npz": "source/cardioid_a17_f10_OT_ident_nodelay.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "52b153adaa3ef86d5102d60505bab2c534c429c1e307c6f498f29cd22aa9033a",
+   "duration_sec": 8.0,
+   "campaign": "scaleup_20260924",
+   "measurement_family": "feedforward_validation",
+   "condition": "cardioid_a17_f10_ot_ident",
+   "note": "Scale-up cardioid, width 44 mm, 10 Hz, design OT_ident_nodelay (OptiTrap-style linear inverse model, no lookahead). 15 V operating point (k 0.208/0.198/2.48 1/ms^2, tau0 0.9 ms). Peak speed 2048 mm/s, peak acceleration 238447 mm/s^2, max |u-r| 1.041 mm. The point of the series is whether the non-linear inverse model C_nl beats the linear C once the required force approaches the limit.",
+   "feedforward_design": {
+    "design": "OT_ident_nodelay",
+    "command_differs_from_reference": true,
+    "shape": "cardioid",
+    "size_mm": 44,
+    "loop_frequency_hz": 10.0,
+    "w_compensation": "none",
+    "identified_model": {
+     "k_1_per_ms2": {
+      "x": 0.208,
+      "y": 0.198,
+      "z": 2.48
+     },
+     "gamma_1_per_ms": {
+      "x": 0.0372,
+      "y": 0.0319,
+      "z": 0.0237
+     },
+     "tau0_ms": 0.9,
+     "supply_voltage_V": 15.0
+    },
+    "source_file": "cardioid_a17_f10_OT_ident_nodelay.npz"
+   },
+   "enabled": true
+  },
+  {
+   "name": "cardioid_a23_f10_OFF",
+   "kind": "imported",
+   "source_npz": "source/cardioid_a23_f10_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "fb07d11914d92b17fb82bc3d0753ab8fcf7e2eddda811c2cd7080968bfd45465",
+   "duration_sec": 8.0,
+   "campaign": "scaleup_20260924",
+   "measurement_family": "feedforward_validation",
+   "condition": "cardioid_a23_f10_off",
+   "note": "Scale-up cardioid, width 60 mm, 10 Hz, design OFF (u = r (no feedforward)). 15 V operating point (k 0.208/0.198/2.48 1/ms^2, tau0 0.9 ms). Peak speed 2890 mm/s, peak acceleration 272900 mm/s^2, max |u-r| 0.000 mm. The point of the series is whether the non-linear inverse model C_nl beats the linear C once the required force approaches the limit.",
+   "feedforward_design": {
+    "design": "OFF",
+    "command_differs_from_reference": false,
+    "shape": "cardioid",
+    "size_mm": 60,
+    "loop_frequency_hz": 10.0,
+    "w_compensation": "none",
+    "identified_model": {
+     "k_1_per_ms2": {
+      "x": 0.208,
+      "y": 0.198,
+      "z": 2.48
+     },
+     "gamma_1_per_ms": {
+      "x": 0.0372,
+      "y": 0.0319,
+      "z": 0.0237
+     },
+     "tau0_ms": 0.9,
+     "supply_voltage_V": 15.0
+    },
+    "source_file": "cardioid_a23_f10_OFF.npz"
+   },
+   "enabled": true
+  },
+  {
+   "name": "cardioid_a23_f10_A_delay",
+   "kind": "imported",
+   "source_npz": "source/cardioid_a23_f10_A_delay.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "86062c793d0297d447c79c683b0fbc4b39c23d6968f54f53b9cbc4007037ea48",
+   "duration_sec": 8.0,
+   "campaign": "scaleup_20260924",
+   "measurement_family": "feedforward_validation",
+   "condition": "cardioid_a23_f10_a_delay",
+   "note": "Scale-up cardioid, width 60 mm, 10 Hz, design A_delay (lookahead only). 15 V operating point (k 0.208/0.198/2.48 1/ms^2, tau0 0.9 ms). Peak speed 2890 mm/s, peak acceleration 272900 mm/s^2, max |u-r| 2.600 mm. The point of the series is whether the non-linear inverse model C_nl beats the linear C once the required force approaches the limit.",
+   "feedforward_design": {
+    "design": "A_delay",
+    "command_differs_from_reference": true,
+    "shape": "cardioid",
+    "size_mm": 60,
+    "loop_frequency_hz": 10.0,
+    "w_compensation": "none",
+    "identified_model": {
+     "k_1_per_ms2": {
+      "x": 0.208,
+      "y": 0.198,
+      "z": 2.48
+     },
+     "gamma_1_per_ms": {
+      "x": 0.0372,
+      "y": 0.0319,
+      "z": 0.0237
+     },
+     "tau0_ms": 0.9,
+     "supply_voltage_V": 15.0
+    },
+    "source_file": "cardioid_a23_f10_A_delay.npz"
+   },
+   "enabled": true
+  },
+  {
+   "name": "cardioid_a23_f10_C_delay",
+   "kind": "imported",
+   "source_npz": "source/cardioid_a23_f10_C_delay_inverse.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "7288f142d504f132ab7bbe13a74b923059a8b5be3fa5f67f58461164a791798d",
+   "duration_sec": 8.0,
+   "campaign": "scaleup_20260924",
+   "measurement_family": "feedforward_validation",
+   "condition": "cardioid_a23_f10_c_delay",
+   "note": "Scale-up cardioid, width 60 mm, 10 Hz, design C_delay_inverse (lookahead + linear inverse model). 15 V operating point (k 0.208/0.198/2.48 1/ms^2, tau0 0.9 ms). Peak speed 2770 mm/s, peak acceleration 322605 mm/s^2, max |u-r| 3.573 mm. The point of the series is whether the non-linear inverse model C_nl beats the linear C once the required force approaches the limit.",
+   "feedforward_design": {
+    "design": "C_delay_inverse",
+    "command_differs_from_reference": true,
+    "shape": "cardioid",
+    "size_mm": 60,
+    "loop_frequency_hz": 10.0,
+    "w_compensation": "none",
+    "identified_model": {
+     "k_1_per_ms2": {
+      "x": 0.208,
+      "y": 0.198,
+      "z": 2.48
+     },
+     "gamma_1_per_ms": {
+      "x": 0.0372,
+      "y": 0.0319,
+      "z": 0.0237
+     },
+     "tau0_ms": 0.9,
+     "supply_voltage_V": 15.0
+    },
+    "source_file": "cardioid_a23_f10_C_delay_inverse.npz"
+   },
+   "enabled": true
+  },
+  {
+   "name": "cardioid_a23_f10_C_nl",
+   "kind": "imported",
+   "source_npz": "source/cardioid_a23_f10_C_nl_inverse.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "8e2094705c548e3b3f75db7d31adfe5a48e6a0bc648cbf523e2aaf3b7279fabc",
+   "duration_sec": 8.0,
+   "campaign": "scaleup_20260924",
+   "measurement_family": "feedforward_validation",
+   "condition": "cardioid_a23_f10_c_nl",
+   "note": "Scale-up cardioid, width 60 mm, 10 Hz, design C_nl_inverse (lookahead + non-linear inverse model (OptiTrap force shape)). 15 V operating point (k 0.208/0.198/2.48 1/ms^2, tau0 0.9 ms). Peak speed 2755 mm/s, peak acceleration 322941 mm/s^2, max |u-r| 3.669 mm. The point of the series is whether the non-linear inverse model C_nl beats the linear C once the required force approaches the limit.",
+   "feedforward_design": {
+    "design": "C_nl_inverse",
+    "command_differs_from_reference": true,
+    "shape": "cardioid",
+    "size_mm": 60,
+    "loop_frequency_hz": 10.0,
+    "w_compensation": "none",
+    "identified_model": {
+     "k_1_per_ms2": {
+      "x": 0.208,
+      "y": 0.198,
+      "z": 2.48
+     },
+     "gamma_1_per_ms": {
+      "x": 0.0372,
+      "y": 0.0319,
+      "z": 0.0237
+     },
+     "tau0_ms": 0.9,
+     "supply_voltage_V": 15.0
+    },
+    "source_file": "cardioid_a23_f10_C_nl_inverse.npz"
+   },
+   "enabled": true
+  },
+  {
+   "name": "cardioid_a23_f10_OT_ident",
+   "kind": "imported",
+   "source_npz": "source/cardioid_a23_f10_OT_ident_nodelay.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "e269a496a6626a866a37632c9fb54ee2beaf552730ddf325e140682e116b9519",
+   "duration_sec": 8.0,
+   "campaign": "scaleup_20260924",
+   "measurement_family": "feedforward_validation",
+   "condition": "cardioid_a23_f10_ot_ident",
+   "note": "Scale-up cardioid, width 60 mm, 10 Hz, design OT_ident_nodelay (OptiTrap-style linear inverse model, no lookahead). 15 V operating point (k 0.208/0.198/2.48 1/ms^2, tau0 0.9 ms). Peak speed 2770 mm/s, peak acceleration 322605 mm/s^2, max |u-r| 1.408 mm. The point of the series is whether the non-linear inverse model C_nl beats the linear C once the required force approaches the limit.",
+   "feedforward_design": {
+    "design": "OT_ident_nodelay",
+    "command_differs_from_reference": true,
+    "shape": "cardioid",
+    "size_mm": 60,
+    "loop_frequency_hz": 10.0,
+    "w_compensation": "none",
+    "identified_model": {
+     "k_1_per_ms2": {
+      "x": 0.208,
+      "y": 0.198,
+      "z": 2.48
+     },
+     "gamma_1_per_ms": {
+      "x": 0.0372,
+      "y": 0.0319,
+      "z": 0.0237
+     },
+     "tau0_ms": 0.9,
+     "supply_voltage_V": 15.0
+    },
+    "source_file": "cardioid_a23_f10_OT_ident_nodelay.npz"
+   },
+   "enabled": true
+  }
+ ]
+}

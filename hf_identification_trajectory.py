@@ -35,6 +35,13 @@ PLAN_B_STAIRCASE_FAMILIES = frozenset({"plan_b2_z_line_source"})
 # narrowly bounded instead of turning the estimated escape boundary into a
 # general-purpose configurable limit.
 ESCAPE_BOUNDARY_PROBE_HARD_LIMIT_MM = 2.30
+# Hard cap on a single staircase jump (2026-09-24, requested by the analysis side
+# for the scale-up plan and approved by the user).  Jumps at or beyond the
+# estimated escape boundary lambda/4 = ESCAPE_OFFSET_MM are still reported in the
+# metadata (escape_boundary_exceeded), but they no longer stop the export: the
+# boundary protects the particle, not the hardware, and the scale-up commands
+# deliberately probe past it (2.5 and 3.0 mm horizontal steps).
+STAIRCASE_MAX_JUMP_MM = 3.2
 # Multi-axis simultaneous sine excitation (vzr identification, 2026-09-17).
 # Component phases default to the reference generator's fixed sequence so an
 # export reproduces the measurement-plan command numerically.
@@ -674,15 +681,10 @@ def _staircase_safety_check(
             f"staircase jump {max_step:.3f} mm exceeds max_step_mm={step_limit:.3f}"
         )
     escape_boundary_exceeded = max_step >= ESCAPE_OFFSET_MM
-    if escape_boundary_exceeded and not allow_escape_boundary_probe:
+    if max_step > STAIRCASE_MAX_JUMP_MM * (1.0 + 1e-12):
         raise ValueError(
-            f"staircase jump {max_step:.3f} mm is at or beyond the estimated "
-            f"escape boundary {ESCAPE_OFFSET_MM:.3f} mm"
-        )
-    if allow_escape_boundary_probe and max_step > ESCAPE_BOUNDARY_PROBE_HARD_LIMIT_MM * (1.0 + 1e-12):
-        raise ValueError(
-            f"escape-boundary probe jump {max_step:.3f} mm exceeds the hard probe cap "
-            f"{ESCAPE_BOUNDARY_PROBE_HARD_LIMIT_MM:.3f} mm"
+            f"staircase jump {max_step:.3f} mm exceeds the hard cap "
+            f"{STAIRCASE_MAX_JUMP_MM:.3f} mm"
         )
     return {
         "max_abs_offset_mm": max_offset,
@@ -694,6 +696,7 @@ def _staircase_safety_check(
         "escape_boundary_exceeded": escape_boundary_exceeded,
         "escape_boundary_probe_enabled": bool(allow_escape_boundary_probe),
         "escape_boundary_probe_hard_limit_mm": ESCAPE_BOUNDARY_PROBE_HARD_LIMIT_MM,
+        "staircase_max_jump_limit_mm": STAIRCASE_MAX_JUMP_MM,
         "force_peak_offset_mm": FORCE_PEAK_OFFSET_MM,
         "derivative_limits_applied": False,
         "derivative_limits_reason": "intentional_discontinuous_trap_command",

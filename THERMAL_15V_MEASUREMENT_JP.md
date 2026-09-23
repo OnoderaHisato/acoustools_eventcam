@@ -82,6 +82,26 @@
    powershell -ExecutionPolicy Bypass -File .\run_ff_heart_validation.ps1 -Designs "WXZ" -SupplyVoltage 15
    ```
 
+## 14 mm検証セッション（2026-09-24追加、解析側の `README_15V_SESSION.md`）
+
+15 Vの動作点で同定したk・γ（k_x 0.208、k_y 0.198、k_z 2.48 [1/ms²]、γ 0.0372／0.0319／0.0237 [1/ms]、
+τ0 0.9 ms）で設計し直したハートとカーディオイド（幅14 mm）を、1回のPATセッション（約95分）で撮ります。
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\run_ff_heart_15v_session.ps1 -DryRunOnly
+powershell -ExecutionPolicy Bypass -File .\run_ff_heart_15v_session.ps1
+```
+
+- 冷えた状態（休止45分以上）から始め、電源は15 Vにしておきます。最初のrunだけpreviewとEnterです。
+- 時計は音を出した瞬間から。各組は 5〜35分（暖機のkcheck x/z）、40分（kcheck x/y/z）、43分（走査1回目）、
+  46分（ハート10 Hz 7本）、56分、58分（カーディオイド10 Hz 7本）、68分、70分（ハート7 Hz 5本）、
+  77分（カーディオイド7 Hz 3本）、82分、85分（走査2回目）、95分 に始まります。合計52 run・約78 GB。
+- `-SkipWarmupChecks` で5〜35分のkcheckを省略（40分まで待つだけ）、`-SkipCardioidF7` で77分の3本を省略できます。
+- 新しい設計名: `_Ws4`（走査した場のなだらかな成分だけ補償）、`_Ws`（細かい構造まで補償）。
+- **フォルダ名**: 長さ制限（記述部28文字）のため、run名は短縮形です。解析側が使う目印は残しています。
+  例 `feedforward_validation_017_cardioid_a5p4_f10_C_Ws4_scale100_V15_<時刻>`。完全な設計名は
+  `pipeline_manifest.json` の `feedforward_design.design`（例 `C_delay_inverse_Ws4`）にあります。
+
 ## 注意
 
 - **1 回の PAT セッションで 39 run・約 65 分**になる。これまで「1 セッション 8〜12 run 以内」を目安にしていたのは、

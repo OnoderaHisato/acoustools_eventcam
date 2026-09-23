@@ -1,0 +1,856 @@
+{
+ "schema_version": 1,
+ "purpose": "14 mm validation session at the 15 V operating point (2026-09-24). Stiffness checks, two w-field scans, and the heart / cardioid designs supplied by the analysis side in G:/Experiment/20260923/measurement_plan/ff_heart_15V. Run names are shortened so that the run directory keeps the _V15 tag under the Windows path budget; the full design name is kept in feedforward_design.design.",
+ "defaults": {
+  "sample_hz": 10000,
+  "duration_sec": 8.0,
+  "ramp_sec": 0.5,
+  "safety_limits": {
+   "max_offset_mm": 9.5,
+   "max_speed_mm_s": 800.0,
+   "max_acceleration_mm_s2": 100000.0,
+   "max_endpoint_offset_mm": 0.01,
+   "max_command_reference_distance_mm": 1.0
+  }
+ },
+ "experiments": [
+  {
+   "name": "kcheck_x_S105_6jumps",
+   "kind": "staircase",
+   "tier": "C",
+   "axis": "x",
+   "duration_sec": 14.0,
+   "hold_sec": 2.0,
+   "initial_hold_sec": 2.0,
+   "final_hold_sec": 2.0,
+   "amplitudes_mm": [
+    1.05
+   ],
+   "directions": [
+    1,
+    -1,
+    1
+   ],
+   "repeats_within_run": 1,
+   "repeats": 1,
+   "safety_limits": {
+    "max_offset_mm": 1.05,
+    "max_step_mm": 1.05,
+    "max_speed_mm_s": 100.0,
+    "max_acceleration_mm_s2": 28000.0
+   },
+   "condition": "stiffness_check_x",
+   "note": "Stiffness check for the 15 V session: x steps 0 -> +1.05 -> 0 -> -1.05 -> 0 -> +1.05 -> 0 mm, 7 holds of 2.0 s, 6 jumps, 14.0 s. Same command as the ff_heart_20260918 kcheck so the 18 V and 15 V stiffness values compare directly.",
+   "enabled": true
+  },
+  {
+   "name": "kcheck_y_S105_6jumps",
+   "kind": "staircase",
+   "tier": "C",
+   "axis": "y",
+   "duration_sec": 14.0,
+   "hold_sec": 2.0,
+   "initial_hold_sec": 2.0,
+   "final_hold_sec": 2.0,
+   "amplitudes_mm": [
+    1.05
+   ],
+   "directions": [
+    1,
+    -1,
+    1
+   ],
+   "repeats_within_run": 1,
+   "repeats": 1,
+   "safety_limits": {
+    "max_offset_mm": 1.05,
+    "max_step_mm": 1.05,
+    "max_speed_mm_s": 100.0,
+    "max_acceleration_mm_s2": 28000.0
+   },
+   "condition": "stiffness_check_y",
+   "note": "Stiffness check for the 15 V session: y steps 0 -> +1.05 -> 0 -> -1.05 -> 0 -> +1.05 -> 0 mm, 7 holds of 2.0 s, 6 jumps, 14.0 s. Same command as the ff_heart_20260918 kcheck so the 18 V and 15 V stiffness values compare directly.",
+   "enabled": true
+  },
+  {
+   "name": "kcheck_z_S105_6jumps",
+   "kind": "staircase",
+   "tier": "C",
+   "axis": "z",
+   "duration_sec": 14.0,
+   "hold_sec": 2.0,
+   "initial_hold_sec": 2.0,
+   "final_hold_sec": 2.0,
+   "amplitudes_mm": [
+    1.05
+   ],
+   "directions": [
+    1,
+    -1,
+    1
+   ],
+   "repeats_within_run": 1,
+   "repeats": 1,
+   "safety_limits": {
+    "max_offset_mm": 1.05,
+    "max_step_mm": 1.05,
+    "max_speed_mm_s": 100.0,
+    "max_acceleration_mm_s2": 28000.0
+   },
+   "condition": "stiffness_check_z",
+   "note": "Stiffness check for the 15 V session: z steps 0 -> +1.05 -> 0 -> -1.05 -> 0 -> +1.05 -> 0 mm, 7 holds of 2.0 s, 6 jumps, 14.0 s. Same command as the ff_heart_20260918 kcheck so the 18 V and 15 V stiffness values compare directly.",
+   "enabled": true
+  },
+  {
+   "name": "wscan_XZ_a",
+   "kind": "imported",
+   "source_npz": "source/wscan_XZ_a.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "29b51dc277550df2fa4bfe9a07775c9af6d580829e793c2b2486ad487479d288",
+   "duration_sec": 14.0,
+   "campaign": "ff_heart_15v_20260923",
+   "measurement_family": "feedforward_validation",
+   "condition": "w_scan_xz_a",
+   "note": "Surface scan of the equilibrium-shift field w at 15 V: spiral centre -> 9.2 mm -> centre in the XZ plane (y = 0), counter-clockwise, 1.5 turns/s, 14 s, no compensation (u = r). Recorded twice per session, at least 40 minutes apart, to check how far the field moves while the boards stay at their operating point.",
+   "enabled": true,
+   "feedforward_design": {
+    "design": "WSCAN",
+    "command_differs_from_reference": false,
+    "description": "u(t) = r(t)",
+    "plane": "XZ",
+    "direction": "counter-clockwise",
+    "radius_mm": 9.2,
+    "plane_offset_mm": 0.0
+   }
+  },
+  {
+   "name": "wscan_XZ_b",
+   "kind": "imported",
+   "source_npz": "source/wscan_XZ_b.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "90f3ed0efb9c663a84fccbb867052e3cf38a6b4f3f1a9b1a123b5e52d158269f",
+   "duration_sec": 14.0,
+   "campaign": "ff_heart_15v_20260923",
+   "measurement_family": "feedforward_validation",
+   "condition": "w_scan_xz_b",
+   "note": "Surface scan of the equilibrium-shift field w at 15 V: spiral centre -> 9.2 mm -> centre in the XZ plane (y = 0), clockwise, 1.5 turns/s, 14 s, no compensation (u = r). Recorded twice per session, at least 40 minutes apart, to check how far the field moves while the boards stay at their operating point.",
+   "enabled": true,
+   "feedforward_design": {
+    "design": "WSCAN",
+    "command_differs_from_reference": false,
+    "description": "u(t) = r(t)",
+    "plane": "XZ",
+    "direction": "clockwise",
+    "radius_mm": 9.2,
+    "plane_offset_mm": 0.0
+   }
+  },
+  {
+   "name": "heart_f10_OFF",
+   "kind": "imported",
+   "source_npz": "source/heart_s7_f10_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "46c631c8cb6163a62defc3db48dbfee9a908559f4df45e2cccd09546ffe2a50a",
+   "duration_sec": 8.0,
+   "campaign": "ff_heart_15v_20260923",
+   "measurement_family": "feedforward_validation",
+   "condition": "heart_off_f10",
+   "note": "15 V operating point, heart at 10 Hz, design OFF (no w compensation). Designed by the analysis side from the 15 V identification (k 0.208/0.198/2.48 1/ms^2, tau0 0.9 ms). Peak speed 745 mm/s, peak acceleration 93401 mm/s^2, max |u-r| 0.000 mm.",
+   "enabled": true,
+   "feedforward_design": {
+    "design": "OFF",
+    "command_differs_from_reference": false,
+    "shape": "heart",
+    "loop_frequency_hz": 10.0,
+    "w_compensation": "none",
+    "identified_model": {
+     "k_1_per_ms2": {
+      "x": 0.208,
+      "y": 0.198,
+      "z": 2.48
+     },
+     "gamma_1_per_ms": {
+      "x": 0.0372,
+      "y": 0.0319,
+      "z": 0.0237
+     },
+     "tau0_ms": 0.9,
+     "supply_voltage_V": 15.0,
+     "source": "identified from the 15 V recordings of 2026-09-23 (analysis side)"
+    },
+    "source_file": "heart_s7_f10_OFF.npz"
+   }
+  },
+  {
+   "name": "heart_f10_OFF_Ws4",
+   "kind": "imported",
+   "source_npz": "source/heart_s7_f10_OFF_Ws4.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "fc5af96ec9f3ca6768f2f7b610758c1ecd0ef159ee9ede0f46664c3493fa482c",
+   "duration_sec": 8.0,
+   "campaign": "ff_heart_15v_20260923",
+   "measurement_family": "feedforward_validation",
+   "condition": "heart_off_ws4_f10",
+   "note": "15 V operating point, heart at 10 Hz, design OFF_Ws4 (w compensated with the smooth part of the scanned field only (wavenumber <= 4)). Designed by the analysis side from the 15 V identification (k 0.208/0.198/2.48 1/ms^2, tau0 0.9 ms). Peak speed 741 mm/s, peak acceleration 93315 mm/s^2, max |u-r| 0.178 mm.",
+   "enabled": true,
+   "feedforward_design": {
+    "design": "OFF_Ws4",
+    "command_differs_from_reference": true,
+    "shape": "heart",
+    "loop_frequency_hz": 10.0,
+    "w_compensation": "Ws4",
+    "identified_model": {
+     "k_1_per_ms2": {
+      "x": 0.208,
+      "y": 0.198,
+      "z": 2.48
+     },
+     "gamma_1_per_ms": {
+      "x": 0.0372,
+      "y": 0.0319,
+      "z": 0.0237
+     },
+     "tau0_ms": 0.9,
+     "supply_voltage_V": 15.0,
+     "source": "identified from the 15 V recordings of 2026-09-23 (analysis side)"
+    },
+    "source_file": "heart_s7_f10_OFF_Ws4.npz"
+   }
+  },
+  {
+   "name": "heart_f10_C_delay",
+   "kind": "imported",
+   "source_npz": "source/heart_s7_f10_C_delay_inverse.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "08cdb5e4336fb23753416ed16561f1b96921f3590ad1196cdbcd3ffd50e6205b",
+   "duration_sec": 8.0,
+   "campaign": "ff_heart_15v_20260923",
+   "measurement_family": "feedforward_validation",
+   "condition": "heart_c_delay_inverse_f10",
+   "note": "15 V operating point, heart at 10 Hz, design C_delay_inverse (no w compensation). Designed by the analysis side from the 15 V identification (k 0.208/0.198/2.48 1/ms^2, tau0 0.9 ms). Peak speed 709 mm/s, peak acceleration 92346 mm/s^2, max |u-r| 0.850 mm.",
+   "enabled": true,
+   "feedforward_design": {
+    "design": "C_delay_inverse",
+    "command_differs_from_reference": true,
+    "shape": "heart",
+    "loop_frequency_hz": 10.0,
+    "w_compensation": "none",
+    "identified_model": {
+     "k_1_per_ms2": {
+      "x": 0.208,
+      "y": 0.198,
+      "z": 2.48
+     },
+     "gamma_1_per_ms": {
+      "x": 0.0372,
+      "y": 0.0319,
+      "z": 0.0237
+     },
+     "tau0_ms": 0.9,
+     "supply_voltage_V": 15.0,
+     "source": "identified from the 15 V recordings of 2026-09-23 (analysis side)"
+    },
+    "source_file": "heart_s7_f10_C_delay_inverse.npz"
+   }
+  },
+  {
+   "name": "heart_f10_C_delay_Ws4",
+   "kind": "imported",
+   "source_npz": "source/heart_s7_f10_C_delay_inverse_Ws4.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "38fc8914d249c6dc3836d7883afd9b7dba33ee75d4afcd3d8089d3604924ed41",
+   "duration_sec": 8.0,
+   "campaign": "ff_heart_15v_20260923",
+   "measurement_family": "feedforward_validation",
+   "condition": "heart_c_delay_inverse_ws4_f10",
+   "note": "15 V operating point, heart at 10 Hz, design C_delay_inverse_Ws4 (w compensated with the smooth part of the scanned field only (wavenumber <= 4)). Designed by the analysis side from the 15 V identification (k 0.208/0.198/2.48 1/ms^2, tau0 0.9 ms). Peak speed 702 mm/s, peak acceleration 91998 mm/s^2, max |u-r| 0.874 mm.",
+   "enabled": true,
+   "feedforward_design": {
+    "design": "C_delay_inverse_Ws4",
+    "command_differs_from_reference": true,
+    "shape": "heart",
+    "loop_frequency_hz": 10.0,
+    "w_compensation": "Ws4",
+    "identified_model": {
+     "k_1_per_ms2": {
+      "x": 0.208,
+      "y": 0.198,
+      "z": 2.48
+     },
+     "gamma_1_per_ms": {
+      "x": 0.0372,
+      "y": 0.0319,
+      "z": 0.0237
+     },
+     "tau0_ms": 0.9,
+     "supply_voltage_V": 15.0,
+     "source": "identified from the 15 V recordings of 2026-09-23 (analysis side)"
+    },
+    "source_file": "heart_s7_f10_C_delay_inverse_Ws4.npz"
+   }
+  },
+  {
+   "name": "heart_f10_C_delay_Ws",
+   "kind": "imported",
+   "source_npz": "source/heart_s7_f10_C_delay_inverse_Ws.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "0dcd6e2873b91bad58be7c3d398bd99dfcac44275ecbae6a3c583a26bbe974a9",
+   "duration_sec": 8.0,
+   "campaign": "ff_heart_15v_20260923",
+   "measurement_family": "feedforward_validation",
+   "condition": "heart_c_delay_inverse_ws_f10",
+   "note": "15 V operating point, heart at 10 Hz, design C_delay_inverse_Ws (w compensated including the fine structure of the scanned field). Designed by the analysis side from the 15 V identification (k 0.208/0.198/2.48 1/ms^2, tau0 0.9 ms). Peak speed 721 mm/s, peak acceleration 94146 mm/s^2, max |u-r| 0.840 mm.",
+   "enabled": true,
+   "feedforward_design": {
+    "design": "C_delay_inverse_Ws",
+    "command_differs_from_reference": true,
+    "shape": "heart",
+    "loop_frequency_hz": 10.0,
+    "w_compensation": "Ws",
+    "identified_model": {
+     "k_1_per_ms2": {
+      "x": 0.208,
+      "y": 0.198,
+      "z": 2.48
+     },
+     "gamma_1_per_ms": {
+      "x": 0.0372,
+      "y": 0.0319,
+      "z": 0.0237
+     },
+     "tau0_ms": 0.9,
+     "supply_voltage_V": 15.0,
+     "source": "identified from the 15 V recordings of 2026-09-23 (analysis side)"
+    },
+    "source_file": "heart_s7_f10_C_delay_inverse_Ws.npz"
+   }
+  },
+  {
+   "name": "heart_f7_OFF",
+   "kind": "imported",
+   "source_npz": "source/heart_s7_f7_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "ffb35479218d51e91986ba1ac43ec67b9caf8dada6e1675059e05733c17c3aea",
+   "duration_sec": 8.0,
+   "campaign": "ff_heart_15v_20260923",
+   "measurement_family": "feedforward_validation",
+   "condition": "heart_off_f7",
+   "note": "15 V operating point, heart at 7 Hz, design OFF (no w compensation). Designed by the analysis side from the 15 V identification (k 0.208/0.198/2.48 1/ms^2, tau0 0.9 ms). Peak speed 521 mm/s, peak acceleration 45770 mm/s^2, max |u-r| 0.000 mm.",
+   "enabled": true,
+   "feedforward_design": {
+    "design": "OFF",
+    "command_differs_from_reference": false,
+    "shape": "heart",
+    "loop_frequency_hz": 7.0,
+    "w_compensation": "none",
+    "identified_model": {
+     "k_1_per_ms2": {
+      "x": 0.208,
+      "y": 0.198,
+      "z": 2.48
+     },
+     "gamma_1_per_ms": {
+      "x": 0.0372,
+      "y": 0.0319,
+      "z": 0.0237
+     },
+     "tau0_ms": 0.9,
+     "supply_voltage_V": 15.0,
+     "source": "identified from the 15 V recordings of 2026-09-23 (analysis side)"
+    },
+    "source_file": "heart_s7_f7_OFF.npz"
+   }
+  },
+  {
+   "name": "heart_f7_C_delay",
+   "kind": "imported",
+   "source_npz": "source/heart_s7_f7_C_delay_inverse.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "11cf7987ee3649fd10875a3ba38298c682ea03001707f2e3a9a2e595ee6f6031",
+   "duration_sec": 8.0,
+   "campaign": "ff_heart_15v_20260923",
+   "measurement_family": "feedforward_validation",
+   "condition": "heart_c_delay_inverse_f7",
+   "note": "15 V operating point, heart at 7 Hz, design C_delay_inverse (no w compensation). Designed by the analysis side from the 15 V identification (k 0.208/0.198/2.48 1/ms^2, tau0 0.9 ms). Peak speed 509 mm/s, peak acceleration 50377 mm/s^2, max |u-r| 0.561 mm.",
+   "enabled": true,
+   "feedforward_design": {
+    "design": "C_delay_inverse",
+    "command_differs_from_reference": true,
+    "shape": "heart",
+    "loop_frequency_hz": 7.0,
+    "w_compensation": "none",
+    "identified_model": {
+     "k_1_per_ms2": {
+      "x": 0.208,
+      "y": 0.198,
+      "z": 2.48
+     },
+     "gamma_1_per_ms": {
+      "x": 0.0372,
+      "y": 0.0319,
+      "z": 0.0237
+     },
+     "tau0_ms": 0.9,
+     "supply_voltage_V": 15.0,
+     "source": "identified from the 15 V recordings of 2026-09-23 (analysis side)"
+    },
+    "source_file": "heart_s7_f7_C_delay_inverse.npz"
+   }
+  },
+  {
+   "name": "heart_f7_C_delay_Ws4",
+   "kind": "imported",
+   "source_npz": "source/heart_s7_f7_C_delay_inverse_Ws4.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "d4460c425fb8646ed198f271e5f0c732e92ccfbdb2a6fddcb1c09f6e4b52c921",
+   "duration_sec": 8.0,
+   "campaign": "ff_heart_15v_20260923",
+   "measurement_family": "feedforward_validation",
+   "condition": "heart_c_delay_inverse_ws4_f7",
+   "note": "15 V operating point, heart at 7 Hz, design C_delay_inverse_Ws4 (w compensated with the smooth part of the scanned field only (wavenumber <= 4)). Designed by the analysis side from the 15 V identification (k 0.208/0.198/2.48 1/ms^2, tau0 0.9 ms). Peak speed 505 mm/s, peak acceleration 50594 mm/s^2, max |u-r| 0.591 mm.",
+   "enabled": true,
+   "feedforward_design": {
+    "design": "C_delay_inverse_Ws4",
+    "command_differs_from_reference": true,
+    "shape": "heart",
+    "loop_frequency_hz": 7.0,
+    "w_compensation": "Ws4",
+    "identified_model": {
+     "k_1_per_ms2": {
+      "x": 0.208,
+      "y": 0.198,
+      "z": 2.48
+     },
+     "gamma_1_per_ms": {
+      "x": 0.0372,
+      "y": 0.0319,
+      "z": 0.0237
+     },
+     "tau0_ms": 0.9,
+     "supply_voltage_V": 15.0,
+     "source": "identified from the 15 V recordings of 2026-09-23 (analysis side)"
+    },
+    "source_file": "heart_s7_f7_C_delay_inverse_Ws4.npz"
+   }
+  },
+  {
+   "name": "heart_f7_C_delay_Ws",
+   "kind": "imported",
+   "source_npz": "source/heart_s7_f7_C_delay_inverse_Ws.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "5386bba777cab55c99dcb0df0e6fe01b958bd02241507418e149e881da723c27",
+   "duration_sec": 8.0,
+   "campaign": "ff_heart_15v_20260923",
+   "measurement_family": "feedforward_validation",
+   "condition": "heart_c_delay_inverse_ws_f7",
+   "note": "15 V operating point, heart at 7 Hz, design C_delay_inverse_Ws (w compensated including the fine structure of the scanned field). Designed by the analysis side from the 15 V identification (k 0.208/0.198/2.48 1/ms^2, tau0 0.9 ms). Peak speed 527 mm/s, peak acceleration 53972 mm/s^2, max |u-r| 0.612 mm.",
+   "enabled": true,
+   "feedforward_design": {
+    "design": "C_delay_inverse_Ws",
+    "command_differs_from_reference": true,
+    "shape": "heart",
+    "loop_frequency_hz": 7.0,
+    "w_compensation": "Ws",
+    "identified_model": {
+     "k_1_per_ms2": {
+      "x": 0.208,
+      "y": 0.198,
+      "z": 2.48
+     },
+     "gamma_1_per_ms": {
+      "x": 0.0372,
+      "y": 0.0319,
+      "z": 0.0237
+     },
+     "tau0_ms": 0.9,
+     "supply_voltage_V": 15.0,
+     "source": "identified from the 15 V recordings of 2026-09-23 (analysis side)"
+    },
+    "source_file": "heart_s7_f7_C_delay_inverse_Ws.npz"
+   }
+  },
+  {
+   "name": "cardioid_a5p4_f10_OFF",
+   "kind": "imported",
+   "source_npz": "source/cardioid_a5p4_f10_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "66f085753f3394a387097652055f08761522a8e4d3e05b8e553b7f0c767a4dcf",
+   "duration_sec": 8.0,
+   "campaign": "ff_heart_15v_20260923",
+   "measurement_family": "feedforward_validation",
+   "condition": "cardioid_off_f10",
+   "note": "15 V operating point, cardioid at 10 Hz, design OFF (no w compensation). Designed by the analysis side from the 15 V identification (k 0.208/0.198/2.48 1/ms^2, tau0 0.9 ms). Peak speed 679 mm/s, peak acceleration 64072 mm/s^2, max |u-r| 0.000 mm.",
+   "enabled": true,
+   "feedforward_design": {
+    "design": "OFF",
+    "command_differs_from_reference": false,
+    "shape": "cardioid",
+    "loop_frequency_hz": 10.0,
+    "w_compensation": "none",
+    "identified_model": {
+     "k_1_per_ms2": {
+      "x": 0.208,
+      "y": 0.198,
+      "z": 2.48
+     },
+     "gamma_1_per_ms": {
+      "x": 0.0372,
+      "y": 0.0319,
+      "z": 0.0237
+     },
+     "tau0_ms": 0.9,
+     "supply_voltage_V": 15.0,
+     "source": "identified from the 15 V recordings of 2026-09-23 (analysis side)"
+    },
+    "source_file": "cardioid_a5p4_f10_OFF.npz"
+   }
+  },
+  {
+   "name": "cardioid_a5p4_f10_OFF_Ws4",
+   "kind": "imported",
+   "source_npz": "source/cardioid_a5p4_f10_OFF_Ws4.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "1134954e6d6810610c48c89b84db538c06cca3e7c22cfc5faf1a2dd4e3591f7d",
+   "duration_sec": 8.0,
+   "campaign": "ff_heart_15v_20260923",
+   "measurement_family": "feedforward_validation",
+   "condition": "cardioid_off_ws4_f10",
+   "note": "15 V operating point, cardioid at 10 Hz, design OFF_Ws4 (w compensated with the smooth part of the scanned field only (wavenumber <= 4)). Designed by the analysis side from the 15 V identification (k 0.208/0.198/2.48 1/ms^2, tau0 0.9 ms). Peak speed 674 mm/s, peak acceleration 64247 mm/s^2, max |u-r| 0.146 mm.",
+   "enabled": true,
+   "feedforward_design": {
+    "design": "OFF_Ws4",
+    "command_differs_from_reference": true,
+    "shape": "cardioid",
+    "loop_frequency_hz": 10.0,
+    "w_compensation": "Ws4",
+    "identified_model": {
+     "k_1_per_ms2": {
+      "x": 0.208,
+      "y": 0.198,
+      "z": 2.48
+     },
+     "gamma_1_per_ms": {
+      "x": 0.0372,
+      "y": 0.0319,
+      "z": 0.0237
+     },
+     "tau0_ms": 0.9,
+     "supply_voltage_V": 15.0,
+     "source": "identified from the 15 V recordings of 2026-09-23 (analysis side)"
+    },
+    "source_file": "cardioid_a5p4_f10_OFF_Ws4.npz"
+   }
+  },
+  {
+   "name": "cardioid_a5p4_f10_C_delay",
+   "kind": "imported",
+   "source_npz": "source/cardioid_a5p4_f10_C_delay_inverse.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "9625211353d66259a7b81fec0be4ac501da579bd382bdfcd73f78e5d606fdf33",
+   "duration_sec": 8.0,
+   "campaign": "ff_heart_15v_20260923",
+   "measurement_family": "feedforward_validation",
+   "condition": "cardioid_c_delay_inverse_f10",
+   "note": "15 V operating point, cardioid at 10 Hz, design C_delay_inverse (no w compensation). Designed by the analysis side from the 15 V identification (k 0.208/0.198/2.48 1/ms^2, tau0 0.9 ms). Peak speed 650 mm/s, peak acceleration 75742 mm/s^2, max |u-r| 0.839 mm.",
+   "enabled": true,
+   "feedforward_design": {
+    "design": "C_delay_inverse",
+    "command_differs_from_reference": true,
+    "shape": "cardioid",
+    "loop_frequency_hz": 10.0,
+    "w_compensation": "none",
+    "identified_model": {
+     "k_1_per_ms2": {
+      "x": 0.208,
+      "y": 0.198,
+      "z": 2.48
+     },
+     "gamma_1_per_ms": {
+      "x": 0.0372,
+      "y": 0.0319,
+      "z": 0.0237
+     },
+     "tau0_ms": 0.9,
+     "supply_voltage_V": 15.0,
+     "source": "identified from the 15 V recordings of 2026-09-23 (analysis side)"
+    },
+    "source_file": "cardioid_a5p4_f10_C_delay_inverse.npz"
+   }
+  },
+  {
+   "name": "cardioid_a5p4_f10_C_Ws4",
+   "kind": "imported",
+   "source_npz": "source/cardioid_a5p4_f10_C_delay_inverse_Ws4.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "037c409023fe12793aaa7384e4c463c305df2972d9631bc99363d50c83e9d280",
+   "duration_sec": 8.0,
+   "campaign": "ff_heart_15v_20260923",
+   "measurement_family": "feedforward_validation",
+   "condition": "cardioid_c_delay_inverse_ws4_f10",
+   "note": "15 V operating point, cardioid at 10 Hz, design C_delay_inverse_Ws4 (w compensated with the smooth part of the scanned field only (wavenumber <= 4)). Designed by the analysis side from the 15 V identification (k 0.208/0.198/2.48 1/ms^2, tau0 0.9 ms). Peak speed 648 mm/s, peak acceleration 75866 mm/s^2, max |u-r| 0.900 mm.",
+   "enabled": true,
+   "feedforward_design": {
+    "design": "C_delay_inverse_Ws4",
+    "command_differs_from_reference": true,
+    "shape": "cardioid",
+    "loop_frequency_hz": 10.0,
+    "w_compensation": "Ws4",
+    "identified_model": {
+     "k_1_per_ms2": {
+      "x": 0.208,
+      "y": 0.198,
+      "z": 2.48
+     },
+     "gamma_1_per_ms": {
+      "x": 0.0372,
+      "y": 0.0319,
+      "z": 0.0237
+     },
+     "tau0_ms": 0.9,
+     "supply_voltage_V": 15.0,
+     "source": "identified from the 15 V recordings of 2026-09-23 (analysis side)"
+    },
+    "source_file": "cardioid_a5p4_f10_C_delay_inverse_Ws4.npz"
+   }
+  },
+  {
+   "name": "cardioid_a5p4_f10_C_Ws",
+   "kind": "imported",
+   "source_npz": "source/cardioid_a5p4_f10_C_delay_inverse_Ws.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "4062c0dc4571910cea060d66bc5d496a7fa8a584c6ec57aa789731a2700a865b",
+   "duration_sec": 8.0,
+   "campaign": "ff_heart_15v_20260923",
+   "measurement_family": "feedforward_validation",
+   "condition": "cardioid_c_delay_inverse_ws_f10",
+   "note": "15 V operating point, cardioid at 10 Hz, design C_delay_inverse_Ws (w compensated including the fine structure of the scanned field). Designed by the analysis side from the 15 V identification (k 0.208/0.198/2.48 1/ms^2, tau0 0.9 ms). Peak speed 683 mm/s, peak acceleration 74213 mm/s^2, max |u-r| 0.894 mm.",
+   "enabled": true,
+   "feedforward_design": {
+    "design": "C_delay_inverse_Ws",
+    "command_differs_from_reference": true,
+    "shape": "cardioid",
+    "loop_frequency_hz": 10.0,
+    "w_compensation": "Ws",
+    "identified_model": {
+     "k_1_per_ms2": {
+      "x": 0.208,
+      "y": 0.198,
+      "z": 2.48
+     },
+     "gamma_1_per_ms": {
+      "x": 0.0372,
+      "y": 0.0319,
+      "z": 0.0237
+     },
+     "tau0_ms": 0.9,
+     "supply_voltage_V": 15.0,
+     "source": "identified from the 15 V recordings of 2026-09-23 (analysis side)"
+    },
+    "source_file": "cardioid_a5p4_f10_C_delay_inverse_Ws.npz"
+   }
+  },
+  {
+   "name": "cardioid_a5p4_f7_C_delay",
+   "kind": "imported",
+   "source_npz": "source/cardioid_a5p4_f7_C_delay_inverse.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "8011f4d2a5381f8ed96768e39556982d442f6dad5678ae62ee31048b50c97212",
+   "duration_sec": 8.0,
+   "campaign": "ff_heart_15v_20260923",
+   "measurement_family": "feedforward_validation",
+   "condition": "cardioid_c_delay_inverse_f7",
+   "note": "15 V operating point, cardioid at 7 Hz, design C_delay_inverse (no w compensation). Designed by the analysis side from the 15 V identification (k 0.208/0.198/2.48 1/ms^2, tau0 0.9 ms). Peak speed 465 mm/s, peak acceleration 31283 mm/s^2, max |u-r| 0.554 mm.",
+   "enabled": true,
+   "feedforward_design": {
+    "design": "C_delay_inverse",
+    "command_differs_from_reference": true,
+    "shape": "cardioid",
+    "loop_frequency_hz": 7.0,
+    "w_compensation": "none",
+    "identified_model": {
+     "k_1_per_ms2": {
+      "x": 0.208,
+      "y": 0.198,
+      "z": 2.48
+     },
+     "gamma_1_per_ms": {
+      "x": 0.0372,
+      "y": 0.0319,
+      "z": 0.0237
+     },
+     "tau0_ms": 0.9,
+     "supply_voltage_V": 15.0,
+     "source": "identified from the 15 V recordings of 2026-09-23 (analysis side)"
+    },
+    "source_file": "cardioid_a5p4_f7_C_delay_inverse.npz"
+   }
+  },
+  {
+   "name": "cardioid_a5p4_f7_C_Ws4",
+   "kind": "imported",
+   "source_npz": "source/cardioid_a5p4_f7_C_delay_inverse_Ws4.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "fd6d346f3ae8ec18c6207f68b4fdf5586a59066cbcb67c4395aa1dfa355ab148",
+   "duration_sec": 8.0,
+   "campaign": "ff_heart_15v_20260923",
+   "measurement_family": "feedforward_validation",
+   "condition": "cardioid_c_delay_inverse_ws4_f7",
+   "note": "15 V operating point, cardioid at 7 Hz, design C_delay_inverse_Ws4 (w compensated with the smooth part of the scanned field only (wavenumber <= 4)). Designed by the analysis side from the 15 V identification (k 0.208/0.198/2.48 1/ms^2, tau0 0.9 ms). Peak speed 460 mm/s, peak acceleration 31324 mm/s^2, max |u-r| 0.615 mm.",
+   "enabled": true,
+   "feedforward_design": {
+    "design": "C_delay_inverse_Ws4",
+    "command_differs_from_reference": true,
+    "shape": "cardioid",
+    "loop_frequency_hz": 7.0,
+    "w_compensation": "Ws4",
+    "identified_model": {
+     "k_1_per_ms2": {
+      "x": 0.208,
+      "y": 0.198,
+      "z": 2.48
+     },
+     "gamma_1_per_ms": {
+      "x": 0.0372,
+      "y": 0.0319,
+      "z": 0.0237
+     },
+     "tau0_ms": 0.9,
+     "supply_voltage_V": 15.0,
+     "source": "identified from the 15 V recordings of 2026-09-23 (analysis side)"
+    },
+    "source_file": "cardioid_a5p4_f7_C_delay_inverse_Ws4.npz"
+   }
+  },
+  {
+   "name": "cardioid_a5p4_f7_C_Ws",
+   "kind": "imported",
+   "source_npz": "source/cardioid_a5p4_f7_C_delay_inverse_Ws.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "121e1d4bb92622aa91abb5264108adc9c1def203df251646ac9105919628fc38",
+   "duration_sec": 8.0,
+   "campaign": "ff_heart_15v_20260923",
+   "measurement_family": "feedforward_validation",
+   "condition": "cardioid_c_delay_inverse_ws_f7",
+   "note": "15 V operating point, cardioid at 7 Hz, design C_delay_inverse_Ws (w compensated including the fine structure of the scanned field). Designed by the analysis side from the 15 V identification (k 0.208/0.198/2.48 1/ms^2, tau0 0.9 ms). Peak speed 527 mm/s, peak acceleration 51940 mm/s^2, max |u-r| 0.683 mm.",
+   "enabled": true,
+   "feedforward_design": {
+    "design": "C_delay_inverse_Ws",
+    "command_differs_from_reference": true,
+    "shape": "cardioid",
+    "loop_frequency_hz": 7.0,
+    "w_compensation": "Ws",
+    "identified_model": {
+     "k_1_per_ms2": {
+      "x": 0.208,
+      "y": 0.198,
+      "z": 2.48
+     },
+     "gamma_1_per_ms": {
+      "x": 0.0372,
+      "y": 0.0319,
+      "z": 0.0237
+     },
+     "tau0_ms": 0.9,
+     "supply_voltage_V": 15.0,
+     "source": "identified from the 15 V recordings of 2026-09-23 (analysis side)"
+    },
+    "source_file": "cardioid_a5p4_f7_C_delay_inverse_Ws.npz"
+   }
+  }
+ ]
+}

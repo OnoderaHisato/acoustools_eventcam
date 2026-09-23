@@ -349,14 +349,15 @@ class HighFrequencyIdentificationTests(unittest.TestCase):
                 ]
                 self.assertEqual(target_levels, sorted(target_levels))
 
-    def test_escape_boundary_crossing_requires_tier_h_opt_in_and_hard_cap(self) -> None:
+    def test_escape_boundary_crossing_is_reported_and_capped_at_the_hard_limit(self) -> None:
+        """2026-09-24: the gate is the 3.2 mm hard cap; lambda/4 is reported, not enforced."""
         defaults = {
             "sample_hz": 1000,
             "duration_sec": 1.0,
             "ramp_sec": 0.0,
             "safety_limits": {
-                "max_offset_mm": 2.31,
-                "max_step_mm": 2.31,
+                "max_offset_mm": 3.4,
+                "max_step_mm": 3.4,
                 "max_speed_mm_s": 1.0,
                 "max_acceleration_mm_s2": 1.0,
             },
@@ -370,24 +371,25 @@ class HighFrequencyIdentificationTests(unittest.TestCase):
             "amplitudes_mm": [2.15],
             "directions": [1],
         }
-        with self.assertRaisesRegex(ValueError, "escape boundary"):
-            hf.generate_trajectory({**base, "tier": "G"}, defaults)
+        # A jump past lambda/4 no longer stops the export; it is flagged in the metadata.
+        offset, metadata = hf.generate_trajectory({**base, "tier": "G"}, defaults)
+        safety = metadata["generation_detail"]["safety"]
+        self.assertAlmostEqual(np.max(np.abs(offset[:, 0])), 2.15)
+        self.assertTrue(safety["escape_boundary_exceeded"])
+        self.assertAlmostEqual(safety["escape_offset_mm"], hf.ESCAPE_OFFSET_MM)
+        self.assertAlmostEqual(safety["staircase_max_jump_limit_mm"], hf.STAIRCASE_MAX_JUMP_MM)
+        # Tier H keeps its own opt-in.
         with self.assertRaisesRegex(ValueError, "require allow_escape_boundary_probe"):
             hf.generate_trajectory({**base, "tier": "H"}, defaults)
-        offset, metadata = hf.generate_trajectory(
-            {**base, "tier": "H", "allow_escape_boundary_probe": True}, defaults
-        )
-        self.assertAlmostEqual(np.max(np.abs(offset[:, 0])), 2.15)
-        self.assertTrue(metadata["generation_detail"]["safety"]["escape_boundary_exceeded"])
-        with self.assertRaisesRegex(ValueError, "hard probe cap"):
+        # The scale-up steps (2.5 and 3.0 mm) pass; beyond the 3.2 mm cap they do not.
+        for amplitude in (2.5, 3.0):
+            offset, _metadata = hf.generate_trajectory(
+                {**base, "tier": "G", "amplitudes_mm": [amplitude]}, defaults
+            )
+            self.assertAlmostEqual(np.max(np.abs(offset[:, 0])), amplitude)
+        with self.assertRaisesRegex(ValueError, "exceeds the hard cap"):
             hf.generate_trajectory(
-                {
-                    **base,
-                    "tier": "H",
-                    "allow_escape_boundary_probe": True,
-                    "amplitudes_mm": [2.31],
-                },
-                defaults,
+                {**base, "tier": "G", "amplitudes_mm": [3.3]}, defaults
             )
 
     def test_step_hardware_loader_uses_jump_limits_and_keeps_exact_steps(self) -> None:
