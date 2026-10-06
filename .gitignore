@@ -103,6 +103,18 @@
 !/large_step_20260924/
 !/large_step_20260924/*.md
 
+# Field-mapping session at 15 V (date not fixed): 7 surfaces x a/b, twice. Plan tracked;
+# source/*.npz and the export stay ignored.
+!/fieldscan_15V/
+!/fieldscan_15V/*.json
+!/generalization_20260927/
+!/generalization_20260927/*.json
+!/cooling_20261006/
+!/cooling_20261006/*.json
+# dngstation (sindy-server2) container runner for the 3D post-processing
+!/run_post_and_compare_list_docker.sh
+!/run_leftmask_reprocess_docker.sh
+
 # Standalone camera-only code and instructions; keep SDKs/captures/calibration outputs ignored.
 !/eventcam_standalone/
 !/eventcam_standalone/.gitignore

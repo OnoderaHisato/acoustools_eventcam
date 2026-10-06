@@ -156,6 +156,114 @@ class AutoEntryTests(unittest.TestCase):
             self.assertTrue(all("supply" in run for run in session_json["runs"]))
 
 
+class CurrentGuardTests(unittest.TestCase):
+    def verdict(self, current, now_s: float, baseline_min: float = 2.0, **kwargs):
+        with TemporaryDirectory() as temporary:
+            log = Path(temporary) / "psu.csv"
+            write_log(log, 1000.0, 900, current, **kwargs)
+            return link.current_guard_verdict(link.load_psu_rows(log), 1000.0, 1000.0 + now_s, baseline_min, 0.05)
+
+    def test_a_rise_past_the_limit_stops_and_a_smaller_one_does_not(self) -> None:
+        rising = self.verdict(lambda k: 4.0 if k < 200 else 4.3, now_s=300.0)
+        self.assertTrue(rising["stop"])
+        self.assertEqual(rising["reason"], "current_rise")
+        self.assertAlmostEqual(rising["baseline_A"], 4.0)
+        self.assertAlmostEqual(rising["rise_percent"], 7.5, places=2)
+        small = self.verdict(lambda k: 4.0 if k < 200 else 4.15, now_s=300.0)
+        self.assertFalse(small["stop"])
+        self.assertAlmostEqual(small["rise_percent"], 3.75, places=2)
+
+    def test_a_board_drop_stops_even_before_the_baseline_minute(self) -> None:
+        # a fall to 60 %: above the half used for the event reports, below the guard's 75 %
+        dropped = self.verdict(lambda k: 4.0 if k < 60 else 2.4, now_s=90.0)
+        self.assertTrue(dropped["stop"])
+        self.assertEqual(dropped["reason"], "board_drop")
+        self.assertEqual(dropped["event"]["kind"], "current_drop")
+        self.assertEqual(dropped["event"]["to_A"], 2.4)
+
+    def test_before_the_baseline_minute_only_drops_count(self) -> None:
+        early = self.verdict(lambda k: 4.0 if k < 60 else 5.0, now_s=100.0)
+        self.assertFalse(early["stop"])
+        self.assertIn("baseline", early["note"])
+
+    def test_a_single_spike_and_readings_after_now_are_ignored(self) -> None:
+        spike = self.verdict(lambda k: 4.95 if k == 299 else 4.0, now_s=300.0)
+        self.assertFalse(spike["stop"])
+        future = self.verdict(lambda k: 4.0 if k < 400 else 1.0, now_s=300.0)   # the drop is at 400 s
+        self.assertFalse(future["stop"])
+
+    def run_session(self, root: Path, argv_extra: list[str], current):
+        export_dir = write_export(root)
+        log = root / "psu_log_x.csv"
+        write_log(log, SOUND_ON_SEC - 30.0, 600, lambda k: current(k - 30))
+        output_root = root / "rec"
+        clock = FakeClock(SOUND_ON_SEC + 20.0)
+        recorded = []
+
+        def record(*_args, **_kwargs):
+            recorded.append(clock.now - SOUND_ON_SEC)
+            clock.now += 60.0
+            return 0, None
+
+        events = mock.Mock()
+        events.open_hw.return_value = SimpleNamespace(
+            current_pos=(0.0, 0.0, 0.0), active_output_started_wall_ns=int(SOUND_ON_SEC * 1e9)
+        )
+        events.precompute.return_value = SimpleNamespace(name="first")
+        argv = [
+            "--hf-export-dir", str(export_dir), "--output-dir", str(output_root),
+            "--hf-run", "kx=1", "--hf-run", "ky=1", "--hf-run", "kz=1", "--hf-run", "kx=1",
+            "--acknowledge-step-response-risk", "--unattended-after-first-checkpoint",
+        ] + argv_extra
+        argv = [str(log) if item == "LOG" else item for item in argv]
+        with mock.patch.object(auto_record, "open_recording_hardware_session", events.open_hw), \
+                mock.patch.object(auto_record, "shutdown_recording_hardware_session", events.close_hw), \
+                mock.patch.object(auto_record, "precompute_hologram_playback", events.precompute), \
+                mock.patch.object(auto_record, "run_recording", side_effect=record), \
+                mock.patch.object(auto_record, "time", clock):
+            code = auto_record.main(argv)
+        sessions = list(output_root.glob("auto_recording_session_*.json"))
+        session = json.loads(sessions[0].read_text(encoding="utf-8")) if sessions else None
+        return code, recorded, session, events
+
+    def test_the_guard_stops_the_session_before_the_next_run(self) -> None:
+        with TemporaryDirectory() as temporary:
+            # runs start at 20, 80, 140, 200 s after sound on; the current rises 12.5 % at 120 s
+            code, recorded, session, events = self.run_session(
+                Path(temporary),
+                ["--psu-log", "LOG", "--current-guard-rise-percent", "5", "--current-guard-baseline-min", "1"],
+                lambda s: 4.0 if s < 120 else 4.5,
+            )
+            self.assertEqual(code, 3)
+            self.assertEqual(recorded, [20.0, 80.0])
+            self.assertEqual(session["status"], "stopped_by_current_guard")
+            self.assertEqual(session["current_guard"]["stopped_before_run_number"], 3)
+            self.assertEqual(session["current_guard"]["reason"], "current_rise")
+            self.assertEqual(session["current_guard_settings"]["rise_percent"], 5.0)
+            self.assertEqual(len(session["current_guard_checks"]), 3)
+            events.close_hw.assert_called_once()   # PAT output is turned off
+
+    def test_a_steady_current_records_every_run(self) -> None:
+        with TemporaryDirectory() as temporary:
+            code, recorded, session, _events = self.run_session(
+                Path(temporary),
+                ["--psu-log", "LOG", "--current-guard-rise-percent", "5", "--current-guard-baseline-min", "1"],
+                lambda s: 4.0 + 0.001 * max(0, s - 60),   # +3.5 % by the last run at 200 s
+            )
+            self.assertEqual(code, 0)
+            self.assertEqual(len(recorded), 4)
+            self.assertEqual(session["status"], "complete")
+
+    def test_the_guard_needs_a_supply_log(self) -> None:
+        with TemporaryDirectory() as temporary:
+            code, recorded, session, events = self.run_session(
+                Path(temporary), ["--current-guard-rise-percent", "5"], lambda s: 4.0
+            )
+            self.assertEqual(code, 2)
+            self.assertEqual(recorded, [])
+            events.open_hw.assert_not_called()
+
+
 class ReportTests(unittest.TestCase):
     def test_report_is_written_once_with_steadiness_and_events(self) -> None:
         with TemporaryDirectory() as temporary:

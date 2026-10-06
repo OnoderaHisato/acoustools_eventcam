@@ -23,7 +23,7 @@ from stereo_acoustools_3d_auto_common import (
     select_conditions,
     write_preview_set,
 )
-from psu_run_link import attach_supply_record
+from psu_run_link import GUARD_DROP_FRACTION, attach_supply_record, current_guard_verdict, load_psu_rows
 from stereo_acoustools_3d_common import PROCESSING_CONFIG_FIELDS, atomic_write_json
 from stereo_acoustools_3d_hf_common import (
     hf_run_selections,
@@ -285,6 +285,26 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         ),
     )
     parser.add_argument(
+        "--current-guard-rise-percent",
+        type=float,
+        default=0.0,
+        metavar="PERCENT",
+        help=(
+            "With --psu-log: before each run, stop the session (PAT off, exit code 3) when a PAT "
+            "board has dropped out (current below 75% of the preceding 30 s with the output ON) or the output went "
+            "off, or when the supply current has risen this many percent above its value at "
+            "--current-guard-baseline-min minutes after sound on. The boards heat and the current "
+            "climbs for tens of minutes before a fuse trips. 0 (default) disables the guard."
+        ),
+    )
+    parser.add_argument(
+        "--current-guard-baseline-min",
+        type=float,
+        default=40.0,
+        metavar="MIN",
+        help="Minutes after sound on at which the guard takes the reference current (default 40).",
+    )
+    parser.add_argument(
         "--schedule-interval-sec",
         type=float,
         default=None,
@@ -312,6 +332,28 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
             "before these runs, given as 1-based positions in the selected order (for example "
             "'5,17'). Use it where the plan says to confirm that the particle survived before "
             "the next, larger command."
+        ),
+    )
+    parser.add_argument(
+        "--particle-change-run-numbers",
+        default="",
+        metavar="LIST",
+        help=(
+            "With --unattended-after-first-checkpoint: before these runs (1-based positions), stop and "
+            "ask the operator to replace the particle, then press Enter. The time of that Enter is "
+            "written to the session JSON under particle_changes, and the run also gets the stereo "
+            "preview and Enter checkpoint so the new particle is confirmed."
+        ),
+    )
+    parser.add_argument(
+        "--operator-actions",
+        default="",
+        metavar="LIST",
+        help=(
+            "With --unattended-after-first-checkpoint: before the given runs, stop and ask the operator to do "
+            "something (for example switch the cooling fans), then press Enter. Given as 'N:action' items "
+            "separated by ';' (for example '5:fan_on;9:fan_off'). The time of each Enter is written to the "
+            "session JSON under operator_actions; the run also gets the stereo preview and Enter checkpoint."
         ),
     )
     parser.add_argument(
@@ -829,6 +871,60 @@ def main(argv: list[str] | None = None) -> int:
                 "[AUTO] Extra preview/Enter checkpoints before run(s) "
                 + ", ".join(str(number) for number in sorted(checkpoint_run_numbers))
             )
+        particle_change_run_numbers: set[int] = set()
+        if str(args.particle_change_run_numbers).strip():
+            if not unattended:
+                raise ValueError(
+                    "--particle-change-run-numbers requires --unattended-after-first-checkpoint"
+                )
+            for item in str(args.particle_change_run_numbers).split(","):
+                if not item.strip():
+                    continue
+                number = int(item)
+                if not 2 <= number <= len(conditions):
+                    raise ValueError(
+                        f"--particle-change-run-numbers: {number} is outside 2..{len(conditions)}"
+                    )
+                particle_change_run_numbers.add(number)
+            checkpoint_run_numbers |= particle_change_run_numbers
+            print(
+                "[AUTO] Particle change (with its time recorded) before run(s) "
+                + ", ".join(str(number) for number in sorted(particle_change_run_numbers))
+            )
+        operator_actions: dict[int, list[str]] = {}
+        if str(args.operator_actions).strip():
+            if not unattended:
+                raise ValueError("--operator-actions requires --unattended-after-first-checkpoint")
+            for item in str(args.operator_actions).split(";"):
+                if not item.strip():
+                    continue
+                number_text, separator, action = item.partition(":")
+                action = action.strip()
+                if not separator or not action:
+                    raise ValueError(f"--operator-actions: expected 'N:action', got {item!r}")
+                number = int(number_text)
+                if not 1 <= number <= len(conditions):
+                    raise ValueError(f"--operator-actions: {number} is outside 1..{len(conditions)}")
+                operator_actions.setdefault(number, []).append(action)
+            # run 1 already stops for the first preview; later ones get an extra checkpoint
+            checkpoint_run_numbers |= {number for number in operator_actions if number > 1}
+            print(
+                "[AUTO] Operator actions (with their times recorded): "
+                + "; ".join(f"before run {n}: {', '.join(a)}" for n, a in sorted(operator_actions.items()))
+            )
+        current_guard_rise = float(args.current_guard_rise_percent) / 100.0
+        if not math.isfinite(current_guard_rise) or current_guard_rise < 0.0:
+            raise ValueError("--current-guard-rise-percent must be zero or positive")
+        if current_guard_rise > 0.0:
+            if args.psu_log is None:
+                raise ValueError("--current-guard-rise-percent needs --psu-log (the supply log to watch)")
+            if not math.isfinite(float(args.current_guard_baseline_min)) or args.current_guard_baseline_min < 0.0:
+                raise ValueError("--current-guard-baseline-min must be zero or positive")
+            print(
+                f"[AUTO][PSU] Current guard on: stop before a run if a board drops out or the current "
+                f"is {args.current_guard_rise_percent:g}% above its value at "
+                f"{args.current_guard_baseline_min:g} min after sound on."
+            )
         schedule_offsets: list[float | None] | None = None
         if args.schedule_offsets_sec is not None:
             if not unattended:
@@ -1205,6 +1301,15 @@ def main(argv: list[str] | None = None) -> int:
             session["supply_voltage_V"] = supply_voltage
             session["run_label_tag"] = run_tag
             session["psu_log"] = "" if args.psu_log is None else str(args.psu_log.resolve())
+            session["current_guard_settings"] = (
+                {
+                    "rise_percent": float(args.current_guard_rise_percent),
+                    "baseline_min": float(args.current_guard_baseline_min),
+                    "drop_fraction": GUARD_DROP_FRACTION,
+                }
+                if current_guard_rise > 0.0
+                else None
+            )
             session["schedule"] = (
                 {
                     "interval_sec": schedule_interval_sec,
@@ -1340,6 +1445,95 @@ def main(argv: list[str] | None = None) -> int:
                             atomic_write_json(session_path, session)
                             print("[AUTO] Interrupted while waiting for the next group.")
                             return 130
+                    if current_guard_rise > 0.0 and sound_on_wall_ns is not None:
+                        try:
+                            verdict = current_guard_verdict(
+                                load_psu_rows(args.psu_log),
+                                sound_on_wall_ns / 1e9,
+                                time.time(),
+                                baseline_min=float(args.current_guard_baseline_min),
+                                rise_fraction=current_guard_rise,
+                            )
+                        except Exception as exc:  # noqa: BLE001 - an unreadable log must not stop a run
+                            verdict = {"stop": False, "error": repr(exc)[:300]}
+                            print(f"[AUTO][PSU][WARN] Current guard could not read the supply log: {exc}")
+                        session.setdefault("current_guard_checks", []).append(
+                            {"run_number": run_index + 1, "label": condition.label, **verdict}
+                        )
+                        if verdict.get("stop"):
+                            session["current_guard"] = {
+                                "stopped_before_run_number": run_index + 1,
+                                "stopped_before_label": condition.label,
+                                **verdict,
+                            }
+                            session["status"] = "stopped_by_current_guard"
+                            session["finished_at"] = dt.datetime.now().isoformat(timespec="milliseconds")
+                            atomic_write_json(session_path, session)
+                            print(
+                                f"[AUTO][PSU][STOP] Current guard ({verdict['reason']}) before run "
+                                f"{run_index + 1} ({condition.label}) at "
+                                f"{verdict.get('minutes_after_sound_on')} min after sound on: "
+                                f"{ {k: verdict[k] for k in ('baseline_A', 'recent_A', 'rise_percent', 'event') if k in verdict} }. "
+                                "The remaining runs are not recorded; PAT output is turned off."
+                            )
+                            return 3
+                    for action in operator_actions.get(run_index + 1, []):
+                        print(
+                            f"\n[AUTO][OPERATOR ACTION] Before run {run_index + 1} ({condition.label}): "
+                            f"{action}. Do it now (PAT keeps holding at the centre), then press Enter. "
+                            "The time of this Enter is recorded."
+                        )
+                        try:
+                            input(f"[AUTO][OPERATOR ACTION] Press Enter once done ({action}): ")
+                        except (EOFError, KeyboardInterrupt):
+                            session["status"] = "interrupted"
+                            session["finished_at"] = dt.datetime.now().isoformat(timespec="milliseconds")
+                            atomic_write_json(session_path, session)
+                            print(f"[AUTO] Interrupted at the operator action ({action}).")
+                            return 130
+                        done_at = dt.datetime.now()
+                        session.setdefault("operator_actions", []).append(
+                            {
+                                "before_run_number": run_index + 1,
+                                "before_label": condition.label,
+                                "action": action,
+                                "confirmed_at": done_at.isoformat(timespec="milliseconds"),
+                                "minutes_after_sound_on": (
+                                    None
+                                    if sound_on_wall_ns is None
+                                    else round((done_at.timestamp() - sound_on_wall_ns / 1e9) / 60.0, 2)
+                                ),
+                            }
+                        )
+                        atomic_write_json(session_path, session)
+                    if (run_index + 1) in particle_change_run_numbers:
+                        print(
+                            f"\n[AUTO][PARTICLE CHANGE] Before run {run_index + 1} ({condition.label}): "
+                            "replace the particle now (PAT keeps holding at the centre), then press "
+                            "Enter. The time of this Enter is recorded; the stereo preview follows."
+                        )
+                        try:
+                            input("[AUTO][PARTICLE CHANGE] Press Enter once the new particle is levitated: ")
+                        except (EOFError, KeyboardInterrupt):
+                            session["status"] = "interrupted"
+                            session["finished_at"] = dt.datetime.now().isoformat(timespec="milliseconds")
+                            atomic_write_json(session_path, session)
+                            print("[AUTO] Interrupted at the particle change.")
+                            return 130
+                        changed_at = dt.datetime.now()
+                        session.setdefault("particle_changes", []).append(
+                            {
+                                "before_run_number": run_index + 1,
+                                "before_label": condition.label,
+                                "confirmed_at": changed_at.isoformat(timespec="milliseconds"),
+                                "minutes_after_sound_on": (
+                                    None
+                                    if sound_on_wall_ns is None
+                                    else round((changed_at.timestamp() - sound_on_wall_ns / 1e9) / 60.0, 2)
+                                ),
+                            }
+                        )
+                        atomic_write_json(session_path, session)
                     run_started_wall = time.time()
                     if hf_mode:
                         if condition.label in precomputed_b3:

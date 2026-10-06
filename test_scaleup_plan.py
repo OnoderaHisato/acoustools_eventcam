@@ -30,6 +30,10 @@ EXPECTED_ORDER = [
     f"cardioid_{size}_f10_{design}"
     for size in ("a10", "a17", "a23")
     for design in ("OFF", "A_delay", "C_delay", "C_nl", "OT_ident")
+] + [
+    "cardioid_a23_f10_OFF_topt", "cardioid_a23_f10_C_nl_topt",
+    "cardioid_a23_f13_C_nl_topt", "cardioid_a23_f13_OFF_topt",
+    "hold_center_30s",
 ]
 
 
@@ -84,9 +88,13 @@ class ScaleUpPlanTests(unittest.TestCase):
             base = safe_run_dir_base(DEFAULT_OUTPUT_ROOT, shape, label, "20260924_010203")
             self.assertEqual(base, f"{shape}_{label}_20260924_010203", entry["name"])
             if entry["name"].startswith("cardioid_"):
-                size = entry["name"].split("_")[1]
-                for marker in (f"cardioid_{size}", "_f10_", "_V15_"):
+                size, frequency = entry["name"].split("_")[1:3]
+                for marker in (f"cardioid_{size}", f"_{frequency}_", "_V15_"):
                     self.assertIn(marker, base, entry["name"])
+                if entry["name"].endswith("_topt"):
+                    design = "_OFF_" if "_OFF_" in entry["name"] else "_C_nl_"
+                    for marker in ("_topt_", design):
+                        self.assertIn(marker, base, entry["name"])
         self.assertEqual(len(names), len(set(zip(names, range(len(names))))))
 
     @unittest.skipUnless(export_matches_plan(), "the export is older than the plan")
@@ -99,6 +107,28 @@ class ScaleUpPlanTests(unittest.TestCase):
             elif entry["name"].startswith("vzrstep_"):
                 supplied = np.load(SUPPLIED_STEPS / entry["name"] / "command_trajectory.npz")
                 np.testing.assert_array_equal(exported, supplied["offset_mm"])
+
+    def test_time_optimal_cardioids_follow_the_a23_designs(self) -> None:
+        topt = [e for e in plan()["experiments"] if e["name"].endswith("_topt")]
+        self.assertEqual(
+            [(e["feedforward_design"]["design"], e["feedforward_design"]["loop_frequency_hz"]) for e in topt],
+            [("OFF_topt", 10.0), ("C_nl_inverse_topt", 10.0), ("C_nl_inverse_topt", 13.0), ("OFF_topt", 13.0)],
+        )
+        for entry in topt:
+            self.assertEqual(entry["feedforward_design"]["time_parametrisation"], "time_optimal")
+            self.assertNotIn("safety_limits", entry)   # no per-run raise: the approved limits apply
+            self.assertEqual(
+                entry["feedforward_design"]["command_differs_from_reference"], "_C_nl_" in entry["name"]
+            )
+
+    def test_the_hold_run_keeps_the_particle_still_at_the_centre(self) -> None:
+        entry = next(e for e in plan()["experiments"] if e["name"] == "hold_center_30s")
+        self.assertEqual(entry["feedforward_design"]["design"], "HOLD")
+        self.assertEqual(entry["duration_sec"], 30.0)
+        with np.load(CAMPAIGN / entry["source_npz"]) as data:
+            positions = np.asarray(data["positions_mm"], dtype=np.float64)
+        self.assertEqual(positions.shape, (300000, 3))
+        self.assertEqual(float(np.max(np.abs(positions))), 0.0)
 
     @unittest.skipUnless(export_matches_plan(), "the export is older than the plan")
     def test_the_largest_cardioid_is_inside_the_raised_limits(self) -> None:

@@ -1,0 +1,514 @@
+{
+ "schema_version": 1,
+ "purpose": "Field-mapping session at the 15 V operating point (Experiment/20260924/FIELD_MAPPING_SESSION.md, date not fixed): w scans on 7 surfaces (XZ / YZ / XY at 28 mm, XZ at y = +-8 mm with 24 mm and at y = +-16 mm with 20 mm), each counter-clockwise (a) and clockwise (b), recorded twice with at least 30 minutes in between, bracketed by the kcheck steps. Commands are the analysis side's files, pinned by content hash. The limits are the scale-up values approved on 2026-09-24.",
+ "defaults": {
+  "sample_hz": 10000,
+  "duration_sec": 8.0,
+  "ramp_sec": 0.5,
+  "safety_limits": {
+   "max_offset_mm": 35.0,
+   "max_speed_mm_s": 3500.0,
+   "max_acceleration_mm_s2": 350000.0,
+   "max_endpoint_offset_mm": 0.01,
+   "max_command_reference_distance_mm": 4.0
+  }
+ },
+ "experiments": [
+  {
+   "name": "kcheck_x_S105_6jumps",
+   "kind": "staircase",
+   "tier": "C",
+   "axis": "x",
+   "duration_sec": 14.0,
+   "hold_sec": 2.0,
+   "initial_hold_sec": 2.0,
+   "final_hold_sec": 2.0,
+   "amplitudes_mm": [
+    1.05
+   ],
+   "directions": [
+    1,
+    -1,
+    1
+   ],
+   "repeats_within_run": 1,
+   "repeats": 1,
+   "safety_limits": {
+    "max_offset_mm": 1.05,
+    "max_step_mm": 1.05,
+    "max_speed_mm_s": 100.0,
+    "max_acceleration_mm_s2": 28000.0
+   },
+   "campaign": "fieldscan_15V",
+   "condition": "stiffness_check_x",
+   "note": "Stiffness check at the 15 V operating point: x steps 0 -> +1.05 -> 0 -> -1.05 -> 0 -> +1.05 -> 0 mm, 7 holds of 2.0 s, 6 jumps, 14.0 s. Same command as ff_heart_20260918 so the stiffness values compare across sessions.",
+   "enabled": true
+  },
+  {
+   "name": "kcheck_y_S105_6jumps",
+   "kind": "staircase",
+   "tier": "C",
+   "axis": "y",
+   "duration_sec": 14.0,
+   "hold_sec": 2.0,
+   "initial_hold_sec": 2.0,
+   "final_hold_sec": 2.0,
+   "amplitudes_mm": [
+    1.05
+   ],
+   "directions": [
+    1,
+    -1,
+    1
+   ],
+   "repeats_within_run": 1,
+   "repeats": 1,
+   "safety_limits": {
+    "max_offset_mm": 1.05,
+    "max_step_mm": 1.05,
+    "max_speed_mm_s": 100.0,
+    "max_acceleration_mm_s2": 28000.0
+   },
+   "campaign": "fieldscan_15V",
+   "condition": "stiffness_check_y",
+   "note": "Stiffness check at the 15 V operating point: y steps 0 -> +1.05 -> 0 -> -1.05 -> 0 -> +1.05 -> 0 mm, 7 holds of 2.0 s, 6 jumps, 14.0 s. Same command as ff_heart_20260918 so the stiffness values compare across sessions.",
+   "enabled": true
+  },
+  {
+   "name": "kcheck_z_S105_6jumps",
+   "kind": "staircase",
+   "tier": "C",
+   "axis": "z",
+   "duration_sec": 14.0,
+   "hold_sec": 2.0,
+   "initial_hold_sec": 2.0,
+   "final_hold_sec": 2.0,
+   "amplitudes_mm": [
+    1.05
+   ],
+   "directions": [
+    1,
+    -1,
+    1
+   ],
+   "repeats_within_run": 1,
+   "repeats": 1,
+   "safety_limits": {
+    "max_offset_mm": 1.05,
+    "max_step_mm": 1.05,
+    "max_speed_mm_s": 100.0,
+    "max_acceleration_mm_s2": 28000.0
+   },
+   "campaign": "fieldscan_15V",
+   "condition": "stiffness_check_z",
+   "note": "Stiffness check at the 15 V operating point: z steps 0 -> +1.05 -> 0 -> -1.05 -> 0 -> +1.05 -> 0 mm, 7 holds of 2.0 s, 6 jumps, 14.0 s. Same command as ff_heart_20260918 so the stiffness values compare across sessions.",
+   "enabled": true
+  },
+  {
+   "name": "wscan_XZ_R28_a",
+   "kind": "imported",
+   "source_npz": "source/wscan_XZ_R28_a.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "efcec4fb4c99812c969b2d2ccc74242cf75b113c09faa74208df6e48b94a1383",
+   "duration_sec": 24.0,
+   "campaign": "fieldscan_15V",
+   "measurement_family": "feedforward_validation",
+   "condition": "w_scan_xz_r28_a",
+   "note": "Field-mapping scan of the equilibrium-shift field w at 15 V (FIELD_MAPPING_SESSION.md): spiral centre -> 28 mm -> centre in the XZ plane at y = +0 mm, counter-clockwise, 24 s, no compensation (u = r). Peak speed 264 mm/s, peak acceleration 2488 mm/s^2, 28.0 mm from the centre. a / b cancel the part that depends on the direction of travel; the two rounds test reproducibility once settled.",
+   "feedforward_design": {
+    "design": "WSCAN",
+    "command_differs_from_reference": false,
+    "description": "u(t) = r(t)",
+    "plane": "XZ",
+    "plane_name": "XZ_R28",
+    "direction": "counter-clockwise",
+    "radius_mm": 28.0,
+    "plane_offset_axis": "y",
+    "plane_offset_mm": 0.0
+   },
+   "enabled": true
+  },
+  {
+   "name": "wscan_XZ_R28_b",
+   "kind": "imported",
+   "source_npz": "source/wscan_XZ_R28_b.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "9d19cf2f124a2f72c6b355c278a10efe8a0990c6a2ad221e80bacdeca0572824",
+   "duration_sec": 24.0,
+   "campaign": "fieldscan_15V",
+   "measurement_family": "feedforward_validation",
+   "condition": "w_scan_xz_r28_b",
+   "note": "Field-mapping scan of the equilibrium-shift field w at 15 V (FIELD_MAPPING_SESSION.md): spiral centre -> 28 mm -> centre in the XZ plane at y = +0 mm, clockwise, 24 s, no compensation (u = r). Peak speed 264 mm/s, peak acceleration 2488 mm/s^2, 28.0 mm from the centre. a / b cancel the part that depends on the direction of travel; the two rounds test reproducibility once settled.",
+   "feedforward_design": {
+    "design": "WSCAN",
+    "command_differs_from_reference": false,
+    "description": "u(t) = r(t)",
+    "plane": "XZ",
+    "plane_name": "XZ_R28",
+    "direction": "clockwise",
+    "radius_mm": 28.0,
+    "plane_offset_axis": "y",
+    "plane_offset_mm": 0.0
+   },
+   "enabled": true
+  },
+  {
+   "name": "wscan_YZ_R28_a",
+   "kind": "imported",
+   "source_npz": "source/wscan_YZ_R28_a.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "b9b8081f39a6957e5c93a07ca3e67ff7a0d53f0503543cf8369f56e373837448",
+   "duration_sec": 24.0,
+   "campaign": "fieldscan_15V",
+   "measurement_family": "feedforward_validation",
+   "condition": "w_scan_yz_r28_a",
+   "note": "Field-mapping scan of the equilibrium-shift field w at 15 V (FIELD_MAPPING_SESSION.md): spiral centre -> 28 mm -> centre in the YZ plane at x = +0 mm, counter-clockwise, 24 s, no compensation (u = r). Peak speed 264 mm/s, peak acceleration 2488 mm/s^2, 28.0 mm from the centre. a / b cancel the part that depends on the direction of travel; the two rounds test reproducibility once settled.",
+   "feedforward_design": {
+    "design": "WSCAN",
+    "command_differs_from_reference": false,
+    "description": "u(t) = r(t)",
+    "plane": "YZ",
+    "plane_name": "YZ_R28",
+    "direction": "counter-clockwise",
+    "radius_mm": 28.0,
+    "plane_offset_axis": "x",
+    "plane_offset_mm": 0.0
+   },
+   "enabled": true
+  },
+  {
+   "name": "wscan_YZ_R28_b",
+   "kind": "imported",
+   "source_npz": "source/wscan_YZ_R28_b.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "7f11888b105fbd384251ed211959f73c99d01946dc26691a8eca1f984febaff4",
+   "duration_sec": 24.0,
+   "campaign": "fieldscan_15V",
+   "measurement_family": "feedforward_validation",
+   "condition": "w_scan_yz_r28_b",
+   "note": "Field-mapping scan of the equilibrium-shift field w at 15 V (FIELD_MAPPING_SESSION.md): spiral centre -> 28 mm -> centre in the YZ plane at x = +0 mm, clockwise, 24 s, no compensation (u = r). Peak speed 264 mm/s, peak acceleration 2488 mm/s^2, 28.0 mm from the centre. a / b cancel the part that depends on the direction of travel; the two rounds test reproducibility once settled.",
+   "feedforward_design": {
+    "design": "WSCAN",
+    "command_differs_from_reference": false,
+    "description": "u(t) = r(t)",
+    "plane": "YZ",
+    "plane_name": "YZ_R28",
+    "direction": "clockwise",
+    "radius_mm": 28.0,
+    "plane_offset_axis": "x",
+    "plane_offset_mm": 0.0
+   },
+   "enabled": true
+  },
+  {
+   "name": "wscan_XY_R28_a",
+   "kind": "imported",
+   "source_npz": "source/wscan_XY_R28_a.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "c6ce541b4e9499c6e7055d40b8d033d464c9691dee071148d20151eba3dc11ce",
+   "duration_sec": 24.0,
+   "campaign": "fieldscan_15V",
+   "measurement_family": "feedforward_validation",
+   "condition": "w_scan_xy_r28_a",
+   "note": "Field-mapping scan of the equilibrium-shift field w at 15 V (FIELD_MAPPING_SESSION.md): spiral centre -> 28 mm -> centre in the XY plane at z = +0 mm, counter-clockwise, 24 s, no compensation (u = r). Peak speed 264 mm/s, peak acceleration 2488 mm/s^2, 28.0 mm from the centre. a / b cancel the part that depends on the direction of travel; the two rounds test reproducibility once settled.",
+   "feedforward_design": {
+    "design": "WSCAN",
+    "command_differs_from_reference": false,
+    "description": "u(t) = r(t)",
+    "plane": "XY",
+    "plane_name": "XY_R28",
+    "direction": "counter-clockwise",
+    "radius_mm": 28.0,
+    "plane_offset_axis": "z",
+    "plane_offset_mm": 0.0
+   },
+   "enabled": true
+  },
+  {
+   "name": "wscan_XY_R28_b",
+   "kind": "imported",
+   "source_npz": "source/wscan_XY_R28_b.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "d2b7f913246374d5a0260ce4538013ed1801b53cda90ab6cf9b7d479db9f32c8",
+   "duration_sec": 24.0,
+   "campaign": "fieldscan_15V",
+   "measurement_family": "feedforward_validation",
+   "condition": "w_scan_xy_r28_b",
+   "note": "Field-mapping scan of the equilibrium-shift field w at 15 V (FIELD_MAPPING_SESSION.md): spiral centre -> 28 mm -> centre in the XY plane at z = +0 mm, clockwise, 24 s, no compensation (u = r). Peak speed 264 mm/s, peak acceleration 2488 mm/s^2, 28.0 mm from the centre. a / b cancel the part that depends on the direction of travel; the two rounds test reproducibility once settled.",
+   "feedforward_design": {
+    "design": "WSCAN",
+    "command_differs_from_reference": false,
+    "description": "u(t) = r(t)",
+    "plane": "XY",
+    "plane_name": "XY_R28",
+    "direction": "clockwise",
+    "radius_mm": 28.0,
+    "plane_offset_axis": "z",
+    "plane_offset_mm": 0.0
+   },
+   "enabled": true
+  },
+  {
+   "name": "wscan_XZ_R24yp8_a",
+   "kind": "imported",
+   "source_npz": "source/wscan_XZ_R24yp8_a.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "9abc133ffcfa8f73f7270230d9f798ee6567a1e80214e8e77115914a78aa07fe",
+   "duration_sec": 22.0,
+   "campaign": "fieldscan_15V",
+   "measurement_family": "feedforward_validation",
+   "condition": "w_scan_xz_r24yp8_a",
+   "note": "Field-mapping scan of the equilibrium-shift field w at 15 V (FIELD_MAPPING_SESSION.md): spiral centre -> 24 mm -> centre in the XZ plane at y = +8 mm, counter-clockwise, 22 s, no compensation (u = r). Peak speed 226 mm/s, peak acceleration 2133 mm/s^2, 25.3 mm from the centre. a / b cancel the part that depends on the direction of travel; the two rounds test reproducibility once settled.",
+   "feedforward_design": {
+    "design": "WSCAN",
+    "command_differs_from_reference": false,
+    "description": "u(t) = r(t)",
+    "plane": "XZ",
+    "plane_name": "XZ_R24yp8",
+    "direction": "counter-clockwise",
+    "radius_mm": 24.0,
+    "plane_offset_axis": "y",
+    "plane_offset_mm": 8.0
+   },
+   "enabled": true
+  },
+  {
+   "name": "wscan_XZ_R24yp8_b",
+   "kind": "imported",
+   "source_npz": "source/wscan_XZ_R24yp8_b.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "81ee6b325bd10ad7fa0ee6dba3934c1bcb44cebab7a25800ba16324d91b23002",
+   "duration_sec": 22.0,
+   "campaign": "fieldscan_15V",
+   "measurement_family": "feedforward_validation",
+   "condition": "w_scan_xz_r24yp8_b",
+   "note": "Field-mapping scan of the equilibrium-shift field w at 15 V (FIELD_MAPPING_SESSION.md): spiral centre -> 24 mm -> centre in the XZ plane at y = +8 mm, clockwise, 22 s, no compensation (u = r). Peak speed 226 mm/s, peak acceleration 2133 mm/s^2, 25.3 mm from the centre. a / b cancel the part that depends on the direction of travel; the two rounds test reproducibility once settled.",
+   "feedforward_design": {
+    "design": "WSCAN",
+    "command_differs_from_reference": false,
+    "description": "u(t) = r(t)",
+    "plane": "XZ",
+    "plane_name": "XZ_R24yp8",
+    "direction": "clockwise",
+    "radius_mm": 24.0,
+    "plane_offset_axis": "y",
+    "plane_offset_mm": 8.0
+   },
+   "enabled": true
+  },
+  {
+   "name": "wscan_XZ_R24ym8_a",
+   "kind": "imported",
+   "source_npz": "source/wscan_XZ_R24ym8_a.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "58350d440e2bae8acfcd15c2414c609456e677ae034a6b24b50bb6357edb2a38",
+   "duration_sec": 22.0,
+   "campaign": "fieldscan_15V",
+   "measurement_family": "feedforward_validation",
+   "condition": "w_scan_xz_r24ym8_a",
+   "note": "Field-mapping scan of the equilibrium-shift field w at 15 V (FIELD_MAPPING_SESSION.md): spiral centre -> 24 mm -> centre in the XZ plane at y = -8 mm, counter-clockwise, 22 s, no compensation (u = r). Peak speed 226 mm/s, peak acceleration 2133 mm/s^2, 25.3 mm from the centre. a / b cancel the part that depends on the direction of travel; the two rounds test reproducibility once settled.",
+   "feedforward_design": {
+    "design": "WSCAN",
+    "command_differs_from_reference": false,
+    "description": "u(t) = r(t)",
+    "plane": "XZ",
+    "plane_name": "XZ_R24ym8",
+    "direction": "counter-clockwise",
+    "radius_mm": 24.0,
+    "plane_offset_axis": "y",
+    "plane_offset_mm": -8.0
+   },
+   "enabled": true
+  },
+  {
+   "name": "wscan_XZ_R24ym8_b",
+   "kind": "imported",
+   "source_npz": "source/wscan_XZ_R24ym8_b.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "9282e47e957a13d22f561a2486c1d961996f6e07812719ea20d52d46a63bd7e3",
+   "duration_sec": 22.0,
+   "campaign": "fieldscan_15V",
+   "measurement_family": "feedforward_validation",
+   "condition": "w_scan_xz_r24ym8_b",
+   "note": "Field-mapping scan of the equilibrium-shift field w at 15 V (FIELD_MAPPING_SESSION.md): spiral centre -> 24 mm -> centre in the XZ plane at y = -8 mm, clockwise, 22 s, no compensation (u = r). Peak speed 226 mm/s, peak acceleration 2133 mm/s^2, 25.3 mm from the centre. a / b cancel the part that depends on the direction of travel; the two rounds test reproducibility once settled.",
+   "feedforward_design": {
+    "design": "WSCAN",
+    "command_differs_from_reference": false,
+    "description": "u(t) = r(t)",
+    "plane": "XZ",
+    "plane_name": "XZ_R24ym8",
+    "direction": "clockwise",
+    "radius_mm": 24.0,
+    "plane_offset_axis": "y",
+    "plane_offset_mm": -8.0
+   },
+   "enabled": true
+  },
+  {
+   "name": "wscan_XZ_R20yp16_a",
+   "kind": "imported",
+   "source_npz": "source/wscan_XZ_R20yp16_a.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "6a8471e05bb99f4cc827514728262868a8cdfa7ae5b9432cd5b5963964dacb22",
+   "duration_sec": 20.0,
+   "campaign": "fieldscan_15V",
+   "measurement_family": "feedforward_validation",
+   "condition": "w_scan_xz_r20yp16_a",
+   "note": "Field-mapping scan of the equilibrium-shift field w at 15 V (FIELD_MAPPING_SESSION.md): spiral centre -> 20 mm -> centre in the XZ plane at y = +16 mm, counter-clockwise, 20 s, no compensation (u = r). Peak speed 188 mm/s, peak acceleration 1778 mm/s^2, 25.6 mm from the centre. a / b cancel the part that depends on the direction of travel; the two rounds test reproducibility once settled.",
+   "feedforward_design": {
+    "design": "WSCAN",
+    "command_differs_from_reference": false,
+    "description": "u(t) = r(t)",
+    "plane": "XZ",
+    "plane_name": "XZ_R20yp16",
+    "direction": "counter-clockwise",
+    "radius_mm": 20.0,
+    "plane_offset_axis": "y",
+    "plane_offset_mm": 16.0
+   },
+   "enabled": true
+  },
+  {
+   "name": "wscan_XZ_R20yp16_b",
+   "kind": "imported",
+   "source_npz": "source/wscan_XZ_R20yp16_b.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "531b19ebfdb21eab3c54e4faa4d07c07731927e079092e064ff7848fc3c7aff4",
+   "duration_sec": 20.0,
+   "campaign": "fieldscan_15V",
+   "measurement_family": "feedforward_validation",
+   "condition": "w_scan_xz_r20yp16_b",
+   "note": "Field-mapping scan of the equilibrium-shift field w at 15 V (FIELD_MAPPING_SESSION.md): spiral centre -> 20 mm -> centre in the XZ plane at y = +16 mm, clockwise, 20 s, no compensation (u = r). Peak speed 188 mm/s, peak acceleration 1778 mm/s^2, 25.6 mm from the centre. a / b cancel the part that depends on the direction of travel; the two rounds test reproducibility once settled.",
+   "feedforward_design": {
+    "design": "WSCAN",
+    "command_differs_from_reference": false,
+    "description": "u(t) = r(t)",
+    "plane": "XZ",
+    "plane_name": "XZ_R20yp16",
+    "direction": "clockwise",
+    "radius_mm": 20.0,
+    "plane_offset_axis": "y",
+    "plane_offset_mm": 16.0
+   },
+   "enabled": true
+  },
+  {
+   "name": "wscan_XZ_R20ym16_a",
+   "kind": "imported",
+   "source_npz": "source/wscan_XZ_R20ym16_a.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "11285697fc4d5541df5b5cd8c96bd6c4ee067737efa88a326ff0504c02f06430",
+   "duration_sec": 20.0,
+   "campaign": "fieldscan_15V",
+   "measurement_family": "feedforward_validation",
+   "condition": "w_scan_xz_r20ym16_a",
+   "note": "Field-mapping scan of the equilibrium-shift field w at 15 V (FIELD_MAPPING_SESSION.md): spiral centre -> 20 mm -> centre in the XZ plane at y = -16 mm, counter-clockwise, 20 s, no compensation (u = r). Peak speed 188 mm/s, peak acceleration 1778 mm/s^2, 25.6 mm from the centre. a / b cancel the part that depends on the direction of travel; the two rounds test reproducibility once settled.",
+   "feedforward_design": {
+    "design": "WSCAN",
+    "command_differs_from_reference": false,
+    "description": "u(t) = r(t)",
+    "plane": "XZ",
+    "plane_name": "XZ_R20ym16",
+    "direction": "counter-clockwise",
+    "radius_mm": 20.0,
+    "plane_offset_axis": "y",
+    "plane_offset_mm": -16.0
+   },
+   "enabled": true
+  },
+  {
+   "name": "wscan_XZ_R20ym16_b",
+   "kind": "imported",
+   "source_npz": "source/wscan_XZ_R20ym16_b.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "cd65bade18a4cbbfe1d3499860742ededd57bc7b04fbd6bffeaf2400bd53ee8d",
+   "duration_sec": 20.0,
+   "campaign": "fieldscan_15V",
+   "measurement_family": "feedforward_validation",
+   "condition": "w_scan_xz_r20ym16_b",
+   "note": "Field-mapping scan of the equilibrium-shift field w at 15 V (FIELD_MAPPING_SESSION.md): spiral centre -> 20 mm -> centre in the XZ plane at y = -16 mm, clockwise, 20 s, no compensation (u = r). Peak speed 188 mm/s, peak acceleration 1778 mm/s^2, 25.6 mm from the centre. a / b cancel the part that depends on the direction of travel; the two rounds test reproducibility once settled.",
+   "feedforward_design": {
+    "design": "WSCAN",
+    "command_differs_from_reference": false,
+    "description": "u(t) = r(t)",
+    "plane": "XZ",
+    "plane_name": "XZ_R20ym16",
+    "direction": "clockwise",
+    "radius_mm": 20.0,
+    "plane_offset_axis": "y",
+    "plane_offset_mm": -16.0
+   },
+   "enabled": true
+  }
+ ]
+}

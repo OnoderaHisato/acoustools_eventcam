@@ -15,6 +15,27 @@ function Get-PsuTargetArgs {
     return @()
 }
 
+function Get-CurrentGuardArgs {
+    # Arguments for the recording's current guard (stop before the next run when a PAT board drops
+    # out or the supply current has risen $Percent above its value $BaselineMin minutes after sound
+    # on). The guard reads the supply log, so it needs a logger; without one it only warns.
+    param($Logger, [double]$Percent, [double]$BaselineMin, [switch]$Disabled)
+    $invariant = [System.Globalization.CultureInfo]::InvariantCulture
+    if ($Disabled -or $Percent -le 0.0) {
+        Write-Host "[PSU] Current guard off."
+        return @()
+    }
+    if ($null -eq $Logger) {
+        Write-Host "[PSU][WARN] Current guard needs the supply log (-PsuUsb, -PsuResource or -PsuHost); it is OFF for this session."
+        return @()
+    }
+    Write-Host ("[PSU] Current guard on: stop before a run if a board drops out or the current is {0}% above its value at {1} min after sound on." -f $Percent, $BaselineMin)
+    return @(
+        "--current-guard-rise-percent", $Percent.ToString($invariant),
+        "--current-guard-baseline-min", $BaselineMin.ToString($invariant)
+    )
+}
+
 function Start-PsuLogger {
     param(
         [string]$Python,

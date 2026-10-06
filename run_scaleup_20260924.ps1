@@ -6,7 +6,10 @@ Scale-up session at the 15 V operating point (SCALE_UP_PLAN_20260924.md section 
 .DESCRIPTION
 Order: kcheck x/y/z -> XL25 -> (confirm the particle) XL30 -> wscan R28 a/b -> kcheck x/z
        -> a10 OFF, C, C_nl, C, OFF -> a17 the same five -> kcheck x/z
-       -> (confirm) a23 the same five -> kcheck x/y/z
+       -> (confirm) a23 the same five
+       -> a23 time-optimal: f10 OFF_topt, f10 C_nl_topt, f13 C_nl_topt, (confirm) f13 OFF_topt
+       -> kcheck x/y/z
+The 13 Hz OFF_topt loses the particle in simulation; if it falls, reload it and end the session.
 Warm-up: by default the script starts from the cold state like the 14 mm session. Right after
 PAT opens (sound on) a stereo preview asks you to confirm the particle; then it waits
 -WarmupMin minutes (default 40, when the stiffness levelled off at 15 V) with kcheck x/z every
@@ -32,6 +35,16 @@ powershell -ExecutionPolicy Bypass -File .\run_scaleup_20260924.ps1 -Sizes "a10,
 
 .EXAMPLE
 powershell -ExecutionPolicy Bypass -File .\run_scaleup_20260924.ps1 -WarmupMin 0
+
+.EXAMPLE
+# Two sessions of about an hour of sound each, each from the cold state (45 min or more without
+# sound in between): A = steps, R28 scan, a10; B = a17, a23 and the _topt runs.
+powershell -ExecutionPolicy Bypass -File .\run_scaleup_20260924.ps1 -Part A -PsuUsb
+powershell -ExecutionPolicy Bypass -File .\run_scaleup_20260924.ps1 -Part B -PsuUsb
+
+Current guard: with a supply log (-PsuUsb) the session stops before the next run when a PAT board
+drops out or the current is -CurrentGuardPercent (default 3, chosen 2026-09-24) above its value at the end of the
+warm-up. -NoCurrentGuard turns it off.
 #>
 [CmdletBinding()]
 param(
@@ -50,6 +63,23 @@ param(
     [switch]$SkipScan,
     # Also record A_delay and OT_ident for each size (plan item 8, "if there is time").
     [switch]$IncludeExtraDesigns,
+    # Skip the four time-optimal 60 mm cardioids (_topt) recorded after the a23 designs.
+    [switch]$SkipTopt,
+    # Record only part of the session, each from the cold state with its own warm-up:
+    # A = steps, R28 scan, a10; B = a17, a23 and the _topt runs. All (default) = everything.
+    [ValidateSet("All", "A", "B")]
+    [string]$Part = "All",
+    # Re-record only these runs (comma-separated plan names, in order) after the same warm-up:
+    # warm-up -> kcheck x/y/z -> these runs -> hold_center_30s -> kcheck x/y/z. The first a23
+    # cardioid and the 13 Hz OFF_topt still stop for a preview. Cannot be combined with -Part.
+    [string]$RetryRuns = "",
+    # Leave out hold_center_30s (a still particle at the centre for 30 s), which is recorded right
+    # after the settled kcheck x/y/z (All and Part A) and after the _topt runs (Part B).
+    [switch]$SkipHold,
+    # Stop before the next run when a PAT board drops out or the supply current has risen this
+    # many percent above its value at the end of the warm-up (needs -PsuUsb/-PsuResource/-PsuHost).
+    [double]$CurrentGuardPercent = 3.0,
+    [switch]$NoCurrentGuard,
     [switch]$Unattended,
     [ValidateRange(0, 10)]
     [int]$AutomaticCaptureRetries = 2,
@@ -82,6 +112,12 @@ if (($SupplyVoltage -le 0.0) -or ($SupplyVoltage -gt 30.0)) {
 $selectedSizes = @($Sizes.Split(",") | ForEach-Object { $_.Trim().ToLowerInvariant() } | Where-Object { $_ -ne "" })
 foreach ($size in $selectedSizes) {
     if ($size -notin @("a10", "a17", "a23")) { throw "Unknown size '$size'. Use a10, a17, a23." }
+}
+# -Part A / B split the session into two sound-on periods of about an hour each, each from the
+# cold state with its own warm-up (at 15 V one board tripped 83 min after sound on, 2026-09-24).
+if ($Part -ne "All") {
+    if ($PSBoundParameters.ContainsKey("Sizes")) { throw "-Sizes cannot be combined with -Part; the part fixes the sizes." }
+    $selectedSizes = if ($Part -eq "A") { @("a10") } else { @("a17", "a23") }
 }
 
 $manifest = Join-Path $export "export_manifest.json"
@@ -117,13 +153,38 @@ if ($WarmupMin -gt 0.0 -and -not $SkipWarmupChecks) {
 }
 Add-Run "kcheck_x_S105_6jumps" $(if ($WarmupMin -gt 0.0) { $WarmupMin } else { $null })
 Add-Run "kcheck_y_S105_6jumps"; Add-Run "kcheck_z_S105_6jumps"
-if (-not $SkipLargeSteps) {
-    Add-Run "vzrstep_XL25"
-    $checkpoints += $runs.Count + 1      # confirm the particle survived 2.5 mm before 3.0 mm
-    Add-Run "vzrstep_XL30"
+$retryMode = ($RetryRuns.Trim() -ne "")
+if ($retryMode) {
+    # Re-recording session: only the named runs, then the still record and the closing kcheck.
+    if ($Part -ne "All") { throw "-RetryRuns cannot be combined with -Part." }
+    $known = @((Get-Content -Raw -Encoding UTF8 -LiteralPath $plan | ConvertFrom-Json).experiments | ForEach-Object { $_.name })
+    $a23Seen = $false
+    foreach ($label in @($RetryRuns.Split(",") | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne "" })) {
+        if ($known -notcontains $label) { throw "Unknown run '$label'. Use the plan names, e.g. cardioid_a23_f10_OFF_topt." }
+        if (($label -like "cardioid_a23_*" -and -not $a23Seen) -or $label -eq "cardioid_a23_f13_OFF_topt") {
+            $checkpoints += $runs.Count + 1
+        }
+        if ($label -like "cardioid_a23_*") { $a23Seen = $true }
+        Add-Run $label
+    }
+    if (-not $SkipHold) { Add-Run "hold_center_30s" }
+    Add-Run "kcheck_x_S105_6jumps"; Add-Run "kcheck_y_S105_6jumps"; Add-Run "kcheck_z_S105_6jumps"
+    $selectedSizes = @()
 }
-if (-not $SkipScan) { Add-Run "wscan_XZ_R28_a"; Add-Run "wscan_XZ_R28_b" }
-Add-Run "kcheck_x_S105_6jumps"; Add-Run "kcheck_z_S105_6jumps"
+elseif ($Part -ne "B" -and -not $SkipHold) {
+    # Still particle at the centre for 30 s, once settled and before any step (analysis side:
+    # measurement noise or real jitter in the loop-to-loop wobble).
+    Add-Run "hold_center_30s"
+}
+if (-not $retryMode -and $Part -ne "B") {
+    if (-not $SkipLargeSteps) {
+        Add-Run "vzrstep_XL25"
+        $checkpoints += $runs.Count + 1      # confirm the particle survived 2.5 mm before 3.0 mm
+        Add-Run "vzrstep_XL30"
+    }
+    if (-not $SkipScan) { Add-Run "wscan_XZ_R28_a"; Add-Run "wscan_XZ_R28_b" }
+    Add-Run "kcheck_x_S105_6jumps"; Add-Run "kcheck_z_S105_6jumps"
+}
 $sizeIndex = 0
 foreach ($size in $selectedSizes) {
     $sizeIndex += 1
@@ -135,11 +196,19 @@ foreach ($size in $selectedSizes) {
         @("OFF", "C_delay", "C_nl", "C_delay", "OFF")
     }
     foreach ($design in $designs) { Add-Run "cardioid_${size}_f10_${design}" }
+    if ($size -eq "a23" -and -not $SkipTopt) {
+        # Time-optimal parametrisation (OptiTrap "timing"): 10 Hz OFF / C_nl, then 13 Hz C_nl / OFF.
+        Add-Run "cardioid_a23_f10_OFF_topt"; Add-Run "cardioid_a23_f10_C_nl_topt"
+        Add-Run "cardioid_a23_f13_C_nl_topt"
+        $checkpoints += $runs.Count + 1   # the 13 Hz OFF is expected to lose the particle in simulation
+        Add-Run "cardioid_a23_f13_OFF_topt"
+    }
     if ($sizeIndex -lt $selectedSizes.Count) {
         Add-Run "kcheck_x_S105_6jumps"; Add-Run "kcheck_z_S105_6jumps"
     }
 }
-Add-Run "kcheck_x_S105_6jumps"; Add-Run "kcheck_y_S105_6jumps"; Add-Run "kcheck_z_S105_6jumps"
+if ($Part -eq "B" -and -not $SkipHold) { Add-Run "hold_center_30s" }   # a second still record, if the guard has not stopped the session
+if (-not $retryMode) { Add-Run "kcheck_x_S105_6jumps"; Add-Run "kcheck_y_S105_6jumps"; Add-Run "kcheck_z_S105_6jumps" }
 
 $invariant = [System.Globalization.CultureInfo]::InvariantCulture
 $recordArgs = @(
@@ -163,8 +232,8 @@ if ($KeepFailedCaptures) { $recordArgs += "--keep-failed-captures" }
 if ($Unattended) { $recordArgs += @("--automatic-capture-retries", "$AutomaticCaptureRetries") }
 else { $recordArgs += "--prompt-on-capture-failure" }
 
-Write-Host ("[SCALEUP] {0} V, {1} runs. Extra checkpoints before run(s): {2}" -f `
-    $SupplyVoltage, $runs.Count, ($(if ($checkpoints.Count) { $checkpoints -join ", " } else { "none" })))
+Write-Host ("[SCALEUP] {0} V, part {3}{4}, {1} runs. Extra checkpoints before run(s): {2}" -f `
+    $SupplyVoltage, $runs.Count, ($(if ($checkpoints.Count) { $checkpoints -join ", " } else { "none" })), $Part, $(if ($retryMode) { " (re-record)" } else { "" }))
 $index = 0
 foreach ($label in $runs) {
     $index += 1
@@ -194,6 +263,8 @@ Write-Host "  - Stop with Ctrl+C at a preview if the particle is gone; the sessi
 $psuTarget = Get-PsuTargetArgs -Usb:$PsuUsb -Resource $PsuResource -HostName $PsuHost
 $psuLogger = Start-PsuLogger -Python $python -OutputDir $OutputDir -TargetArgs $psuTarget -IntervalSec $PsuIntervalSec
 if ($null -ne $psuLogger) { $recordArgs += @("--psu-log", $psuLogger.Log) }
+$guardBaselineMin = if ($WarmupMin -gt 0.0) { $WarmupMin } else { 5.0 }
+$recordArgs += Get-CurrentGuardArgs -Logger $psuLogger -Percent $CurrentGuardPercent -BaselineMin $guardBaselineMin -Disabled:$NoCurrentGuard
 try {
     & $python .\acoustools_stereo_eventcam_3d_recording_auto.py @recordArgs `
         --acknowledge-ff-validation-protocol --acknowledge-step-response-risk
@@ -204,5 +275,6 @@ finally {
     Write-PsuReport -Python $python -OutputDir $OutputDir -Logger $psuLogger
 }
 if ($code -eq 0) { Write-Host "[SCALEUP] The session finished. Output: $OutputDir" }
+elseif ($code -eq 3) { Write-Host "[SCALEUP] The current guard stopped the session before the next run (see current_guard in the session JSON). Let the boards cool before continuing." }
 else { Write-Host "[SCALEUP] Recording stopped with exit code $code. See the auto_recording_session JSON in $OutputDir." }
 exit $code

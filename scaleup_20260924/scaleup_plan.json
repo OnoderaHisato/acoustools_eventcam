@@ -1,6 +1,6 @@
 {
  "schema_version": 1,
- "purpose": "Scale-up session at the 15 V operating point (SCALE_UP_PLAN_20260924.md): cardioids of 26 / 44 / 60 mm at 10 Hz with five feedforward designs each, a 28 mm radius w scan, and the 2.5 / 3.0 mm horizontal steps. The limits below were raised on 2026-09-24 with the user's approval; 35 mm is needed because the 60 mm cardioid reaches 30.741 mm from the centre although it stays inside the |x|, |z| <= 30 mm camera box.",
+ "purpose": "Scale-up session at the 15 V operating point (SCALE_UP_PLAN_20260924.md): cardioids of 26 / 44 / 60 mm at 10 Hz with five feedforward designs each, a 28 mm radius w scan, and the 2.5 / 3.0 mm horizontal steps. The limits below were raised on 2026-09-24 with the user's approval; 35 mm is needed because the 60 mm cardioid reaches 30.741 mm from the centre although it stays inside the |x|, |z| <= 30 mm camera box. On 2026-09-24 four time-optimal 60 mm cardioids (_topt: 10 Hz OFF and C_nl, 13 Hz C_nl and OFF) were appended at the analysis side's request. hold_center_30s (a still particle at the centre, 30 s) was appended on 2026-09-24 at the analysis side's request.",
  "defaults": {
   "sample_hz": 10000,
   "duration_sec": 8.0,
@@ -840,6 +840,198 @@
      "supply_voltage_V": 15.0
     },
     "source_file": "cardioid_a23_f10_OT_ident_nodelay.npz"
+   },
+   "enabled": true
+  },
+  {
+   "name": "cardioid_a23_f10_OFF_topt",
+   "kind": "imported",
+   "source_npz": "source/cardioid_a23_f10_OFF_topt.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "fcc56eb5856f5e249ea665160fb5a85c060e7099f26d33308c784a9346dfef83",
+   "duration_sec": 8.0,
+   "campaign": "scaleup_20260924",
+   "measurement_family": "feedforward_validation",
+   "condition": "cardioid_a23_f10_off_topt",
+   "note": "Scale-up cardioid, width 60 mm, 10 Hz, design OFF (u = r) on the time-optimal parametrisation: the loop period is fixed but theta(t) is not uniform (slow at the cusp, fast on the straight parts; OptiTrap timing optimisation, C3 ramp windows). 15 V operating point (k 0.208/0.198/2.48 1/ms^2, tau0 0.9 ms). Peak speed 2737 mm/s, peak acceleration 329592 mm/s^2, max |u-r| 0.000 mm.",
+   "feedforward_design": {
+    "design": "OFF_topt",
+    "command_differs_from_reference": false,
+    "shape": "cardioid",
+    "size_mm": 60,
+    "loop_frequency_hz": 10.0,
+    "w_compensation": "none",
+    "identified_model": {
+     "k_1_per_ms2": {
+      "x": 0.208,
+      "y": 0.198,
+      "z": 2.48
+     },
+     "gamma_1_per_ms": {
+      "x": 0.0372,
+      "y": 0.0319,
+      "z": 0.0237
+     },
+     "tau0_ms": 0.9,
+     "supply_voltage_V": 15.0
+    },
+    "source_file": "cardioid_a23_f10_OFF_topt.npz",
+    "time_parametrisation": "time_optimal"
+   },
+   "enabled": true
+  },
+  {
+   "name": "cardioid_a23_f10_C_nl_topt",
+   "kind": "imported",
+   "source_npz": "source/cardioid_a23_f10_C_nl_inverse_topt.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "06ac745e1984d640b47dfe9ce6de8ea15e79bf74893ffd2a8f96e6aa77bbb64b",
+   "duration_sec": 8.0,
+   "campaign": "scaleup_20260924",
+   "measurement_family": "feedforward_validation",
+   "condition": "cardioid_a23_f10_c_nl_topt",
+   "note": "Scale-up cardioid, width 60 mm, 10 Hz, design C_nl_inverse (lookahead + non-linear inverse model) on the time-optimal parametrisation: the loop period is fixed but theta(t) is not uniform (slow at the cusp, fast on the straight parts; OptiTrap timing optimisation, C3 ramp windows). 15 V operating point (k 0.208/0.198/2.48 1/ms^2, tau0 0.9 ms). Peak speed 2539 mm/s, peak acceleration 316926 mm/s^2, max |u-r| 2.912 mm.",
+   "feedforward_design": {
+    "design": "C_nl_inverse_topt",
+    "command_differs_from_reference": true,
+    "shape": "cardioid",
+    "size_mm": 60,
+    "loop_frequency_hz": 10.0,
+    "w_compensation": "none",
+    "identified_model": {
+     "k_1_per_ms2": {
+      "x": 0.208,
+      "y": 0.198,
+      "z": 2.48
+     },
+     "gamma_1_per_ms": {
+      "x": 0.0372,
+      "y": 0.0319,
+      "z": 0.0237
+     },
+     "tau0_ms": 0.9,
+     "supply_voltage_V": 15.0
+    },
+    "source_file": "cardioid_a23_f10_C_nl_inverse_topt.npz",
+    "time_parametrisation": "time_optimal"
+   },
+   "enabled": true
+  },
+  {
+   "name": "cardioid_a23_f13_C_nl_topt",
+   "kind": "imported",
+   "source_npz": "source/cardioid_a23_f13_C_nl_inverse_topt.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "877c8247778cc7df6f4b2cd328b53c3851bdcd2bdea28fafe173035d5912ed50",
+   "duration_sec": 8.0,
+   "campaign": "scaleup_20260924",
+   "measurement_family": "feedforward_validation",
+   "condition": "cardioid_a23_f13_c_nl_topt",
+   "note": "Scale-up cardioid, width 60 mm, 13 Hz, design C_nl_inverse (lookahead + non-linear inverse model) on the time-optimal parametrisation: the loop period is fixed but theta(t) is not uniform (slow at the cusp, fast on the straight parts; OptiTrap timing optimisation, C3 ramp windows). 15 V operating point (k 0.208/0.198/2.48 1/ms^2, tau0 0.9 ms). Peak speed 3005 mm/s, peak acceleration 340967 mm/s^2, max |u-r| 3.991 mm.",
+   "feedforward_design": {
+    "design": "C_nl_inverse_topt",
+    "command_differs_from_reference": true,
+    "shape": "cardioid",
+    "size_mm": 60,
+    "loop_frequency_hz": 13.0,
+    "w_compensation": "none",
+    "identified_model": {
+     "k_1_per_ms2": {
+      "x": 0.208,
+      "y": 0.198,
+      "z": 2.48
+     },
+     "gamma_1_per_ms": {
+      "x": 0.0372,
+      "y": 0.0319,
+      "z": 0.0237
+     },
+     "tau0_ms": 0.9,
+     "supply_voltage_V": 15.0
+    },
+    "source_file": "cardioid_a23_f13_C_nl_inverse_topt.npz",
+    "time_parametrisation": "time_optimal"
+   },
+   "enabled": true
+  },
+  {
+   "name": "cardioid_a23_f13_OFF_topt",
+   "kind": "imported",
+   "source_npz": "source/cardioid_a23_f13_OFF_topt.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "e7f71afbd417e24d55c899d9f9dcf46f24983fc06c293097b316450b53160607",
+   "duration_sec": 8.0,
+   "campaign": "scaleup_20260924",
+   "measurement_family": "feedforward_validation",
+   "condition": "cardioid_a23_f13_off_topt",
+   "note": "Scale-up cardioid, width 60 mm, 13 Hz, design OFF (u = r) on the time-optimal parametrisation: the loop period is fixed but theta(t) is not uniform (slow at the cusp, fast on the straight parts; OptiTrap timing optimisation, C3 ramp windows). 15 V operating point (k 0.208/0.198/2.48 1/ms^2, tau0 0.9 ms). Peak speed 3179 mm/s, peak acceleration 330000 mm/s^2, max |u-r| 0.000 mm. The analysis side's simulation loses the particle here (required force above the limit without the inverse model); the batch script stops for the operator before it.",
+   "feedforward_design": {
+    "design": "OFF_topt",
+    "command_differs_from_reference": false,
+    "shape": "cardioid",
+    "size_mm": 60,
+    "loop_frequency_hz": 13.0,
+    "w_compensation": "none",
+    "identified_model": {
+     "k_1_per_ms2": {
+      "x": 0.208,
+      "y": 0.198,
+      "z": 2.48
+     },
+     "gamma_1_per_ms": {
+      "x": 0.0372,
+      "y": 0.0319,
+      "z": 0.0237
+     },
+     "tau0_ms": 0.9,
+     "supply_voltage_V": 15.0
+    },
+    "source_file": "cardioid_a23_f13_OFF_topt.npz",
+    "time_parametrisation": "time_optimal"
+   },
+   "enabled": true
+  },
+  {
+   "name": "hold_center_30s",
+   "kind": "imported",
+   "source_npz": "source/hold_center_30s.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "4f8e006788058cdc3574f711d9adc4a35932d34b9fb3e2a567e6218caa000a8c",
+   "duration_sec": 30.0,
+   "campaign": "scaleup_20260924",
+   "measurement_family": "feedforward_validation",
+   "condition": "hold_center",
+   "note": "Particle held still at the centre for 30 s (every sample 0 mm), recorded once settled at 15 V. Separates camera measurement noise from real particle jitter in the loop-to-loop wobble (0.2-0.3 mm): the spectrum of a still particle, 0.03 Hz resolution. An event camera sees few events from a still object, so tracking may break up; the recording is kept regardless (the event count and tracked fraction are wanted too).",
+   "feedforward_design": {
+    "design": "HOLD",
+    "command_differs_from_reference": false,
+    "description": "u(t) = r(t) = 0",
+    "source_file": "hold_center_30s.npz"
    },
    "enabled": true
   }

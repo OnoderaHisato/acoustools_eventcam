@@ -105,6 +105,44 @@ powershell -ExecutionPolicy Bypass -File .\run_ff_heart_15v_session.ps1
   例 `feedforward_validation_017_cardioid_a5p4_f10_C_Ws4_scale100_V15_<時刻>`。完全な設計名は
   `pipeline_manifest.json` の `feedforward_design.design`（例 `C_delay_inverse_Ws4`）にあります。
 
+## 場の専用セッション（2026-09-24追加、日付なし、解析側の `FIELD_MAPPING_SESSION.md`）
+
+描画領域の体積全体で平衡点のずれ w(x, y, z) を決めるため、7面（XZ／YZ／XY の半径28 mm、y = ±8 mmの
+半径24 mm、y = ±16 mmの半径20 mm）を逆回り a／b で2回撮ります。
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\run_fieldscan_15v.ps1 -DryRunOnly
+powershell -ExecutionPolicy Bypass -File .\run_fieldscan_15v.ps1 -PsuUsb
+```
+
+- 冷えた状態から。音を出した直後に粒子を確認してEnter。以後は時刻表どおり（64 run、約2時間）:
+  5〜35分 kcheck x/z → 40分 kcheck x/y/z → 走査14本 → kcheck x/z → 65〜95分 5分ごとに kcheck x/z →
+  100分 走査14本（2回目）→ kcheck x/y/z。
+- 2回目の開始は `-Round2StartMin` で変えられます（1回目の終わりから30分以上あけること）。
+- 始めと終わりの室温を控えてください。電源の記録は `-PsuUsb`。
+- 約2時間音を出します。2026-09-24の14 mmセッションでは83分で片方の基板が落ちました。
+
+## 基板が落ちる前に止める（電流の見張り）と、セッションの分割（2026-09-24追加）
+
+15 Vでも音を出してから83分で片方の基板が落ちました（電流は58分から上がり続け、4.40 → 4.76 A）。
+解析側の見積もりでは、15 Vで使えるのは音を出してから約60分です。
+
+- **電流の見張り**: `run_scaleup_20260924.ps1`、`run_fieldscan_15v.ps1`、`run_ff_heart_15v_session.ps1` は、
+  電源の記録（`-PsuUsb` など）があるとき、各runの前に次のどちらかなら残りを撮らずに止めます（PATを止め、終了コード3、
+  session JSONの `status` は `stopped_by_current_guard`、理由は `current_guard`）。
+  - 片方の基板が落ちた: 電流が直前30秒の中央値の75%未満（出力はONのまま）。通常の揺れは0.6%以内でした。
+  - 電流が暖機の終わり（既定40分）の値より `-CurrentGuardPercent`（既定**3**、2026-09-24にユーザーが決定）%以上上がった（30秒の中央値どうしで比較）。
+  - 09-24の14 mmセッションに当てはめると、3%では78.6分（+4.2%、基板が落ちた83.3分の約5分前）に止まります。5%では82.0分（約1.3分前）でした。
+  - `-NoCurrentGuard` で無効。電源の記録が無いときは警告だけで、見張りは働きません。
+- **分割**（どちらも冷えた状態から、それぞれ暖機40分つき。あいだは音を止めて45分以上休む）:
+  - 規模拡大: `-Part A`（ステップ・R28走査・a10、31 run）と `-Part B`（a17・a23・`_topt`、36 run）。
+  - 場の専用セッション: `-Round 1` と `-Round 2`（各33 run、暖機 → kcheck x/y/z → 14本 → kcheck x/z）。
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\run_scaleup_20260924.ps1 -Part A -PsuUsb
+powershell -ExecutionPolicy Bypass -File .\run_fieldscan_15v.ps1 -Round 1 -PsuUsb
+```
+
 ## 電源の電圧・電流の自動記録（2026-09-24追加）
 
 どのコマンドにも `-PsuUsb` を足すと、PAT電源（PWR801L）の電圧・電流をUSBで1秒ごとに記録し、

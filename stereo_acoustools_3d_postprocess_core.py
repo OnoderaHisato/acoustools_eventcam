@@ -37,6 +37,17 @@ def processing_namespace(
     else:
         args.pat_start_led_side = "off"
         args.pat_start_led_roi = ""
+    # Tracking-only left mask that replaces pat_start_led.roi (2026-09-26). The LED ROI and the
+    # recorded PAT-start time in pat_camera_timing.json are not touched.
+    left_mask_override = str(override_values.get("left_mask_roi_override") or "").strip()
+    if left_mask_override:
+        values = [int(v) for v in left_mask_override.split(",")]
+        if len(values) != 4 or values[0] >= values[2] or values[1] >= values[3]:
+            raise ValueError(f"--left-mask-roi-override must be x0,y0,x1,y1; got {left_mask_override!r}")
+        left_mask_override = ",".join(str(v) for v in values)
+    args.left_mask_roi_override = left_mask_override
+    args.reacquire_after_sec = float(override_values.get("reacquire_after_sec") or 0.0)
+    args.reacquire_bins = int(override_values.get("reacquire_bins") or 3)
     transform_override = override_values.get("camera_to_pat_transform")
     transform_text = str(manifest.get("camera_to_pat_transform", "")).strip()
     args.camera_to_pat_transform = (
@@ -45,6 +56,14 @@ def processing_namespace(
         else (Path(transform_text).resolve() if transform_text else None)
     )
     return args
+
+
+def left_tracking_mask(args: argparse.Namespace) -> str:
+    """Left-camera tracking mask: the override if given, else the PAT-start LED ROI on the left."""
+    override = str(getattr(args, "left_mask_roi_override", "") or "").strip()
+    if override:
+        return override
+    return str(args.pat_start_led_roi) if args.pat_start_led_side == "left" else ""
 
 
 def run_command(command: list[str]) -> None:
@@ -102,10 +121,20 @@ def processing_commands(
         process_command.append("--render-overlay")
     if resume:
         process_command.append("--resume")
-    if args.pat_start_led_side == "left":
-        process_command.extend(["--left-mask-roi", str(args.pat_start_led_roi)])
-    elif args.pat_start_led_side == "right":
+    left_mask = left_tracking_mask(args)
+    if left_mask:
+        process_command.extend(["--left-mask-roi", left_mask])
+    if args.pat_start_led_side == "right":
         process_command.extend(["--right-mask-roi", str(args.pat_start_led_roi)])
+    if float(getattr(args, "reacquire_after_sec", 0.0)) > 0:
+        process_command.extend(
+            [
+                "--reacquire-after-sec",
+                str(float(args.reacquire_after_sec)),
+                "--reacquire-bins",
+                str(int(args.reacquire_bins)),
+            ]
+        )
 
     stereo_npz = camera_run / "stereo_3d" / "stereo_3d_points.npz"
     comparison_time_search = (
@@ -192,6 +221,18 @@ def run_postprocess(
     ideal_log = resolve_run_artifact(run_dir, str(manifest["ideal_log"]))
     initial_offset = float(timing["ideal_start_in_recording_sec"])
 
+    postprocess_settings = {
+        "scripts_dir": str(Path(__file__).resolve().parent),
+        "pat_start_led_side": args.pat_start_led_side,
+        "pat_start_led_roi_for_timing": args.pat_start_led_roi,
+        "left_tracking_mask_roi": left_tracking_mask(args),
+        "left_mask_roi_overridden": bool(getattr(args, "left_mask_roi_override", "")),
+        "reacquire_after_sec": float(getattr(args, "reacquire_after_sec", 0.0)),
+        "reacquire_bins": int(getattr(args, "reacquire_bins", 3)),
+        "previous_processing_status": manifest.get("processing_status"),
+        "previous_processing_completed_at": manifest.get("processing_completed_at"),
+    }
+    manifest["postprocess_settings"] = postprocess_settings
     manifest["processing_complete"] = False
     manifest["processing_status"] = "running"
     manifest["processing_started_at"] = dt.datetime.now().isoformat(timespec="milliseconds")
@@ -219,6 +260,16 @@ def run_postprocess(
         atomic_write_json(manifest_path, manifest)
         raise
 
+    for side in ("left", "right"):
+        meta_path = run_dir / "stereo_recording" / side / "event_tracking" / "event_tracking_meta.json"
+        try:
+            meta = json.loads(meta_path.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            continue
+        postprocess_settings[f"{side}_mask_rois"] = meta.get("mask_rois")
+        postprocess_settings[f"{side}_tracking_rejected_points"] = meta.get("tracking_rejected_points")
+        postprocess_settings[f"{side}_reacquisitions"] = meta.get("reacquisitions")
+    manifest["postprocess_settings"] = postprocess_settings
     manifest["processing_complete"] = True
     manifest["processing_status"] = "complete"
     manifest["processing_completed_at"] = dt.datetime.now().isoformat(timespec="milliseconds")

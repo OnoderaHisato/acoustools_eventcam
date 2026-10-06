@@ -57,6 +57,19 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--auto-time-step-sec", type=float, default=suppress)
     parser.add_argument("--refine-led-time", action="store_true", default=suppress)
     parser.add_argument("--camera-to-pat-transform", type=Path, default=suppress)
+    parser.add_argument(
+        "--left-mask-roi-override",
+        default=suppress,
+        help="x0,y0,x1,y1 excluded from left-camera tracking instead of the PAT-start LED ROI "
+        "(tracking only; the LED ROI and the recorded PAT-start time are unchanged).",
+    )
+    parser.add_argument(
+        "--reacquire-after-sec",
+        type=float,
+        default=suppress,
+        help="Re-acquire a 2D track lost at least this long (see eventcam_npz_track.py). 0 disables.",
+    )
+    parser.add_argument("--reacquire-bins", type=int, default=suppress)
     tokens = list(sys.argv[1:] if argv is None else argv)
     # Compatibility with the short-lived wrapper syntax used before this
     # script owned postprocessing directly.
@@ -66,7 +79,12 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
-    override_names = set(PROCESSING_CONFIG_FIELDS) | {"camera_to_pat_transform"}
+    override_names = set(PROCESSING_CONFIG_FIELDS) | {
+        "camera_to_pat_transform",
+        "left_mask_roi_override",
+        "reacquire_after_sec",
+        "reacquire_bins",
+    }
     overrides = {name: value for name, value in vars(args).items() if name in override_names}
     failures = 0
     for index, requested_run_dir in enumerate(args.run_dirs, start=1):

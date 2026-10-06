@@ -24,6 +24,10 @@ from typing import Any
 # preceding window while the output is still ON (a fuse trip on a PAT board looks like this).
 DROP_FRACTION = 0.5
 DROP_WINDOW_S = 30.0
+# The current guard stops at a smaller fall: the 2026-09-24 trip went from 4.73 A to 2.31 A
+# (0.488, only just under half) and a partial drop could stay above half, while the current
+# never dipped below 0.994 of its preceding 30 s median with both boards running.
+GUARD_DROP_FRACTION = 0.75
 # Gaps in the log longer than this are reported (logger stalled or the USB link failed).
 GAP_S = 5.0
 
@@ -55,7 +59,7 @@ def _valid(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return [row for row in rows if row.get("V") is not None and row.get("I") is not None]
 
 
-def detect_events(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+def detect_events(rows: list[dict[str, Any]], drop_fraction: float = DROP_FRACTION) -> list[dict[str, Any]]:
     """Output OFF transitions, current drops with the output ON, and gaps in the log."""
     events: list[dict[str, Any]] = []
     last_on = None
@@ -80,7 +84,7 @@ def detect_events(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
         window = [r["I"] for r in valid_history if row["t"] - r["t"] <= DROP_WINDOW_S]
         if len(window) >= 3 and last_on is not False:
             reference = sorted(window)[len(window) // 2]
-            dropped = reference > 0.2 and row["I"] < DROP_FRACTION * reference
+            dropped = reference > 0.2 and row["I"] < drop_fraction * reference
             if dropped and not in_drop:
                 events.append({
                     "t": row["t"], "kind": "current_drop",
@@ -174,6 +178,67 @@ def attach_supply_record(
         return summary
     except Exception as exc:  # noqa: BLE001 - the supply record must never break a recording
         return {"error": repr(exc)[:300], "source_log": str(psu_log)}
+
+
+def current_guard_verdict(
+    rows: list[dict[str, Any]],
+    sound_on_unix: float,
+    now_unix: float,
+    baseline_min: float = 40.0,
+    rise_fraction: float = 0.05,
+    window_s: float = 30.0,
+) -> dict[str, Any]:
+    """Whether the session should stop before the next run, judged from the supply log.
+
+    Stops when, since sound on, a PAT board dropped out (the current fell below GUARD_DROP_FRACTION
+    of the preceding 30 s median with the output ON) or the output went OFF, or when the
+    median current over the last `window_s` is more than `rise_fraction` above the median over
+    the `window_s` before `baseline_min` minutes after sound on. Before that minute the rise test
+    is inactive. The boards heat up and the current climbs for tens of minutes before a fuse
+    trips (2026-09-24 at 15 V: 4.40 A at 58 min, 4.76 A at 82 min, a board dropped at 83 min),
+    so a rise warns in time. Medians keep single-reading spikes from stopping a session.
+    """
+    since = [row for row in rows if sound_on_unix <= row["t"] <= now_unix]
+    verdict: dict[str, Any] = {
+        "stop": False,
+        "reason": "",
+        "baseline_min": baseline_min,
+        "rise_limit_percent": round(100.0 * rise_fraction, 3),
+        "checked_at": dt.datetime.fromtimestamp(now_unix).isoformat(timespec="seconds"),
+        "minutes_after_sound_on": round((now_unix - sound_on_unix) / 60.0, 2),
+    }
+    for event in detect_events(since, drop_fraction=GUARD_DROP_FRACTION):
+        if event["kind"] in {"current_drop", "output_off"}:
+            verdict.update({
+                "stop": True,
+                "reason": "board_drop" if event["kind"] == "current_drop" else "output_off",
+                "event": {**event, "time": dt.datetime.fromtimestamp(event["t"]).isoformat(timespec="seconds")},
+            })
+            return verdict
+
+    def median_current(start: float, end: float) -> float | None:
+        values = sorted(
+            row["I"] for row in _valid(since)
+            if start <= row["t"] <= end and row.get("on") is not False
+        )
+        return values[len(values) // 2] if len(values) >= 3 else None
+
+    baseline_at = sound_on_unix + 60.0 * baseline_min
+    if now_unix < baseline_at:
+        verdict["note"] = "before the baseline minute; only board drops are checked"
+        return verdict
+    baseline = median_current(baseline_at - window_s, baseline_at)
+    recent = median_current(now_unix - window_s, now_unix)
+    verdict["baseline_A"] = None if baseline is None else round(baseline, 4)
+    verdict["recent_A"] = None if recent is None else round(recent, 4)
+    if baseline is None or recent is None or baseline <= 0.0:
+        verdict["note"] = "not enough supply readings for the rise test"
+        return verdict
+    rise = recent / baseline - 1.0
+    verdict["rise_percent"] = round(100.0 * rise, 3)
+    if rise >= rise_fraction:
+        verdict.update({"stop": True, "reason": "current_rise"})
+    return verdict
 
 
 def steadiness(

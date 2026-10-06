@@ -63,6 +63,12 @@ param(
     [string]$PsuResource = "",
     [string]$PsuHost = "",
     [double]$PsuIntervalSec = 1.0,
+    # Stop before the next run when a PAT board drops out or the supply current has risen this
+    # many percent above its value at 40 min after sound on (needs a supply log). On 2026-09-24
+    # 3% (default, chosen 2026-09-24) would have stopped it at 78.6 min, about 5 min before a
+    # board tripped at 83.3 min; 5% only at 82.0 min.
+    [double]$CurrentGuardPercent = 3.0,
+    [switch]$NoCurrentGuard,
     [switch]$DryRunOnly
 )
 
@@ -202,6 +208,7 @@ Write-Host "[FF15V] Opening PAT. The clock starts now (sound on): levitate the p
 $psuTarget = Get-PsuTargetArgs -Usb:$PsuUsb -Resource $PsuResource -HostName $PsuHost
 $psuLogger = Start-PsuLogger -Python $python -OutputDir $OutputDir -TargetArgs $psuTarget -IntervalSec $PsuIntervalSec
 if ($null -ne $psuLogger) { $recordArgs += @("--psu-log", $psuLogger.Log) }
+$recordArgs += Get-CurrentGuardArgs -Logger $psuLogger -Percent $CurrentGuardPercent -BaselineMin 40.0 -Disabled:$NoCurrentGuard
 try {
     & $python .\acoustools_stereo_eventcam_3d_recording_auto.py @recordArgs `
         --acknowledge-ff-validation-protocol --acknowledge-step-response-risk
@@ -214,6 +221,9 @@ finally {
 if ($code -eq 0) {
     Write-Host "[FF15V] The session finished. Output: $OutputDir"
     Write-Host "[FF15V] Thermal log: $python .\thermal_log_prefill.py $OutputDir"
+}
+elseif ($code -eq 3) {
+    Write-Host "[FF15V] The current guard stopped the session before the next run (see current_guard in the session JSON)."
 }
 else {
     Write-Host "[FF15V] Recording stopped with exit code $code. See the auto_recording_session JSON in $OutputDir."

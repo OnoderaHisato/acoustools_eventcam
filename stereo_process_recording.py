@@ -65,6 +65,13 @@ def parse_args() -> argparse.Namespace:
         default=0.0,
         help="Reject a raw 2D centroid jump larger than this. 0 disables.",
     )
+    parser.add_argument(
+        "--reacquire-after-sec",
+        type=float,
+        default=0.0,
+        help="Passed to eventcam_npz_track.py: re-acquire a 2D track lost at least this long. 0 disables.",
+    )
+    parser.add_argument("--reacquire-bins", type=int, default=3, help="Consistent bins needed to re-acquire.")
     parser.add_argument("--t-start-sec", type=float, default=0.0, help="Tracking start time.")
     parser.add_argument("--t-end-sec", type=float, default=0.0, help="Tracking end time. 0 uses all events.")
     parser.add_argument("--roi", default="0,0,1280,720", help="Tracking ROI.")
@@ -173,6 +180,11 @@ def tracking_resume_config(
         "min_area": int(args.min_area),
         "min_mass": int(args.min_mass),
         "polarity": str(args.polarity),
+        **(
+            {"reacquire_after_sec": float(args.reacquire_after_sec), "reacquire_bins": int(args.reacquire_bins)}
+            if float(getattr(args, "reacquire_after_sec", 0.0)) > 0
+            else {}
+        ),
     }
 
 
@@ -454,6 +466,15 @@ def main() -> int:
             "--polarity",
             str(args.polarity),
         ]
+        if float(args.reacquire_after_sec) > 0:
+            common.extend(
+                [
+                    "--reacquire-after-sec",
+                    str(float(args.reacquire_after_sec)),
+                    "--reacquire-bins",
+                    str(int(args.reacquire_bins)),
+                ]
+            )
         left_command = [python, str(track_script), str(left_npz), "--output-dir", str(left_track_dir), *common]
         right_command = [python, str(track_script), str(right_npz), "--output-dir", str(right_track_dir), *common]
         if str(args.left_mask_roi).strip():
@@ -540,6 +561,8 @@ def main() -> int:
             args.stereo_calibration.resolve()
         ),
         "tracking": {
+            "reacquire_after_sec": float(args.reacquire_after_sec),
+            "reacquire_bins": int(args.reacquire_bins),
             "window_us": int(args.window_us),
             "hop_us": int(args.hop_us),
             "dt_us": float(args.dt_us),

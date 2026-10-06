@@ -89,6 +89,16 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--ransac-iterations", type=int, default=80, help="Random circle hypotheses for --tracking-method ransac_circle.")
     parser.add_argument("--ransac-residual-px", type=float, default=2.0, help="Inlier distance threshold in pixels for --tracking-method ransac_circle.")
     parser.add_argument("--max-step-px", type=float, default=0.0, help="Reject centroids that jump farther than this from the previous valid bin. 0 disables.")
+    parser.add_argument(
+        "--reacquire-after-sec",
+        type=float,
+        default=0.0,
+        help=(
+            "With --max-step-px: once the last accepted centroid is at least this old, accept a farther centroid "
+            "when it starts --reacquire-bins consecutive centroids within --max-step-px of each other. 0 disables."
+        ),
+    )
+    parser.add_argument("--reacquire-bins", type=int, default=3, help="Consecutive consistent bins needed to re-acquire a lost track.")
     parser.add_argument("--polarity", choices=["all", "on", "off"], default="all", help="Which events to use.")
     parser.add_argument("--sensor-width", type=int, default=0, help="Sensor width override. 0 infers from events.")
     parser.add_argument("--sensor-height", type=int, default=0, help="Sensor height override. 0 infers from events.")
@@ -141,21 +151,80 @@ def write_xy_to_rows(rows: list[dict[str, object]], x: np.ndarray, y: np.ndarray
 
 def reject_large_jumps(x: np.ndarray, y: np.ndarray, max_step_px: float) -> np.ndarray:
     """Return a mask of points that look like single-bin tracking jumps."""
+    rejected, _ = reject_large_jumps_with_reacquire(x, y, max_step_px)
+    return rejected
+
+
+def _consistent_run(x: np.ndarray, y: np.ndarray, start: int, bins: int, max_step_px: float) -> bool:
+    """True when bins start..start+bins-1 all have centroids within max_step_px of each other."""
+    stop = start + int(bins)
+    if stop > x.size:
+        return False
+    xs = x[start:stop]
+    ys = y[start:stop]
+    if not (np.all(np.isfinite(xs)) and np.all(np.isfinite(ys))):
+        return False
+    for a in range(xs.size):
+        for b in range(a + 1, xs.size):
+            if np.hypot(xs[a] - xs[b], ys[a] - ys[b]) > max_step_px:
+                return False
+    return True
+
+
+def reject_large_jumps_with_reacquire(
+    x: np.ndarray,
+    y: np.ndarray,
+    max_step_px: float,
+    t: np.ndarray | None = None,
+    reacquire_after_sec: float = 0.0,
+    reacquire_bins: int = 3,
+) -> tuple[np.ndarray, list[dict[str, float]]]:
+    """Reject single-bin jumps; optionally re-acquire a track that has been lost for a while.
+
+    Without re-acquisition (reacquire_after_sec <= 0) this is the original filter: a centroid farther
+    than max_step_px from the last accepted one is rejected, and the reference only moves on
+    acceptance, so after a real loss nothing is accepted until the particle comes back near the old
+    place. With re-acquisition, once the last accepted centroid is at least reacquire_after_sec old, a
+    farther centroid is accepted when it and the following reacquire_bins - 1 bins agree within
+    max_step_px (added 2026-09-26: the left track of large trajectories stayed lost for seconds after
+    the particle crossed the PAT-start LED mask).
+    """
     rejected = np.zeros_like(x, dtype=bool)
+    events: list[dict[str, float]] = []
     if max_step_px <= 0:
-        return rejected
+        return rejected, events
+    use_reacquire = reacquire_after_sec > 0 and t is not None and int(reacquire_bins) >= 1
 
     last_x = np.nan
     last_y = np.nan
+    last_t = np.nan
     for i, (cx, cy) in enumerate(zip(x, y)):
         if not (np.isfinite(cx) and np.isfinite(cy)):
             continue
         if np.isfinite(last_x) and np.hypot(cx - last_x, cy - last_y) > max_step_px:
-            rejected[i] = True
-            continue
+            if not (
+                use_reacquire
+                and float(t[i]) - last_t >= reacquire_after_sec - 1e-12
+                and _consistent_run(x, y, i, int(reacquire_bins), max_step_px)
+            ):
+                rejected[i] = True
+                continue
+            events.append(
+                {
+                    "bin_index": int(i),
+                    "t_sec": float(t[i]),
+                    "x_px": float(cx),
+                    "y_px": float(cy),
+                    "gap_sec": float(t[i]) - last_t,
+                    "from_x_px": float(last_x),
+                    "from_y_px": float(last_y),
+                    "jump_px": float(np.hypot(cx - last_x, cy - last_y)),
+                }
+            )
         last_x = float(cx)
         last_y = float(cy)
-    return rejected
+        last_t = float(t[i]) if t is not None else np.nan
+    return rejected, events
 
 
 def write_csv(path: Path, rows: Iterable[dict[str, object]], fieldnames: list[str]) -> None:
@@ -663,7 +732,22 @@ def main() -> None:
     t = np.asarray(t_centres, dtype=float)
     x = np.asarray(x_centres, dtype=float)
     y = np.asarray(y_centres, dtype=float)
-    rejected = reject_large_jumps(x, y, float(args.max_step_px))
+    rejected, reacquisitions = reject_large_jumps_with_reacquire(
+        x,
+        y,
+        float(args.max_step_px),
+        t=t,
+        reacquire_after_sec=float(args.reacquire_after_sec),
+        reacquire_bins=int(args.reacquire_bins),
+    )
+    if float(args.reacquire_after_sec) > 0:
+        write_csv(
+            out_dir / "tracking_reacquisitions.csv",
+            reacquisitions,
+            ["bin_index", "t_sec", "x_px", "y_px", "gap_sec", "from_x_px", "from_y_px", "jump_px"],
+        )
+        if reacquisitions:
+            print(f"[TRACK] re-acquired the track {len(reacquisitions)} time(s)", flush=True)
     if rejected.any():
         x = x.copy()
         y = y.copy()
@@ -779,6 +863,10 @@ def main() -> None:
         "ransac_iterations": int(args.ransac_iterations),
         "ransac_residual_px": float(args.ransac_residual_px),
         "tracking_rejected_points": int(rejected.sum()),
+        "reacquire_after_sec": float(args.reacquire_after_sec),
+        "reacquire_bins": int(args.reacquire_bins),
+        "reacquisitions": len(reacquisitions),
+        "reacquisition_events": reacquisitions,
         "raw_points": int(len(x)),
         "interp_points": int(len(t_i)),
         "leading_nan_filled": bool(not args.keep_leading_nan),
@@ -806,6 +894,8 @@ def main() -> None:
         "missing_raw_points": int(len(rows) - raw_finite.sum()),
         "missing_raw_points_before_leading_fill": int(len(rows) - raw_finite_before_leading_fill.sum()),
         "tracking_rejected_points": int(rejected.sum()),
+        "reacquire_after_sec": float(args.reacquire_after_sec),
+        "reacquisitions": len(reacquisitions),
         "interp_points": int(len(t_i)),
         "mask_rois": [list(mask_roi) for mask_roi in mask_rois if mask_roi is not None],
         "window_us": int(window_us),
