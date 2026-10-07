@@ -1397,27 +1397,25 @@
   {
    "name": "heart_s7_f10_C_Ws4",
    "kind": "imported",
-   "source_npz": "source/heart_s7_f10_C_delay_inverse_Ws4.npz",
+   "source_npz": "source/sig03/heart_s7_f10_C_delay_inverse_Ws4.npz",
    "positions_key": "positions_mm",
    "reference_key": "reference_mm",
    "extra_time_keys": [
     "time_pat_sec",
     "time_cam_expected_sec"
    ],
-   "positions_sha256": "b53a086e158ef2cc694a3e0538c26a690ca0fa180c8a480e339873d36397379a",
+   "positions_sha256": "b5757a330070e7ed31377eed311f2e0266a9c6ab4f5002b1beec855b4f118ea5",
    "duration_sec": 8.0,
    "campaign": "cooling_20261006",
    "measurement_family": "feedforward_validation",
    "condition": "heart_s7_f10_c_ws4",
-   "note": "Generalization session (GENERALIZATION_SESSION_PLAN.md, 15 V): heart_s7_f10_C_delay_inverse_Ws4 (C_delay_inverse + in-plane field compensation from the 9/25 round-2 XZ scan (wavenumber <= 4)). 8 s, 9.1 mm from the centre, peak speed 698 mm/s, peak acceleration 93013 mm/s^2, max |u-r| 0.850 mm, y range 0.00 mm.",
+   "note": "Cooling remeasurement (COOLING_REMEASURE_PLAN_20261006.md): heart_s7_f10_C_delay_inverse_Ws4 (C_delay_inverse + in-plane field compensation (wavenumber <= 4), field map smoothed at sigma 0.3 mm). 8 s, 9.075 mm from the centre, peak speed 697 mm/s, peak acceleration 92736 mm/s^2, max |u-r| 0.867 mm. Field map smoothed at sigma 0.3 mm, scans feedforward_validation_003_wscan_XZ_a_scale100_V15_20260924_062939 / feedforward_validation_004_wscan_XZ_b_scale100_V15_20260924_063048 (ff_heart_15V_sig03).",
    "feedforward_design": {
     "design": "C_delay_inverse_Ws4",
     "source_file": "heart_s7_f10_C_delay_inverse_Ws4.npz",
     "source_design": "C_delay_inverse_Ws4",
     "command_differs_from_reference": true,
-    "description": "C_delay_inverse + in-plane field compensation from the 9/25 round-2 XZ scan (wavenumber <= 4)",
-    "shape": "heart_s7",
-    "loop_frequency_hz": 10.0,
+    "description": "C_delay_inverse + in-plane field compensation (wavenumber <= 4), field map smoothed at sigma 0.3 mm",
     "params": {
      "shape": "heart",
      "scale_mm": 7.0,
@@ -1438,27 +1436,31 @@
      "ramp_sec": 0.5,
      "w_compensation": {
       "source": "same-session planar scan",
-      "plane": "XZ_R28",
+      "plane": "XZ",
       "nmax": 4,
       "axes": "xz",
-      "scan_a": "feedforward_validation_003_wscan_XZ_R28_a_scale100_V15_20260925_110055",
-      "scan_b": "feedforward_validation_004_wscan_XZ_R28_b_scale100_V15_20260925_110248",
-      "rotation_deg_not_compensated": 1.708490166230897,
+      "scan_a": "feedforward_validation_003_wscan_XZ_a_scale100_V15_20260924_062939",
+      "scan_b": "feedforward_validation_004_wscan_XZ_b_scale100_V15_20260924_063048",
+      "rotation_deg_not_compensated": 1.3224829434456868,
       "sym": [
        [
-        0.007673625172286627,
-        0.0003044718342382468
+        0.006402018637293897,
+        0.0052513441776962915
        ],
        [
-        0.0003044718342382468,
-        0.009063379987281567
+        0.0052513441776962915,
+        0.006634794418484734
        ]
-      ]
+      ],
+      "smooth_sigma_cells": 0.6,
+      "smooth_sigma_mm": 0.3
      }
-    }
+    },
+    "shape": "heart_s7",
+    "loop_frequency_hz": 10.0,
+    "design_dir": "ff_heart_15V_sig03"
    },
-   "enabled": true,
-   "copied_from": "generalization_20260927/generalization_plan.json:heart_s7_f10_C_Ws4"
+   "enabled": true
   },
   {
    "name": "heart_s7_f7_OFF",
@@ -1631,44 +1633,70 @@
   {
    "name": "cardioid_a5p4_f10_C_Ws4",
    "kind": "imported",
-   "source_npz": "source/cardioid_a5p4_f10_C_delay_inverse_Ws4.npz",
+   "source_npz": "source/sig03/cardioid_a5p4_f10_C_delay_inverse_Ws4.npz",
    "positions_key": "positions_mm",
    "reference_key": "reference_mm",
    "extra_time_keys": [
     "time_pat_sec",
     "time_cam_expected_sec"
    ],
-   "positions_sha256": "037c409023fe12793aaa7384e4c463c305df2972d9631bc99363d50c83e9d280",
+   "positions_sha256": "63cb832680a5bc3a3b7752f3c91877ce2c439f2a258b00a2e8ca75f91758407e",
    "duration_sec": 8.0,
    "campaign": "cooling_20261006",
    "measurement_family": "feedforward_validation",
-   "condition": "cardioid_c_delay_inverse_ws4_f10",
-   "note": "15 V operating point, cardioid at 10 Hz, design C_delay_inverse_Ws4 (w compensated with the smooth part of the scanned field only (wavenumber <= 4)). Designed by the analysis side from the 15 V identification (k 0.208/0.198/2.48 1/ms^2, tau0 0.9 ms). Peak speed 648 mm/s, peak acceleration 75866 mm/s^2, max |u-r| 0.900 mm.",
-   "enabled": true,
+   "condition": "cardioid_a5p4_f10_c_ws4",
+   "note": "Cooling remeasurement (COOLING_REMEASURE_PLAN_20261006.md): cardioid_a5p4_f10_C_delay_inverse_Ws4 (C_delay_inverse + in-plane field compensation (wavenumber <= 4), field map smoothed at sigma 0.3 mm). 8 s, 7.073 mm from the centre, peak speed 646 mm/s, peak acceleration 76647 mm/s^2, max |u-r| 0.883 mm. Field map smoothed at sigma 0.3 mm, scans feedforward_validation_003_wscan_XZ_a_scale100_V15_20260924_062939 / feedforward_validation_004_wscan_XZ_b_scale100_V15_20260924_063048 (ff_heart_15V_sig03).",
    "feedforward_design": {
     "design": "C_delay_inverse_Ws4",
+    "source_file": "cardioid_a5p4_f10_C_delay_inverse_Ws4.npz",
+    "source_design": "C_delay_inverse_Ws4",
     "command_differs_from_reference": true,
-    "shape": "cardioid",
-    "loop_frequency_hz": 10.0,
-    "w_compensation": "Ws4",
-    "identified_model": {
-     "k_1_per_ms2": {
+    "description": "C_delay_inverse + in-plane field compensation (wavenumber <= 4), field map smoothed at sigma 0.3 mm",
+    "params": {
+     "shape": "cardioid",
+     "scale_mm": 5.4,
+     "f_hz": 10.0,
+     "f_cmd_hz": 10.0,
+     "tau0_ms": 0.9,
+     "eps_ppm": 182.0,
+     "K": {
       "x": 0.208,
       "y": 0.198,
       "z": 2.48
      },
-     "gamma_1_per_ms": {
+     "GAM": {
       "x": 0.0372,
       "y": 0.0319,
       "z": 0.0237
      },
-     "tau0_ms": 0.9,
-     "supply_voltage_V": 15.0,
-     "source": "identified from the 15 V recordings of 2026-09-23 (analysis side)"
+     "ramp_sec": 0.5,
+     "w_compensation": {
+      "source": "same-session planar scan",
+      "plane": "XZ",
+      "nmax": 4,
+      "axes": "xz",
+      "scan_a": "feedforward_validation_003_wscan_XZ_a_scale100_V15_20260924_062939",
+      "scan_b": "feedforward_validation_004_wscan_XZ_b_scale100_V15_20260924_063048",
+      "rotation_deg_not_compensated": 1.3224829434456868,
+      "sym": [
+       [
+        0.006402018637293897,
+        0.0052513441776962915
+       ],
+       [
+        0.0052513441776962915,
+        0.006634794418484734
+       ]
+      ],
+      "smooth_sigma_cells": 0.6,
+      "smooth_sigma_mm": 0.3
+     }
     },
-    "source_file": "cardioid_a5p4_f10_C_delay_inverse_Ws4.npz"
+    "shape": "cardioid_a5p4",
+    "loop_frequency_hz": 10.0,
+    "design_dir": "ff_heart_15V_sig03"
    },
-   "copied_from": "ff_heart_15v_20260923/ff_heart_15v_plan.json:cardioid_a5p4_f10_C_Ws4"
+   "enabled": true
   },
   {
    "name": "cardioid_a10_f10_OFF",
@@ -2229,27 +2257,25 @@
   {
    "name": "heart_s7_xp15_f10_C_Ws4",
    "kind": "imported",
-   "source_npz": "source/heart_s7_xp15_f10_C_delay_inverse_Ws4.npz",
+   "source_npz": "source/sig03/heart_s7_xp15_f10_C_delay_inverse_Ws4.npz",
    "positions_key": "positions_mm",
    "reference_key": "reference_mm",
    "extra_time_keys": [
     "time_pat_sec",
     "time_cam_expected_sec"
    ],
-   "positions_sha256": "f08ded2ca6b26266c74ff350bc12a6546e4b110022e397b76fbe6b779b71a47d",
+   "positions_sha256": "20c8709749d25b0c9e2f349c15d75b7c2e3a2a8ba0b16fb72d164494545ee26b",
    "duration_sec": 8.0,
    "campaign": "cooling_20261006",
    "measurement_family": "feedforward_validation",
    "condition": "heart_s7_xp15_f10_c_ws4",
-   "note": "Generalization session (GENERALIZATION_SESSION_PLAN.md, 15 V): heart_s7_xp15_f10_C_delay_inverse_Ws4 (C_delay_inverse + in-plane field compensation from the 9/25 round-2 XZ scan (wavenumber <= 4)). 8 s, 21.6 mm from the centre, peak speed 713 mm/s, peak acceleration 92090 mm/s^2, max |u-r| 1.004 mm, y range 0.00 mm.",
+   "note": "Cooling remeasurement (COOLING_REMEASURE_PLAN_20261006.md): heart_s7_xp15_f10_C_delay_inverse_Ws4 (C_delay_inverse + in-plane field compensation (wavenumber <= 4), field map smoothed at sigma 0.3 mm). 8 s, 21.695 mm from the centre, peak speed 703 mm/s, peak acceleration 91482 mm/s^2, max |u-r| 0.881 mm. Field map smoothed at sigma 0.3 mm, scans feedforward_validation_003_wscan_XZ_R28_a_scale100_V15_20260925_110055 / feedforward_validation_004_wscan_XZ_R28_b_scale100_V15_20260925_110248 (ff_heart_15V_sig03).",
    "feedforward_design": {
     "design": "C_delay_inverse_Ws4",
     "source_file": "heart_s7_xp15_f10_C_delay_inverse_Ws4.npz",
     "source_design": "C_delay_inverse_Ws4",
     "command_differs_from_reference": true,
-    "description": "C_delay_inverse + in-plane field compensation from the 9/25 round-2 XZ scan (wavenumber <= 4)",
-    "shape": "heart_s7_xp15",
-    "loop_frequency_hz": 10.0,
+    "description": "C_delay_inverse + in-plane field compensation (wavenumber <= 4), field map smoothed at sigma 0.3 mm",
     "params": {
      "shape": "heart",
      "scale_mm": 7.0,
@@ -2282,47 +2308,49 @@
       "axes": "xz",
       "scan_a": "feedforward_validation_003_wscan_XZ_R28_a_scale100_V15_20260925_110055",
       "scan_b": "feedforward_validation_004_wscan_XZ_R28_b_scale100_V15_20260925_110248",
-      "rotation_deg_not_compensated": 1.708490166230897,
+      "rotation_deg_not_compensated": 1.7018866944274047,
       "sym": [
        [
-        0.007673625172286627,
-        0.0003044718342382468
+        0.007874845974388579,
+        0.0003405313530654482
        ],
        [
-        0.0003044718342382468,
-        0.009063379987281567
+        0.0003405313530654482,
+        0.008987645529278677
        ]
-      ]
+      ],
+      "smooth_sigma_cells": 0.6,
+      "smooth_sigma_mm": 0.3
      }
-    }
+    },
+    "shape": "heart_s7_xp15",
+    "loop_frequency_hz": 10.0,
+    "design_dir": "ff_heart_15V_sig03"
    },
-   "enabled": true,
-   "copied_from": "generalization_20260927/generalization_plan.json:heart_s7_xp15_f10_C_Ws4"
+   "enabled": true
   },
   {
    "name": "heart_s7_xm15_f10_C_Ws4",
    "kind": "imported",
-   "source_npz": "source/heart_s7_xm15_f10_C_delay_inverse_Ws4.npz",
+   "source_npz": "source/sig03/heart_s7_xm15_f10_C_delay_inverse_Ws4.npz",
    "positions_key": "positions_mm",
    "reference_key": "reference_mm",
    "extra_time_keys": [
     "time_pat_sec",
     "time_cam_expected_sec"
    ],
-   "positions_sha256": "55f26e6c07027293f6e9746b6ed75b82e7b67ae98c9cbaa635e9d31422ca7e0a",
+   "positions_sha256": "b50e0c67b257786dcd9591e3a31129c5b9553e7313d8302d76e3c036a6ceb059",
    "duration_sec": 8.0,
    "campaign": "cooling_20261006",
    "measurement_family": "feedforward_validation",
    "condition": "heart_s7_xm15_f10_c_ws4",
-   "note": "Generalization session (GENERALIZATION_SESSION_PLAN.md, 15 V): heart_s7_xm15_f10_C_delay_inverse_Ws4 (C_delay_inverse + in-plane field compensation from the 9/25 round-2 XZ scan (wavenumber <= 4)). 8 s, 21.8 mm from the centre, peak speed 712 mm/s, peak acceleration 90566 mm/s^2, max |u-r| 0.863 mm, y range 0.00 mm.",
+   "note": "Cooling remeasurement (COOLING_REMEASURE_PLAN_20261006.md): heart_s7_xm15_f10_C_delay_inverse_Ws4 (C_delay_inverse + in-plane field compensation (wavenumber <= 4), field map smoothed at sigma 0.3 mm). 8 s, 21.679 mm from the centre, peak speed 703 mm/s, peak acceleration 91331 mm/s^2, max |u-r| 0.882 mm. Field map smoothed at sigma 0.3 mm, scans feedforward_validation_003_wscan_XZ_R28_a_scale100_V15_20260925_110055 / feedforward_validation_004_wscan_XZ_R28_b_scale100_V15_20260925_110248 (ff_heart_15V_sig03).",
    "feedforward_design": {
     "design": "C_delay_inverse_Ws4",
     "source_file": "heart_s7_xm15_f10_C_delay_inverse_Ws4.npz",
     "source_design": "C_delay_inverse_Ws4",
     "command_differs_from_reference": true,
-    "description": "C_delay_inverse + in-plane field compensation from the 9/25 round-2 XZ scan (wavenumber <= 4)",
-    "shape": "heart_s7_xm15",
-    "loop_frequency_hz": 10.0,
+    "description": "C_delay_inverse + in-plane field compensation (wavenumber <= 4), field map smoothed at sigma 0.3 mm",
     "params": {
      "shape": "heart",
      "scale_mm": 7.0,
@@ -2355,47 +2383,49 @@
       "axes": "xz",
       "scan_a": "feedforward_validation_003_wscan_XZ_R28_a_scale100_V15_20260925_110055",
       "scan_b": "feedforward_validation_004_wscan_XZ_R28_b_scale100_V15_20260925_110248",
-      "rotation_deg_not_compensated": 1.708490166230897,
+      "rotation_deg_not_compensated": 1.7018866944274047,
       "sym": [
        [
-        0.007673625172286627,
-        0.0003044718342382468
+        0.007874845974388579,
+        0.0003405313530654482
        ],
        [
-        0.0003044718342382468,
-        0.009063379987281567
+        0.0003405313530654482,
+        0.008987645529278677
        ]
-      ]
+      ],
+      "smooth_sigma_cells": 0.6,
+      "smooth_sigma_mm": 0.3
      }
-    }
+    },
+    "shape": "heart_s7_xm15",
+    "loop_frequency_hz": 10.0,
+    "design_dir": "ff_heart_15V_sig03"
    },
-   "enabled": true,
-   "copied_from": "generalization_20260927/generalization_plan.json:heart_s7_xm15_f10_C_Ws4"
+   "enabled": true
   },
   {
    "name": "heart_s7_zp15_f10_C_Ws4",
    "kind": "imported",
-   "source_npz": "source/heart_s7_zp15_f10_C_delay_inverse_Ws4.npz",
+   "source_npz": "source/sig03/heart_s7_zp15_f10_C_delay_inverse_Ws4.npz",
    "positions_key": "positions_mm",
    "reference_key": "reference_mm",
    "extra_time_keys": [
     "time_pat_sec",
     "time_cam_expected_sec"
    ],
-   "positions_sha256": "814305f875b80331543d42ca647935662d05b9c7d027edbeaf4443e4e5d68cf2",
+   "positions_sha256": "2673397a8b120d376e0c5db361c320ded0232abfb2f03a30add6f5b7f0d4d9fa",
    "duration_sec": 8.0,
    "campaign": "cooling_20261006",
    "measurement_family": "feedforward_validation",
    "condition": "heart_s7_zp15_f10_c_ws4",
-   "note": "Generalization session (GENERALIZATION_SESSION_PLAN.md, 15 V): heart_s7_zp15_f10_C_delay_inverse_Ws4 (C_delay_inverse + in-plane field compensation from the 9/25 round-2 XZ scan (wavenumber <= 4)). 8 s, 21.7 mm from the centre, peak speed 705 mm/s, peak acceleration 92121 mm/s^2, max |u-r| 0.787 mm, y range 0.00 mm.",
+   "note": "Cooling remeasurement (COOLING_REMEASURE_PLAN_20261006.md): heart_s7_zp15_f10_C_delay_inverse_Ws4 (C_delay_inverse + in-plane field compensation (wavenumber <= 4), field map smoothed at sigma 0.3 mm). 8 s, 21.666 mm from the centre, peak speed 703 mm/s, peak acceleration 92344 mm/s^2, max |u-r| 0.809 mm. Field map smoothed at sigma 0.3 mm, scans feedforward_validation_003_wscan_XZ_R28_a_scale100_V15_20260925_110055 / feedforward_validation_004_wscan_XZ_R28_b_scale100_V15_20260925_110248 (ff_heart_15V_sig03).",
    "feedforward_design": {
     "design": "C_delay_inverse_Ws4",
     "source_file": "heart_s7_zp15_f10_C_delay_inverse_Ws4.npz",
     "source_design": "C_delay_inverse_Ws4",
     "command_differs_from_reference": true,
-    "description": "C_delay_inverse + in-plane field compensation from the 9/25 round-2 XZ scan (wavenumber <= 4)",
-    "shape": "heart_s7_zp15",
-    "loop_frequency_hz": 10.0,
+    "description": "C_delay_inverse + in-plane field compensation (wavenumber <= 4), field map smoothed at sigma 0.3 mm",
     "params": {
      "shape": "heart",
      "scale_mm": 7.0,
@@ -2428,47 +2458,49 @@
       "axes": "xz",
       "scan_a": "feedforward_validation_003_wscan_XZ_R28_a_scale100_V15_20260925_110055",
       "scan_b": "feedforward_validation_004_wscan_XZ_R28_b_scale100_V15_20260925_110248",
-      "rotation_deg_not_compensated": 1.708490166230897,
+      "rotation_deg_not_compensated": 1.7018866944274047,
       "sym": [
        [
-        0.007673625172286627,
-        0.0003044718342382468
+        0.007874845974388579,
+        0.0003405313530654482
        ],
        [
-        0.0003044718342382468,
-        0.009063379987281567
+        0.0003405313530654482,
+        0.008987645529278677
        ]
-      ]
+      ],
+      "smooth_sigma_cells": 0.6,
+      "smooth_sigma_mm": 0.3
      }
-    }
+    },
+    "shape": "heart_s7_zp15",
+    "loop_frequency_hz": 10.0,
+    "design_dir": "ff_heart_15V_sig03"
    },
-   "enabled": true,
-   "copied_from": "generalization_20260927/generalization_plan.json:heart_s7_zp15_f10_C_Ws4"
+   "enabled": true
   },
   {
    "name": "heart_s7_zm15_f10_C_Ws4",
    "kind": "imported",
-   "source_npz": "source/heart_s7_zm15_f10_C_delay_inverse_Ws4.npz",
+   "source_npz": "source/sig03/heart_s7_zm15_f10_C_delay_inverse_Ws4.npz",
    "positions_key": "positions_mm",
    "reference_key": "reference_mm",
    "extra_time_keys": [
     "time_pat_sec",
     "time_cam_expected_sec"
    ],
-   "positions_sha256": "5b04d87689b519e2f9d8e18f96d98c72f84641a0abb59fcf7c6a3a0a9ba08a04",
+   "positions_sha256": "3d6d5301cf10f1f04077feae9f279eaf919a6b13c6de25ac21aba4699ac40fd9",
    "duration_sec": 8.0,
    "campaign": "cooling_20261006",
    "measurement_family": "feedforward_validation",
    "condition": "heart_s7_zm15_f10_c_ws4",
-   "note": "Generalization session (GENERALIZATION_SESSION_PLAN.md, 15 V): heart_s7_zm15_f10_C_delay_inverse_Ws4 (C_delay_inverse + in-plane field compensation from the 9/25 round-2 XZ scan (wavenumber <= 4)). 8 s, 24.1 mm from the centre, peak speed 706 mm/s, peak acceleration 93384 mm/s^2, max |u-r| 1.096 mm, y range 0.00 mm.",
+   "note": "Cooling remeasurement (COOLING_REMEASURE_PLAN_20261006.md): heart_s7_zm15_f10_C_delay_inverse_Ws4 (C_delay_inverse + in-plane field compensation (wavenumber <= 4), field map smoothed at sigma 0.3 mm). 8 s, 24.075 mm from the centre, peak speed 712 mm/s, peak acceleration 92695 mm/s^2, max |u-r| 1.042 mm. Field map smoothed at sigma 0.3 mm, scans feedforward_validation_003_wscan_XZ_R28_a_scale100_V15_20260925_110055 / feedforward_validation_004_wscan_XZ_R28_b_scale100_V15_20260925_110248 (ff_heart_15V_sig03).",
    "feedforward_design": {
     "design": "C_delay_inverse_Ws4",
     "source_file": "heart_s7_zm15_f10_C_delay_inverse_Ws4.npz",
     "source_design": "C_delay_inverse_Ws4",
     "command_differs_from_reference": true,
-    "description": "C_delay_inverse + in-plane field compensation from the 9/25 round-2 XZ scan (wavenumber <= 4)",
-    "shape": "heart_s7_zm15",
-    "loop_frequency_hz": 10.0,
+    "description": "C_delay_inverse + in-plane field compensation (wavenumber <= 4), field map smoothed at sigma 0.3 mm",
     "params": {
      "shape": "heart",
      "scale_mm": 7.0,
@@ -2501,22 +2533,26 @@
       "axes": "xz",
       "scan_a": "feedforward_validation_003_wscan_XZ_R28_a_scale100_V15_20260925_110055",
       "scan_b": "feedforward_validation_004_wscan_XZ_R28_b_scale100_V15_20260925_110248",
-      "rotation_deg_not_compensated": 1.708490166230897,
+      "rotation_deg_not_compensated": 1.7018866944274047,
       "sym": [
        [
-        0.007673625172286627,
-        0.0003044718342382468
+        0.007874845974388579,
+        0.0003405313530654482
        ],
        [
-        0.0003044718342382468,
-        0.009063379987281567
+        0.0003405313530654482,
+        0.008987645529278677
        ]
-      ]
+      ],
+      "smooth_sigma_cells": 0.6,
+      "smooth_sigma_mm": 0.3
      }
-    }
+    },
+    "shape": "heart_s7_zm15",
+    "loop_frequency_hz": 10.0,
+    "design_dir": "ff_heart_15V_sig03"
    },
-   "enabled": true,
-   "copied_from": "generalization_20260927/generalization_plan.json:heart_s7_zm15_f10_C_Ws4"
+   "enabled": true
   },
   {
    "name": "heart_s7_yp10_f10_C_W3",
@@ -2715,6 +2751,90 @@
    },
    "enabled": true,
    "copied_from": "generalization_20260927/generalization_plan.json:heart_s7_ym10_f10_C_W3"
+  },
+  {
+   "name": "wscan_XZ_R28slow_a",
+   "kind": "imported",
+   "source_npz": "source/w_scan_slow/wscan_XZ_R28slow_a.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "7935c4af7fb968d25ec2abd5e713552525bd0557347490a67de880852871e6ab",
+   "duration_sec": 48.0,
+   "campaign": "cooling_20261006",
+   "measurement_family": "feedforward_validation",
+   "condition": "w_scan_xz_r28slow_a",
+   "note": "Cooling remeasurement (COOLING_REMEASURE_PLAN_20261006.md): wscan_XZ_R28slow_a (u(t) = r(t)). 48 s, 28.000 mm from the centre, peak speed 132 mm/s, peak acceleration 622 mm/s^2, max |u-r| 0.000 mm. Slow field-mapping scan (plan section 2b, optional): the wscan_XZ_R28 spiral at 0.75 rev/s instead of 1.5 rev/s, to test whether the map depends on the scan speed.",
+   "feedforward_design": {
+    "design": "WSCAN",
+    "source_file": "wscan_XZ_R28slow_a.npz",
+    "source_design": "OFF",
+    "command_differs_from_reference": false,
+    "description": "u(t) = r(t)",
+    "params": {
+     "shape": "spiral",
+     "plane": "XZ_R28slow",
+     "variant": "a",
+     "rotation_hz": 0.75,
+     "direction": 1,
+     "rmax_mm": 28.0,
+     "offset_mm": 0.0,
+     "duration_sec": 48.0
+    },
+    "plane": "XZ",
+    "plane_name": "XZ_R28slow",
+    "direction": "counter-clockwise",
+    "radius_mm": 28.0,
+    "rotation_hz": 0.75,
+    "plane_offset_axis": "y",
+    "plane_offset_mm": 0.0
+   },
+   "enabled": true
+  },
+  {
+   "name": "wscan_XZ_R28slow_b",
+   "kind": "imported",
+   "source_npz": "source/w_scan_slow/wscan_XZ_R28slow_b.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "c4bd8540ce3e94138fbb9f3352d143b8ea0240c70dc440d0d0005c2c5aa8851c",
+   "duration_sec": 48.0,
+   "campaign": "cooling_20261006",
+   "measurement_family": "feedforward_validation",
+   "condition": "w_scan_xz_r28slow_b",
+   "note": "Cooling remeasurement (COOLING_REMEASURE_PLAN_20261006.md): wscan_XZ_R28slow_b (u(t) = r(t)). 48 s, 28.000 mm from the centre, peak speed 132 mm/s, peak acceleration 622 mm/s^2, max |u-r| 0.000 mm. Slow field-mapping scan (plan section 2b, optional): the wscan_XZ_R28 spiral at 0.75 rev/s instead of 1.5 rev/s, to test whether the map depends on the scan speed.",
+   "feedforward_design": {
+    "design": "WSCAN",
+    "source_file": "wscan_XZ_R28slow_b.npz",
+    "source_design": "OFF",
+    "command_differs_from_reference": false,
+    "description": "u(t) = r(t)",
+    "params": {
+     "shape": "spiral",
+     "plane": "XZ_R28slow",
+     "variant": "b",
+     "rotation_hz": 0.75,
+     "direction": -1,
+     "rmax_mm": 28.0,
+     "offset_mm": 0.0,
+     "duration_sec": 48.0
+    },
+    "plane": "XZ",
+    "plane_name": "XZ_R28slow",
+    "direction": "clockwise",
+    "radius_mm": 28.0,
+    "rotation_hz": 0.75,
+    "plane_offset_axis": "y",
+    "plane_offset_mm": 0.0
+   },
+   "enabled": true
   }
  ]
 }

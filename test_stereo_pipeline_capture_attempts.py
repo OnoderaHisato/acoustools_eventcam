@@ -748,6 +748,19 @@ class AutomaticCaptureRetryTests(unittest.TestCase):
         self.assertEqual(recording_core.compute_recorder_wait_timeout_sec(13.5, 0.5, 2.0), 60.0)
         self.assertEqual(recording_core.compute_recorder_wait_timeout_sec(80.0, 0.5, 2.0), 100.0)
 
+    def test_tail_margin_grows_with_the_pat_message_length(self) -> None:
+        margin = recording_core.effective_capture_tail_margin_sec
+        # Short commands keep the requested margin (kcheck 140k, sweeps 165k geometries).
+        self.assertEqual(margin(5.0, 140_000), 5.0)
+        self.assertEqual(margin(5.0, 165_000), 5.0)
+        self.assertEqual(margin(5.0, 10), 5.0)
+        # 2026-09-25: 240k geometries took 2.9 s longer to send; the margin covers it with spare.
+        self.assertGreater(margin(5.0, 240_000) - 2.9, 2.0)
+        # A 48 s scan (480k) needs about 9 s, a 72 s one (720k) about 12.8 s.
+        self.assertAlmostEqual(margin(5.0, 480_000), 9.2)
+        self.assertAlmostEqual(margin(5.0, 720_000), 12.8)
+        self.assertEqual(margin(20.0, 480_000), 20.0)
+
     def test_invalid_led_and_watchdog_settings_are_rejected_before_hardware_use(self) -> None:
         for argv in (
             ["--pat-start-led-onset-tolerance-sec", "-0.1"],

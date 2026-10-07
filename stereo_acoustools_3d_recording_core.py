@@ -808,6 +808,21 @@ def led_consistency_warnings(led_result: dict[str, Any] | None) -> list[str]:
     return warnings
 
 
+# The PAT send call outlasts the trajectory by about 1.2-1.4 s per 100k message geometries
+# (2026-09-24/25: 2.9 s for 240k, 3.1-3.6 s for 260k). Long commands need a longer tail
+# margin, or the end of the motion falls outside the recorded interval.
+PAT_SEND_OVERHEAD_SEC_PER_GEOMETRY = 1.5e-5
+CAPTURE_TAIL_SPARE_SEC = 2.0
+
+
+def effective_capture_tail_margin_sec(requested_sec: float, geometry_count: int) -> float:
+    """The requested tail margin, extended to cover the expected PAT send overhead."""
+    return max(
+        float(requested_sec),
+        int(geometry_count) * PAT_SEND_OVERHEAD_SEC_PER_GEOMETRY + CAPTURE_TAIL_SPARE_SEC,
+    )
+
+
 def compute_recorder_wait_timeout_sec(
     capture_duration_sec: float,
     post_roll_sec: float,
@@ -1098,7 +1113,14 @@ def run_recording(
                 session, float(active_warmup_target_minutes)
             )
 
-        capture_duration = expected_duration + float(args.post_roll_sec) + float(args.capture_tail_margin_sec)
+        capture_tail_margin = effective_capture_tail_margin_sec(args.capture_tail_margin_sec, geometry_count)
+        if capture_tail_margin > float(args.capture_tail_margin_sec):
+            print(
+                f"[PREP] Capture tail margin extended from {float(args.capture_tail_margin_sec):g} s "
+                f"to {capture_tail_margin:.1f} s for {geometry_count} message geometries.",
+                flush=True,
+            )
+        capture_duration = expected_duration + float(args.post_roll_sec) + capture_tail_margin
         led_roi = (
             parse_led_roi(str(args.pat_start_led_roi))
             if args.pat_start_led_side != "off"
@@ -1277,6 +1299,10 @@ def run_recording(
                 "pat_send_call_duration_sec": call_duration,
                 "pat_send_overhead_sec": max(0.0, call_duration - expected_duration),
                 "expected_motion_duration_sec": expected_duration,
+                "capture_tail_margin_sec": {
+                    "requested": float(args.capture_tail_margin_sec),
+                    "effective": capture_tail_margin,
+                },
                 "camera_elapsed_at_marker_sec": marker_camera_elapsed_sec,
                 "ideal_start_in_recording_sec": ideal_start_in_recording_sec,
                 "time_definition": "ideal_t = recording_t - ideal_start_in_recording_sec",
@@ -1293,7 +1319,7 @@ def run_recording(
                     timeout=compute_recorder_wait_timeout_sec(
                         capture_duration,
                         float(args.post_roll_sec),
-                        float(args.capture_tail_margin_sec),
+                        capture_tail_margin,
                     )
                 )
             except subprocess.TimeoutExpired as exc:

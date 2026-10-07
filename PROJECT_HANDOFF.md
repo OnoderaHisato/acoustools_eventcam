@@ -1,5 +1,23 @@
 # Project handoff
 
+## 2026-10-07: 遅い走査（48 s）をブロック2へ追加、長い指令では記録の末尾の余裕を自動で延ばす
+
+- ユーザーが直接承認した（「入れてください」）。指令は解析側が作った G: の `Experiment/20261006/measurement_plan/w_scan_slow/wscan_XZ_R28slow_a/b.npz`。`wscan_XZ_R28` と同じ渦巻き（半径 28 mm、XZ 面）を 0.75 回/s・48 s で回したもの。a は反時計回り、b は時計回り。最大 132 mm/s、622 mm/s²、端点 0、u = r。
+- `cooling_plan.json` の末尾（index 56・57）に追加し、元の56本と export の番号は変えていない。ソースは `cooling_20261006/source/w_scan_slow/`。`run_cooling_remeasure_15v.ps1` では、2b の14本の後に入る（ブロック2は69本、ブロック12は105本）。`-SkipSlowScan` で省ける（ブロック2・12のみ。それ以外での指定は拒否）。export の配列は G: とビット一致。全ブロックと `-SkipSlowScan` の dry-run が成功し、フォルダ名の短縮もなかった。
+- **記録コアの変更**: `stereo_acoustools_3d_recording_core.effective_capture_tail_margin_sec()` を追加した。PAT への送信の遅れの見込み（1 ジオメトリあたり 1.5e-5 s。実測は 240k で 2.9 s、260k で 3.1〜3.6 s）に 2 s を足した値が、指定した `--capture-tail-margin-sec` より大きければ、その run だけカメラの記録時間と待ち時間を延ばす。延ばしたときは `[PREP] Capture tail margin extended ...` と表示し、`pat_camera_timing.json` に `capture_tail_margin_sec`（`requested`／`effective`）を残す。
+  - 冷却の計画で延びるのは、48 s の走査（480k、9.2 s）と 24 s の走査（240k、5.6 s）だけ。kcheck（140k）と掃引（165k）は 5 s のまま。完全静止の圧縮再生（1 ジオメトリ）は延びない。
+  - ほかの一括スクリプトでも、24 s 以上の指令（R28 走査、26 s のステップ応答）は少し長く記録されるようになる。
+- テスト: `test_cooling_plan` に遅い走査の検査、`test_stereo_pipeline_capture_attempts` に余裕の計算の検査を追加し、関連9スイートの116件が成功した。
+- 48 s（480k フレーム）は、これまでに送った最長（260k）の約2倍で、実機では未試験。ホログラムの計算は約80 s、記録は約5 GB・約3.7億イベントの見込み。PAT・カメラは開いていない。コミット・pushは行っていない。
+
+## 2026-10-07: 冷却の計画の `_Ws4` 6本を地図の平滑化 σ 0.3 mm の版（ff_heart_15V_sig03）へ差し替え、遅い走査の記録長を回答
+
+- 依頼元: 解析側（「NN モデル構築へ方向転換」）。G: の `Experiment/20261006/MESSAGE_TO_ACQUISITION_PC_20261007.md` と `measurement_plan/ff_heart_15V_sig03/`（32本＋README＋make_log）。場の地図の平滑化を σ 0.6 → 0.3 mm にして作り直した設計で、ファイル名は元と同じ。
+- `cooling_plan.json` の `_Ws4` 6本（2c の `heart_s7_f10_C_Ws4`・`cardioid_a5p4_f10_C_Ws4`、2d の `heart_s7_{xp15,xm15,zp15,zm15}_f10_C_Ws4`）を sig03 の指令にした。元のファイルと名前がぶつかるので `cooling_20261006/source/sig03/` に写した。run 名は変えていない。`feedforward_design.design_dir = "ff_heart_15V_sig03"` を入れたので、manifest と session JSON の各 run（`feedforward_design`）に残る。ほかの50本は元の plan と同一。
+- 注意: ハート f10 とカーディオイド a5p4 の _Ws4 は、場の走査が 9/24 06:29 の a/b に変わった（旧はハート 9/25 ラウンド2、カーディオイド 9/23）。ずらしたハート4本は 9/25 11:00 のまま。全部上限内（最大 24.1 mm、712 mm/s、92.7k mm/s²、\|u−r\| 1.04 mm、端点 0.0009 mm）。
+- export を作り直し、6本の指令・所望軌道は G: の配列とビット一致。ブロック 0/1/2/12 の dry-run が成功した。`test_cooling_plan` のハートの場の検査を「6本とも σ 0.3・sig03・design_dir」に替え、汎化・左マスクと合わせて28件成功。作り直す前の plan と builder はスクラッチ領域に退避した。
+- 遅い走査（計画書 §2b の追記、任意）の記録長: コードに上限は無いが、今までに送った最長は 260k フレーム（26 s）。24 s の R28 走査の実績（ホログラム 39 s、送信の遅れ 2.9 s、イベント 184 M、2.5 GB）から、72 s は約 2 分のホログラム計算、送信の遅れ約 9 s（今の末尾余裕 5 s では最後の約 4 s が切れる）、約 7.5 GB・約 5.5 億イベント（記録プロセスのメモリが RAM 32 GB に対して厳しい）、サーバーでの処理は 1 本約 7 時間。48 s（0.75 回/s）なら約 5 GB・送信の遅れ約 6 s で、末尾余裕を 9 s 程度へ延ばせば撮れる見込み。どちらも未試験の長さで、取り込むときは末尾余裕を run ごとに延ばす変更が要る。計画書は「ユーザー承認」と書いているが、取り込むかはユーザーに直接確かめる。PAT・カメラは開いていない。コミット・pushは行っていない。
+
 ## 2026-10-06: 冷却ファン後の再計測（Experiment/20261006）の準備
 
 - 依頼元: 解析側の新しいセッション「NN モデル構築へ方向転換」（PINN を止め、物理の式に学習項を置く NN モデルへ）。正本は G: の `Experiment/20261006/COOLING_REMEASURE_PLAN_20261006.md`、新しい指令9本は `measurement_plan/resonance_sweep/`。実施日はユーザーが決める。PAT・カメラは開いていない。

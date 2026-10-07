@@ -13,10 +13,11 @@ Remeasurement after the PAT cooling fans (Experiment/20261006/COOLING_REMEASURE_
           kcheck x/z every 5 minutes from 0 to 60, kcheck x/y/z at 20, 60 and 90,
           hold_center_10s at 0, 30, 60 and 90, wscan_XZ_R28 a/b at 45 and 85.
           (-DurationMin 60 for the 18 V test of section 5 keeps the steps up to 60 minutes, no scans.)
--Block 2  NN training data, about 57 minutes, 67 runs, after -WarmupMin (default 20, the settling time
+-Block 2  NN training data, about 59 minutes, 69 runs, after -WarmupMin (default 20, the settling time
           measured in block 1; 0 starts at once):
           2a kcheck x/y/z, hold, chirp x 0.05/0.1/(confirm)0.2, chirp y 0.05/0.1/(confirm)0.2, chirp z 0.01/0.02,
-             multisine, XL25, (confirm) XL30;  2b the 14 field scans;  2c learning shapes (heart, cardioid a5p4/a10);
+             multisine, XL25, (confirm) XL30;  2b the 14 field scans and the slow scan wscan_XZ_R28slow a/b
+             (0.75 rev/s, 48 s each; -SkipSlowScan leaves them out);  2c learning shapes (heart, cardioid a5p4/a10);
           2d test shapes (lissajous, circle, tilted circle, 3-D lissajous, shifted hearts);
           2e kcheck x/y/z, wscan_XZ_R28 a/b, hold, (replace particle) hold, kcheck x, (replace particle) hold, kcheck x.
 -Block 12 Block 1 followed directly by block 2 in the same session (no new sound-on); the last kcheck x/y/z
@@ -50,6 +51,7 @@ param(
     [int]$AutomaticCaptureRetries = 2,
     [double]$CaptureTailMarginSec = 5.0,
     [switch]$KeepFailedCaptures,
+    [switch]$SkipSlowScan,
     [switch]$Regenerate,
     [switch]$PsuUsb,
     [string]$PsuResource = "",
@@ -73,6 +75,7 @@ if ($DurationMin -lt 60.0) { throw "-DurationMin must be at least 60" }
 if ($WarmupMin -lt 0.0) { throw "-WarmupMin must not be negative" }
 if ($Block -ne "2" -and $PSBoundParameters.ContainsKey("WarmupMin")) { throw "-WarmupMin applies to -Block 2 only" }
 if ($Block -ne "1" -and $Block -ne "12" -and $PSBoundParameters.ContainsKey("DurationMin")) { throw "-DurationMin applies to -Block 1 / 12 only" }
+if ($Block -ne "2" -and $Block -ne "12" -and $SkipSlowScan) { throw "-SkipSlowScan applies to -Block 2 / 12 only" }
 if ($OutputDir -eq "") {
     # Keep the folder name this short: a longer one shortens the run names.
     $voltageTag = if ([math]::Abs($SupplyVoltage - [math]::Round($SupplyVoltage)) -lt 1e-9) { "{0:0}" -f $SupplyVoltage } else { ("{0}" -f $SupplyVoltage).Replace(".", "p") }
@@ -162,6 +165,7 @@ if ($Block -eq "2" -or $Block -eq "12") {
     foreach ($surface in @("XZ_R28", "YZ_R28", "XY_R28", "XZ_R24yp8", "XZ_R24ym8", "XZ_R20yp16", "XZ_R20ym16")) {
         Add-Run "wscan_${surface}_a"; Add-Run "wscan_${surface}_b"
     }
+    if (-not $SkipSlowScan) { Add-Run "wscan_XZ_R28slow_a"; Add-Run "wscan_XZ_R28slow_b" }
     # 2c
     foreach ($d in @("OFF", "OFF", "C_delay", "C_delay", "C_Ws4", "C_Ws4")) { Add-Run "heart_s7_f10_$d" }
     Add-Run "heart_s7_f7_OFF"; Add-Run "heart_s7_f7_C_delay"

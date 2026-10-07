@@ -68,10 +68,37 @@ class CoolingPlanTests(unittest.TestCase):
                 base = safe_run_dir_base(OUTPUT_ROOT / root, shape, label, "20261006_010203")
                 self.assertEqual(base, f"{shape}_{label}_20261006_010203", entry["name"])
 
-    def test_heart_ws4_is_the_9_25_round_2_field(self) -> None:
-        entry = next(e for e in plan()["experiments"] if e["name"] == "heart_s7_f10_C_Ws4")
-        params = entry["feedforward_design"]["params"]
-        self.assertIn("20260925_110055", str(params.get("w_compensation", {}).get("scan_a", "")))
+    def test_ws4_designs_are_the_sigma_0p3_remake(self) -> None:
+        ws4 = [e for e in plan()["experiments"] if e["name"].endswith("_Ws4")]
+        self.assertEqual(len(ws4), 6)
+        for entry in ws4:
+            design = entry["feedforward_design"]
+            self.assertEqual(design["design_dir"], "ff_heart_15V_sig03", entry["name"])
+            self.assertTrue(entry["source_npz"].startswith("source/sig03/"), entry["name"])
+            self.assertEqual(design["params"]["w_compensation"]["smooth_sigma_mm"], 0.3, entry["name"])
+        scans = {e["name"]: e["feedforward_design"]["params"]["w_compensation"]["scan_a"] for e in ws4}
+        self.assertIn("20260924_062939", scans["heart_s7_f10_C_Ws4"])
+        self.assertIn("20260925_110055", scans["heart_s7_xp15_f10_C_Ws4"])
+
+    def test_slow_scans_are_48_s_and_uncompensated(self) -> None:
+        entries = {e["name"]: e for e in plan()["experiments"]}
+        fast = entries["wscan_XZ_R28_a"]
+        for variant in "ab":
+            entry = entries[f"wscan_XZ_R28slow_{variant}"]
+            self.assertEqual(entry["duration_sec"], 48.0)
+            self.assertTrue(entry["source_npz"].startswith("source/w_scan_slow/"))
+            self.assertEqual(entry["feedforward_design"]["design"], "WSCAN")
+            self.assertEqual(entry["feedforward_design"]["rotation_hz"], 0.75)
+            with np.load(CAMPAIGN / entry["source_npz"]) as data:
+                u, r = np.asarray(data["positions_mm"]), np.asarray(data["reference_mm"])
+            self.assertTrue(np.array_equal(u, r))
+            self.assertAlmostEqual(float(np.linalg.norm(u, axis=1).max()), 28.0, places=3)
+            self.assertLess(float(np.linalg.norm(u[[0, -1]], axis=1).max()), 1e-9)
+            self.assertEqual(float(np.ptp(u[:, 1])), 0.0)
+        # The slow scans are appended, so the earlier export indices did not move.
+        names = [e["name"] for e in plan()["experiments"]]
+        self.assertEqual(names[-2:], ["wscan_XZ_R28slow_a", "wscan_XZ_R28slow_b"])
+        self.assertLess(names.index(fast["name"]), 56)
 
     @unittest.skipUnless(export_matches_plan(), "the export is older than the plan")
     def test_export_has_every_run(self) -> None:
