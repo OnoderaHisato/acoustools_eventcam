@@ -97,8 +97,27 @@ class CoolingPlanTests(unittest.TestCase):
             self.assertEqual(float(np.ptp(u[:, 1])), 0.0)
         # The slow scans are appended, so the earlier export indices did not move.
         names = [e["name"] for e in plan()["experiments"]]
-        self.assertEqual(names[-2:], ["wscan_XZ_R28slow_a", "wscan_XZ_R28slow_b"])
+        self.assertEqual(names[56:58], ["wscan_XZ_R28slow_a", "wscan_XZ_R28slow_b"])
         self.assertLess(names.index(fast["name"]), 56)
+
+    def test_2026_10_08_additions(self) -> None:
+        entries = {e["name"]: e for e in plan()["experiments"]}
+        names = [e["name"] for e in plan()["experiments"]]
+        # Appended after the slow scans, so earlier export indices did not move.
+        self.assertEqual(names.index("cardioid_a17_f10_OFF"), 58)
+        for size in ("a17", "a23"):
+            entry = entries[f"cardioid_{size}_f10_OFF"]
+            self.assertEqual(entry["feedforward_design"]["design"], "OFF")
+            self.assertEqual(entry["copied_from"], f"scaleup_20260924/scaleup_plan.json:cardioid_{size}_f10_OFF")
+        nn = [n for n in names if "_C_nn_" in n]
+        self.assertEqual(nn, ["heart_s7_f10_C_nn_M1", "heart_s7_f10_C_nn_M1z", "heart_s7_f7_C_nn_M1",
+                              "cardioid_a5p4_f10_C_nn_M1", "cardioid_a10_f10_C_nn_M1", "lissajous_s15_f10_C_nn_M1"])
+        for name in nn:
+            design = entries[name]["feedforward_design"]
+            self.assertEqual(design["design_dir"], "ff_nn", name)
+            self.assertEqual(design["design"], name.split("_f", 1)[1].split("_", 1)[1], name)
+            self.assertIn("nn_compensation", design["params"], name)
+            self.assertTrue(entries[name]["source_npz"].startswith("source/ff_nn/"), name)
 
     @unittest.skipUnless(export_matches_plan(), "the export is older than the plan")
     def test_export_has_every_run(self) -> None:

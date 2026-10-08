@@ -13,18 +13,24 @@ Remeasurement after the PAT cooling fans (Experiment/20261006/COOLING_REMEASURE_
           kcheck x/z every 5 minutes from 0 to 60, kcheck x/y/z at 20, 60 and 90,
           hold_center_10s at 0, 30, 60 and 90, wscan_XZ_R28 a/b at 45 and 85.
           (-DurationMin 60 for the 18 V test of section 5 keeps the steps up to 60 minutes, no scans.)
--Block 2  NN training data, about 59 minutes, 69 runs, after -WarmupMin (default 20, the settling time
+-Block 2  NN training data, about 69 minutes, 78 runs, after -WarmupMin (default 20, the settling time
           measured in block 1; 0 starts at once):
           2a kcheck x/y/z, hold, chirp x 0.05/0.1/(confirm)0.2, chirp y 0.05/0.1/(confirm)0.2, chirp z 0.01/0.02,
              multisine, XL25, (confirm) XL30;  2b the 14 field scans and the slow scan wscan_XZ_R28slow a/b
              (0.75 rev/s, 48 s each; -SkipSlowScan leaves them out);  2c learning shapes (heart, cardioid a5p4/a10);
-          2d test shapes (lissajous, circle, tilted circle, 3-D lissajous, shifted hearts);
-          2e kcheck x/y/z, wscan_XZ_R28 a/b, hold, (replace particle) hold, kcheck x, (replace particle) hold, kcheck x.
+          2d test shapes (lissajous, circle, tilted circle, 3-D lissajous, shifted hearts), then the
+             large-amplitude cardioid_a17_f10_OFF, (confirm) cardioid_a23_f10_OFF;
+          2e kcheck x/y/z, wscan_XZ_R28 a/b, hold, (replace particle) hold, kcheck x, (replace particle) hold, kcheck x;
+          2f (optional, -SkipNnTest leaves it out) learned-model compensation: heart_s7_f10_C_nn_M1 x2, _M1z,
+             heart_s7_f7_C_nn_M1, cardioid_a5p4_f10_C_nn_M1, cardioid_a10_f10_C_nn_M1, lissajous_s15_f10_C_nn_M1.
+-Block 2f The learned-model test of 2f on its own, fans ON, cold start: after -WarmupMin (default 20; 0 starts
+          at once) kcheck x/y/z, hold_center_10s, the seven 2f runs, kcheck x/y/z (14 runs). Use it when 2f was
+          left out of block 2 or is taken on another day; the OFF runs to compare with are then from another session.
 -Block 12 Block 1 followed directly by block 2 in the same session (no new sound-on); the last kcheck x/y/z
           of block 1 is 2a's first, so 2a starts with the hold.
 
 The current guard (3 %) stays on; its baseline is 40 minutes in blocks 0/1/12 (a rise after that means the
-cooling is not enough) and -WarmupMin in block 2. Particle changes and fan switching are recorded in the
+cooling is not enough) and -WarmupMin in blocks 2 and 2f. Particle changes and fan switching are recorded in the
 session JSON (particle_changes, operator_actions). Output: stereo_acoustools_3d_records_V15c (V18c at 18 V),
 separate from the 9/23-9/25 records. Make the PAT-start LED bright (kcheck LED peak 1000 or more).
 
@@ -33,12 +39,13 @@ powershell -ExecutionPolicy Bypass -File .\run_cooling_remeasure_15v.ps1 -Block 
 powershell -ExecutionPolicy Bypass -File .\run_cooling_remeasure_15v.ps1 -Block 1 -PsuUsb
 powershell -ExecutionPolicy Bypass -File .\run_cooling_remeasure_15v.ps1 -Block 12 -PsuUsb
 powershell -ExecutionPolicy Bypass -File .\run_cooling_remeasure_15v.ps1 -Block 2 -WarmupMin 20 -PsuUsb
+powershell -ExecutionPolicy Bypass -File .\run_cooling_remeasure_15v.ps1 -Block 2f -WarmupMin 20 -PsuUsb
 powershell -ExecutionPolicy Bypass -File .\run_cooling_remeasure_15v.ps1 -Block 1 -SupplyVoltage 18 -DurationMin 60 -PsuUsb
 #>
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet("0", "1", "2", "12")]
+    [ValidateSet("0", "1", "2", "12", "2f")]
     [string]$Block,
     [double]$SupplyVoltage = 15.0,
     [string]$OutputDir = "",
@@ -52,6 +59,7 @@ param(
     [double]$CaptureTailMarginSec = 5.0,
     [switch]$KeepFailedCaptures,
     [switch]$SkipSlowScan,
+    [switch]$SkipNnTest,
     [switch]$Regenerate,
     [switch]$PsuUsb,
     [string]$PsuResource = "",
@@ -73,9 +81,10 @@ if (-not (Test-Path -LiteralPath $plan)) { throw "Plan not found: $plan" }
 if (($SupplyVoltage -le 0.0) -or ($SupplyVoltage -gt 30.0)) { throw "-SupplyVoltage must be in (0, 30]; got $SupplyVoltage" }
 if ($DurationMin -lt 60.0) { throw "-DurationMin must be at least 60" }
 if ($WarmupMin -lt 0.0) { throw "-WarmupMin must not be negative" }
-if ($Block -ne "2" -and $PSBoundParameters.ContainsKey("WarmupMin")) { throw "-WarmupMin applies to -Block 2 only" }
+if ($Block -ne "2" -and $Block -ne "2f" -and $PSBoundParameters.ContainsKey("WarmupMin")) { throw "-WarmupMin applies to -Block 2 / 2f only" }
 if ($Block -ne "1" -and $Block -ne "12" -and $PSBoundParameters.ContainsKey("DurationMin")) { throw "-DurationMin applies to -Block 1 / 12 only" }
 if ($Block -ne "2" -and $Block -ne "12" -and $SkipSlowScan) { throw "-SkipSlowScan applies to -Block 2 / 12 only" }
+if ($Block -ne "2" -and $Block -ne "12" -and $SkipNnTest) { throw "-SkipNnTest applies to -Block 2 / 12 only" }
 if ($OutputDir -eq "") {
     # Keep the folder name this short: a longer one shortens the run names.
     $voltageTag = if ([math]::Abs($SupplyVoltage - [math]::Round($SupplyVoltage)) -lt 1e-9) { "{0:0}" -f $SupplyVoltage } else { ("{0}" -f $SupplyVoltage).Replace(".", "p") }
@@ -109,6 +118,8 @@ $actions = @()
 function Add-Run([string]$label, $minute = $null) { [void]$runs.Add($label); [void]$minutes.Add($minute) }
 $kx = "kcheck_x_S105_6jumps"; $ky = "kcheck_y_S105_6jumps"; $kz = "kcheck_z_S105_6jumps"
 $useClock = $false
+$nnRuns = @("heart_s7_f10_C_nn_M1", "heart_s7_f10_C_nn_M1", "heart_s7_f10_C_nn_M1z", "heart_s7_f7_C_nn_M1",
+            "cardioid_a5p4_f10_C_nn_M1", "cardioid_a10_f10_C_nn_M1", "lissajous_s15_f10_C_nn_M1")
 
 if ($Block -eq "0") {
     Add-Run "hold_center_30s_fanOFF"; Add-Run $kx; Add-Run $ky; Add-Run $kz
@@ -177,12 +188,25 @@ if ($Block -eq "2" -or $Block -eq "12") {
     }
     foreach ($o in @("xp15", "xm15", "zp15", "zm15")) { Add-Run "heart_s7_${o}_f10_C_Ws4" }
     foreach ($o in @("yp10", "ym10")) { Add-Run "heart_s7_${o}_f10_C_W3" }
+    Add-Run "cardioid_a17_f10_OFF"
+    $checkpoints += $runs.Count + 1; Add-Run "cardioid_a23_f10_OFF"
     # 2e
     Add-Run $kx; Add-Run $ky; Add-Run $kz
     Add-Run "wscan_XZ_R28_a"; Add-Run "wscan_XZ_R28_b"
     Add-Run "hold_center_10s"
     $particleChange += $runs.Count + 1; Add-Run "hold_center_10s"; Add-Run $kx
     $particleChange += $runs.Count + 1; Add-Run "hold_center_10s"; Add-Run $kx
+    # 2f (optional): compensation from the learned model (UDE) trained before the cooling fans
+    if (-not $SkipNnTest) { foreach ($d in $nnRuns) { Add-Run $d } }
+}
+if ($Block -eq "2f") {
+    # 2f on its own: warm-up, kcheck x/y/z, hold, the seven learned-model runs, kcheck x/y/z.
+    if ($WarmupMin -gt 0.0) { $useClock = $true; Add-Run $kx $WarmupMin } else { Add-Run $kx }
+    Add-Run $ky; Add-Run $kz
+    Add-Run "hold_center_10s"
+    foreach ($d in $nnRuns) { Add-Run $d }
+    Add-Run $kx; Add-Run $ky; Add-Run $kz
+    $guardBaseline = if ($WarmupMin -gt 0.0) { $WarmupMin } else { 5.0 }
 }
 
 $invariant = [System.Globalization.CultureInfo]::InvariantCulture

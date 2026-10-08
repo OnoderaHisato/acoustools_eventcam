@@ -41,7 +41,7 @@ powershell -ExecutionPolicy Bypass -File .\run_cooling_remeasure_15v.ps1 -Block 
 powershell -ExecutionPolicy Bypass -File .\run_cooling_remeasure_15v.ps1 -Block 1 -PsuUsb
 ```
 
-ブロック 1 に続けて、そのままブロック 2 も撮る場合（計画の推奨。粒子は浮かせたまま、合計 105 本、約 2 時間半）:
+ブロック 1 に続けて、そのままブロック 2 も撮る場合（計画の推奨。粒子は浮かせたまま、合計 114 本、約 2 時間 40 分）:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\run_cooling_remeasure_15v.ps1 -Block 12 -PsuUsb
@@ -51,7 +51,7 @@ powershell -ExecutionPolicy Bypass -File .\run_cooling_remeasure_15v.ps1 -Block 
 - 音を出した直後に粒子の確認（プレビューと Enter）があり、あとは時刻どおりに進む。
 - 5 分ごとに温度（室温、板の裏の上・下、板のあいだの空気）を記録用紙に書く。
 
-## 3. ブロック 2 — NN の学習用データ（約 59 分、69 本）
+## 3. ブロック 2 — NN の学習用データ（約 69 分、78 本）
 
 ブロック 1 を別の日に済ませた場合だけ使う（同じ日なら上の `-Block 12`）。`-WarmupMin` はブロック 1 で分かった「落ち着くまでの時間」（分）。
 
@@ -60,8 +60,22 @@ powershell -ExecutionPolicy Bypass -File .\run_cooling_remeasure_15v.ps1 -Block 
 ```
 
 - 2b の 14 本の走査のあとに、遅い走査 `wscan_XZ_R28slow_a`／`_b`（0.75 回/s、各 48 s）が入る。この 2 本は記録の末尾の余裕が自動で約 9 s に延びる。省くときは `-SkipSlowScan` を付ける（ブロック 2・12 で使える）。
-- 確認（プレビューと Enter）で止まるところ: 0.2 mm の x の掃引の前、0.2 mm の y の掃引の前、3.0 mm のステップ（XL30）の前。粒子が落ちていたら Ctrl+C。
+- 2d の終わりに、大振幅の `cardioid_a17_f10_OFF` と `cardioid_a23_f10_OFF` が入る（a23 の前で確認）。
+- 2e のあとに、任意の 2f（学習した模型の補償指令 7 本、約 8 分）が入る。省くときは `-SkipNnTest` を付ける（ブロック 2・12 で使える）。
+- 確認（プレビューと Enter）で止まるところ: 0.2 mm の x の掃引の前、0.2 mm の y の掃引の前、3.0 mm のステップ（XL30）の前、a23 の前。粒子が落ちていたら Ctrl+C。
 - 最後に「粒子を替えたら Enter」が 2 回出る。時刻は session JSON の `particle_changes` に残る。
+
+## 3b. 任意 — 2f（学習した模型の補償指令）だけを撮る（14本、暖機のあと約12分）
+
+ブロック 2 で `-SkipNnTest` を付けて 2f を省いた日や、別の日に 2f だけ撮るとき。ファン ON、冷えた状態から。
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\run_cooling_remeasure_15v.ps1 -Block 2f -WarmupMin 20 -PsuUsb
+```
+
+- 流れ: 音を出した直後に粒子の確認 → `-WarmupMin` 分の暖機（既定 20 分）→ kcheck x/y/z → hold 10 s → 2f の 7 本 → kcheck x/y/z。
+- 暖機を省いてすぐ始めるときは `-WarmupMin 0`（熱が上がっている途中の記録になる）。
+- 比べる相手の OFF は別のセッションのものになる。
 
 ## 4. 任意 — 18 V の試験（ブロック 1 が通ったあと、別の日か 45 分以上の休止のあと、60 分、31 本）
 

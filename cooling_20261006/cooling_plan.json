@@ -2835,6 +2835,475 @@
     "plane_offset_mm": 0.0
    },
    "enabled": true
+  },
+  {
+   "name": "cardioid_a17_f10_OFF",
+   "kind": "imported",
+   "source_npz": "source/cardioid_a17_f10_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "254d57e34d9bd587a00b7cb176f7cff2be9498cf6111fb394eeef6408f9325eb",
+   "duration_sec": 8.0,
+   "campaign": "cooling_20261006",
+   "measurement_family": "feedforward_validation",
+   "condition": "cardioid_a17_f10_off",
+   "note": "Block 2d end (2026-10-08): force-law test at +-3-4 mm trap offsets after the cooling fans. Scale-up cardioid, width 44 mm, 10 Hz, design OFF (u = r (no feedforward)). 15 V operating point (k 0.208/0.198/2.48 1/ms^2, tau0 0.9 ms). Peak speed 2136 mm/s, peak acceleration 201708 mm/s^2, max |u-r| 0.000 mm. The point of the series is whether the non-linear inverse model C_nl beats the linear C once the required force approaches the limit.",
+   "feedforward_design": {
+    "design": "OFF",
+    "command_differs_from_reference": false,
+    "shape": "cardioid",
+    "size_mm": 44,
+    "loop_frequency_hz": 10.0,
+    "w_compensation": "none",
+    "identified_model": {
+     "k_1_per_ms2": {
+      "x": 0.208,
+      "y": 0.198,
+      "z": 2.48
+     },
+     "gamma_1_per_ms": {
+      "x": 0.0372,
+      "y": 0.0319,
+      "z": 0.0237
+     },
+     "tau0_ms": 0.9,
+     "supply_voltage_V": 15.0
+    },
+    "source_file": "cardioid_a17_f10_OFF.npz"
+   },
+   "enabled": true,
+   "copied_from": "scaleup_20260924/scaleup_plan.json:cardioid_a17_f10_OFF"
+  },
+  {
+   "name": "cardioid_a23_f10_OFF",
+   "kind": "imported",
+   "source_npz": "source/cardioid_a23_f10_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "fb07d11914d92b17fb82bc3d0753ab8fcf7e2eddda811c2cd7080968bfd45465",
+   "duration_sec": 8.0,
+   "campaign": "cooling_20261006",
+   "measurement_family": "feedforward_validation",
+   "condition": "cardioid_a23_f10_off",
+   "note": "Block 2d end (2026-10-08): force-law test at +-3-4 mm trap offsets after the cooling fans. Scale-up cardioid, width 60 mm, 10 Hz, design OFF (u = r (no feedforward)). 15 V operating point (k 0.208/0.198/2.48 1/ms^2, tau0 0.9 ms). Peak speed 2890 mm/s, peak acceleration 272900 mm/s^2, max |u-r| 0.000 mm. The point of the series is whether the non-linear inverse model C_nl beats the linear C once the required force approaches the limit.",
+   "feedforward_design": {
+    "design": "OFF",
+    "command_differs_from_reference": false,
+    "shape": "cardioid",
+    "size_mm": 60,
+    "loop_frequency_hz": 10.0,
+    "w_compensation": "none",
+    "identified_model": {
+     "k_1_per_ms2": {
+      "x": 0.208,
+      "y": 0.198,
+      "z": 2.48
+     },
+     "gamma_1_per_ms": {
+      "x": 0.0372,
+      "y": 0.0319,
+      "z": 0.0237
+     },
+     "tau0_ms": 0.9,
+     "supply_voltage_V": 15.0
+    },
+    "source_file": "cardioid_a23_f10_OFF.npz"
+   },
+   "enabled": true,
+   "copied_from": "scaleup_20260924/scaleup_plan.json:cardioid_a23_f10_OFF"
+  },
+  {
+   "name": "heart_s7_f10_C_nn_M1",
+   "kind": "imported",
+   "source_npz": "source/ff_nn/heart_s7_f10_C_nn_M1.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "5fa120a82d68638f42d781ad34b6fdc911af78b6f4701f7bc11068f99b3ca95e",
+   "duration_sec": 8.0,
+   "campaign": "cooling_20261006",
+   "measurement_family": "feedforward_validation",
+   "condition": "heart_s7_f10_c_nn_m1",
+   "note": "Cooling remeasurement (COOLING_REMEASURE_PLAN_20261006.md): heart_s7_f10_C_nn_M1 (inverse of the learned model (UDE, trained on 9/24-25 data)). 8 s, 8.806 mm from the centre, peak speed 741 mm/s, peak acceleration 98150 mm/s^2, max |u-r| 1.102 mm. Block 2f (optional): compensation from the learned model trained before the cooling fans; tests how far it carries over.",
+   "feedforward_design": {
+    "design": "C_nn_M1",
+    "source_file": "heart_s7_f10_C_nn_M1.npz",
+    "source_design": "C_nn_M1",
+    "command_differs_from_reference": true,
+    "description": "inverse of the learned model (UDE, trained on 9/24-25 data)",
+    "params": {
+     "shape": "heart",
+     "scale_mm": 7.0,
+     "f_hz": 10.0,
+     "f_cmd_hz": 10.0,
+     "tau0_ms": 0.9,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.208,
+      "y": 0.198,
+      "z": 2.48
+     },
+     "GAM": {
+      "x": 0.0372,
+      "y": 0.0319,
+      "z": 0.0237
+     },
+     "ramp_sec": 0.5,
+     "nn_compensation": {
+      "model": "M1",
+      "model_dir": "results/b1_M1/M1/3",
+      "nmax": 9,
+      "loops": 2,
+      "iters": 100,
+      "base_design": "OFF",
+      "loss_before": 0.519917595570532,
+      "loss_after": 0.039983799968238656,
+      "limits_ok": false,
+      "offset": 8.805672404300628,
+      "speed": 741.3736436287751,
+      "accel": 98150.0466866972,
+      "endpoint": 0.0,
+      "dist": 1.1024662417510225
+     }
+    },
+    "shape": "heart_s7",
+    "loop_frequency_hz": 10.0,
+    "design_dir": "ff_nn"
+   },
+   "enabled": true
+  },
+  {
+   "name": "heart_s7_f10_C_nn_M1z",
+   "kind": "imported",
+   "source_npz": "source/ff_nn/heart_s7_f10_C_nn_M1z.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "af161695ef11c24e333c9e960ec5c860184beec7245d2827ba8a1208ca601283",
+   "duration_sec": 8.0,
+   "campaign": "cooling_20261006",
+   "measurement_family": "feedforward_validation",
+   "condition": "heart_s7_f10_c_nn_m1z",
+   "note": "Cooling remeasurement (COOLING_REMEASURE_PLAN_20261006.md): heart_s7_f10_C_nn_M1z (inverse of the learned model (UDE, trained on 9/24-25 data)). 8 s, 8.830 mm from the centre, peak speed 745 mm/s, peak acceleration 97897 mm/s^2, max |u-r| 1.099 mm. Block 2f (optional): compensation from the learned model trained before the cooling fans; tests how far it carries over.",
+   "feedforward_design": {
+    "design": "C_nn_M1z",
+    "source_file": "heart_s7_f10_C_nn_M1z.npz",
+    "source_design": "C_nn_M1z",
+    "command_differs_from_reference": true,
+    "description": "inverse of the learned model (UDE, trained on 9/24-25 data)",
+    "params": {
+     "shape": "heart",
+     "scale_mm": 7.0,
+     "f_hz": 10.0,
+     "f_cmd_hz": 10.0,
+     "tau0_ms": 0.9,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.208,
+      "y": 0.198,
+      "z": 2.48
+     },
+     "GAM": {
+      "x": 0.0372,
+      "y": 0.0319,
+      "z": 0.0237
+     },
+     "ramp_sec": 0.5,
+     "nn_compensation": {
+      "model": "M1z",
+      "model_dir": "results/b1_M1z/M1z/2",
+      "nmax": 9,
+      "loops": 2,
+      "iters": 100,
+      "base_design": "OFF",
+      "loss_before": 0.5143694241801285,
+      "loss_after": 0.044053193616814194,
+      "limits_ok": false,
+      "offset": 8.830080341712817,
+      "speed": 745.0767826239895,
+      "accel": 97896.63105756362,
+      "endpoint": 0.0,
+      "dist": 1.0989824430658806
+     }
+    },
+    "shape": "heart_s7",
+    "loop_frequency_hz": 10.0,
+    "design_dir": "ff_nn"
+   },
+   "enabled": true
+  },
+  {
+   "name": "heart_s7_f7_C_nn_M1",
+   "kind": "imported",
+   "source_npz": "source/ff_nn/heart_s7_f7_C_nn_M1.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "034c94cd9dd58f1b2c3776e6c02129e3e3d0ded730afeba13a03020a8cd78b7f",
+   "duration_sec": 8.0,
+   "campaign": "cooling_20261006",
+   "measurement_family": "feedforward_validation",
+   "condition": "heart_s7_f7_c_nn_m1",
+   "note": "Cooling remeasurement (COOLING_REMEASURE_PLAN_20261006.md): heart_s7_f7_C_nn_M1 (inverse of the learned model (UDE, trained on 9/24-25 data)). 8 s, 8.862 mm from the centre, peak speed 525 mm/s, peak acceleration 54880 mm/s^2, max |u-r| 1.110 mm. Block 2f (optional): compensation from the learned model trained before the cooling fans; tests how far it carries over.",
+   "feedforward_design": {
+    "design": "C_nn_M1",
+    "source_file": "heart_s7_f7_C_nn_M1.npz",
+    "source_design": "C_nn_M1",
+    "command_differs_from_reference": true,
+    "description": "inverse of the learned model (UDE, trained on 9/24-25 data)",
+    "params": {
+     "shape": "heart",
+     "scale_mm": 7.0,
+     "f_hz": 7.0,
+     "f_cmd_hz": 7.0,
+     "tau0_ms": 0.9,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.208,
+      "y": 0.198,
+      "z": 2.48
+     },
+     "GAM": {
+      "x": 0.0372,
+      "y": 0.0319,
+      "z": 0.0237
+     },
+     "ramp_sec": 0.5,
+     "nn_compensation": {
+      "model": "M1",
+      "model_dir": "results/b1_M1/M1/3",
+      "nmax": 9,
+      "loops": 2,
+      "iters": 100,
+      "base_design": "OFF",
+      "loss_before": 0.5093109193351909,
+      "loss_after": 0.09778884113815754,
+      "limits_ok": false,
+      "offset": 8.862013070566789,
+      "speed": 525.4634223225298,
+      "accel": 54880.11757086553,
+      "endpoint": 0.0,
+      "dist": 1.110467682033238
+     }
+    },
+    "shape": "heart_s7",
+    "loop_frequency_hz": 7.0,
+    "design_dir": "ff_nn"
+   },
+   "enabled": true
+  },
+  {
+   "name": "cardioid_a5p4_f10_C_nn_M1",
+   "kind": "imported",
+   "source_npz": "source/ff_nn/cardioid_a5p4_f10_C_nn_M1.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "1f3bd364fe77b11f68d535a6d4c114b6cfec69c03f122d3bd8c486a6207f6a4a",
+   "duration_sec": 8.0,
+   "campaign": "cooling_20261006",
+   "measurement_family": "feedforward_validation",
+   "condition": "cardioid_a5p4_f10_c_nn_m1",
+   "note": "Cooling remeasurement (COOLING_REMEASURE_PLAN_20261006.md): cardioid_a5p4_f10_C_nn_M1 (inverse of the learned model (UDE, trained on 9/24-25 data)). 8 s, 7.245 mm from the centre, peak speed 695 mm/s, peak acceleration 82860 mm/s^2, max |u-r| 0.940 mm. Block 2f (optional): compensation from the learned model trained before the cooling fans; tests how far it carries over.",
+   "feedforward_design": {
+    "design": "C_nn_M1",
+    "source_file": "cardioid_a5p4_f10_C_nn_M1.npz",
+    "source_design": "C_nn_M1",
+    "command_differs_from_reference": true,
+    "description": "inverse of the learned model (UDE, trained on 9/24-25 data)",
+    "params": {
+     "shape": "cardioid",
+     "scale_mm": 5.4,
+     "f_hz": 10.0,
+     "f_cmd_hz": 10.0,
+     "tau0_ms": 0.9,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.208,
+      "y": 0.198,
+      "z": 2.48
+     },
+     "GAM": {
+      "x": 0.0372,
+      "y": 0.0319,
+      "z": 0.0237
+     },
+     "ramp_sec": 0.5,
+     "nn_compensation": {
+      "model": "M1",
+      "model_dir": "results/b1_M1/M1/3",
+      "nmax": 9,
+      "loops": 2,
+      "iters": 100,
+      "base_design": "OFF",
+      "loss_before": 0.45702380057785896,
+      "loss_after": 0.05610707609467381,
+      "limits_ok": true,
+      "offset": 7.2449019342497945,
+      "speed": 694.8078790262551,
+      "accel": 82859.99406050144,
+      "endpoint": 0.0,
+      "dist": 0.9402029909036956
+     }
+    },
+    "shape": "cardioid_a5p4",
+    "loop_frequency_hz": 10.0,
+    "design_dir": "ff_nn"
+   },
+   "enabled": true
+  },
+  {
+   "name": "cardioid_a10_f10_C_nn_M1",
+   "kind": "imported",
+   "source_npz": "source/ff_nn/cardioid_a10_f10_C_nn_M1.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "6fdb299aa470736f158f53979cf12c9f2e2605cc3bed07f134d900e039b52702",
+   "duration_sec": 8.0,
+   "campaign": "cooling_20261006",
+   "measurement_family": "feedforward_validation",
+   "condition": "cardioid_a10_f10_c_nn_m1",
+   "note": "Cooling remeasurement (COOLING_REMEASURE_PLAN_20261006.md): cardioid_a10_f10_C_nn_M1 (inverse of the learned model (UDE, trained on 9/24-25 data)). 8 s, 13.053 mm from the centre, peak speed 1213 mm/s, peak acceleration 126721 mm/s^2, max |u-r| 1.672 mm. Block 2f (optional): compensation from the learned model trained before the cooling fans; tests how far it carries over.",
+   "feedforward_design": {
+    "design": "C_nn_M1",
+    "source_file": "cardioid_a10_f10_C_nn_M1.npz",
+    "source_design": "C_nn_M1",
+    "command_differs_from_reference": true,
+    "description": "inverse of the learned model (UDE, trained on 9/24-25 data)",
+    "params": {
+     "shape": "cardioid",
+     "scale_mm": 10.0,
+     "f_hz": 10.0,
+     "f_cmd_hz": 10.0,
+     "tau0_ms": 0.9,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.208,
+      "y": 0.198,
+      "z": 2.48
+     },
+     "GAM": {
+      "x": 0.0372,
+      "y": 0.0319,
+      "z": 0.0237
+     },
+     "ramp_sec": 0.5,
+     "nn_compensation": {
+      "model": "M1",
+      "model_dir": "results/b1_M1/M1/3",
+      "nmax": 9,
+      "loops": 2,
+      "iters": 100,
+      "base_design": "OFF",
+      "loss_before": 1.162184482433811,
+      "loss_after": 0.06453401600500099,
+      "limits_ok": false,
+      "offset": 13.053188752707175,
+      "speed": 1212.7706664210189,
+      "accel": 126720.86621867797,
+      "endpoint": 0.0,
+      "dist": 1.6722230630401973
+     }
+    },
+    "shape": "cardioid_a10",
+    "loop_frequency_hz": 10.0,
+    "design_dir": "ff_nn"
+   },
+   "enabled": true
+  },
+  {
+   "name": "lissajous_s15_f10_C_nn_M1",
+   "kind": "imported",
+   "source_npz": "source/ff_nn/lissajous_s15_f10_C_nn_M1.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "3599505176c5a4e5333f9a1a330499901e833dab75ef9cdd308a56ad4d9ba498",
+   "duration_sec": 8.0,
+   "campaign": "cooling_20261006",
+   "measurement_family": "feedforward_validation",
+   "condition": "lissajous_s15_f10_c_nn_m1",
+   "note": "Cooling remeasurement (COOLING_REMEASURE_PLAN_20261006.md): lissajous_s15_f10_C_nn_M1 (inverse of the learned model (UDE, trained on 9/24-25 data)). 8 s, 15.360 mm from the centre, peak speed 1554 mm/s, peak acceleration 175864 mm/s^2, max |u-r| 1.616 mm. Block 2f (optional): compensation from the learned model trained before the cooling fans; tests how far it carries over.",
+   "feedforward_design": {
+    "design": "C_nn_M1",
+    "source_file": "lissajous_s15_f10_C_nn_M1.npz",
+    "source_design": "C_nn_M1",
+    "command_differs_from_reference": true,
+    "description": "inverse of the learned model (UDE, trained on 9/24-25 data)",
+    "params": {
+     "shape": "lissajous",
+     "scale_mm": 15.0,
+     "f_hz": 10.0,
+     "tau0_ms": 0.9,
+     "ramp_sec": 0.5,
+     "offset_mm": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "f_cmd_hz": 10.0,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.208,
+      "y": 0.198,
+      "z": 2.48
+     },
+     "GAM": {
+      "x": 0.0372,
+      "y": 0.0319,
+      "z": 0.0237
+     },
+     "VXR": 0.2,
+     "VZ": 0.95,
+     "nn_compensation": {
+      "model": "M1",
+      "model_dir": "results/b1_M1/M1/3",
+      "nmax": 9,
+      "loops": 2,
+      "iters": 100,
+      "base_design": "OFF",
+      "loss_before": 1.4279770255861977,
+      "loss_after": 0.045620109661673375,
+      "limits_ok": false,
+      "offset": 15.360242160690397,
+      "speed": 1554.1804283472547,
+      "accel": 175864.12707775357,
+      "endpoint": 0.0,
+      "dist": 1.6156254703090793
+     }
+    },
+    "shape": "lissajous_s15",
+    "loop_frequency_hz": 10.0,
+    "design_dir": "ff_nn"
+   },
+   "enabled": true
   }
  ]
 }

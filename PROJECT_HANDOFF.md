@@ -1,5 +1,19 @@
 # Project handoff
 
+## 2026-10-08: 冷却の再計測に、大振幅のOFF 2本と学習した模型の補償指令7本（2f）を追加
+
+- 依頼元: 解析側（「NN モデル構築へ方向転換」）。G: の `Experiment/20261006/MESSAGE_TO_ACQUISITION_PC_20261008.md`、計画書 §2d・§2f、`measurement_plan/ff_nn/`（34本と README）。**ユーザーが直接承認した**（「両方入れる」）。
+- `cooling_plan.json` の末尾（index 58〜65）に追加した。元の58本と export の番号は変えていない。
+  - `cardioid_a17_f10_OFF`・`cardioid_a23_f10_OFF`: 規模拡大の plan の項目とファイルを写したもの（9/25 Part B と同じ指令）。トラップからのずれが ±3〜4 mm になる条件で、力の式（OptiTrap と Zehnter）の違いを冷却後の状態で検定する。
+  - ff_nn の6種: `heart_s7_f10_C_nn_M1`／`_M1z`、`heart_s7_f7_C_nn_M1`、`cardioid_a5p4_f10_C_nn_M1`、`cardioid_a10_f10_C_nn_M1`、`lissajous_s15_f10_C_nn_M1`。冷却前（9/24〜25）のデータで学習した模型（UDE）の逆モデルで作った指令。ソースは `cooling_20261006/source/ff_nn/`。`feedforward_design.design_dir = "ff_nn"` と `params.nn_compensation`（模型と最適化の記録）が、run ごとの manifest と session JSON に残る。
+- `run_cooling_remeasure_15v.ps1`:
+  - 2d の終わりに a17 → （確認）a23 を入れた。
+  - 2e のあとに任意の 2f を入れた（ハート f10 M1 ×2、M1z、ハート f7 M1、a5p4、a10、リサージュ。7本、約8分）。`-SkipNnTest` で省ける（ブロック2・12のみ）。
+  - ブロック2は78本・約69分、ブロック12は114本・約2時間40分になる。確認は chirp_x/y の 0.2 mm、XL30、a23 の前。
+- 上限内: a23_OFF が 30.74 mm・2890 mm/s・272.9k mm/s²。ff_nn の最大は lissajous の 1554 mm/s・175.9k mm/s² と、a10 の \|u−r\| 1.672 mm。端点は全部0。export の ff_nn の配列は G: とビット一致。全ブロックと `-SkipNnTest` の dry-run が成功し、フォルダ名の短縮もなかった。`test_cooling_plan` に追加の検査を入れ、関連6スイートの83件が成功した。
+- **`-Block 2f` を追加（ユーザーの依頼）**: 2f だけを単独で撮る。`-WarmupMin`（既定20、0ですぐ）の暖機 → kcheck x/y/z → `hold_center_10s` → 2f の7本 → kcheck x/y/z（14本）。見張りの基準は `-WarmupMin`（0なら5分）。`-SkipNnTest`・`-SkipSlowScan` との併用は拒否する。dry-run 成功（20分と0分）。ほかのブロックの本数は変わらない（0: 9、1: 39、2: 78、12: 114）。
+- 追跡の確認: 9/25 の a17・a23 の追跡切れは LED マスクが原因で、左マスク `748,0,892,52` で処理し直して直っている。今回も同じ設定で処理する。解析側は、切れていたら a23 だけもう1本撮ることを望んでいる（別のセッションで撮る）。PAT・カメラは開いていない。
+
 ## 2026-10-07: 遅い走査（48 s）をブロック2へ追加、長い指令では記録の末尾の余裕を自動で延ばす
 
 - ユーザーが直接承認した（「入れてください」）。指令は解析側が作った G: の `Experiment/20261006/measurement_plan/w_scan_slow/wscan_XZ_R28slow_a/b.npz`。`wscan_XZ_R28` と同じ渦巻き（半径 28 mm、XZ 面）を 0.75 回/s・48 s で回したもの。a は反時計回り、b は時計回り。最大 132 mm/s、622 mm/s²、端点 0、u = r。
