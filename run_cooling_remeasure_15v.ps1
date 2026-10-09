@@ -60,6 +60,9 @@ param(
     [switch]$KeepFailedCaptures,
     [switch]$SkipSlowScan,
     [switch]$SkipNnTest,
+    [switch]$NoThermalPrompts,
+    [double]$ThermalPromptTimeoutSec = 60.0,
+    [string]$PatBoardGapMm = "236.5-237",
     [switch]$Regenerate,
     [switch]$PsuUsb,
     [string]$PsuResource = "",
@@ -228,6 +231,17 @@ if ($useClock) {
 if ($checkpoints.Count -gt 0) { $recordArgs += @("--checkpoint-run-numbers", ($checkpoints -join ",")) }
 if ($particleChange.Count -gt 0) { $recordArgs += @("--particle-change-run-numbers", ($particleChange -join ",")) }
 if ($actions.Count -gt 0) { $recordArgs += @("--operator-actions", ($actions -join ";")) }
+if (-not $NoThermalPrompts) {
+    # Plan section 6: every 5 min in blocks 0 and 1, every 10 min in block 2; block 12 switches after block 1.
+    $thermalPlan = switch ($Block) {
+        "0" { "0:5" }
+        "1" { "0:5" }
+        "12" { "0:5," + ($DurationMin + 2).ToString($invariant) + ":10" }
+        default { "0:10" }
+    }
+    $recordArgs += @("--thermal-prompt-every", $thermalPlan, "--thermal-prompt-timeout-sec", $ThermalPromptTimeoutSec.ToString($invariant))
+}
+if ($PatBoardGapMm -ne "") { $recordArgs += @("--pat-board-gap-mm", $PatBoardGapMm) }
 if ($KeepFailedCaptures) { $recordArgs += "--keep-failed-captures" }
 if ($Unattended) { $recordArgs += @("--automatic-capture-retries", "$AutomaticCaptureRetries") }
 else { $recordArgs += "--prompt-on-capture-failure" }

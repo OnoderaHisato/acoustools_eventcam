@@ -24,6 +24,7 @@ from stereo_acoustools_3d_auto_common import (
     write_preview_set,
 )
 from psu_run_link import GUARD_DROP_FRACTION, attach_supply_record, current_guard_verdict, load_psu_rows
+import thermal_prompt
 from stereo_acoustools_3d_common import PROCESSING_CONFIG_FIELDS, atomic_write_json
 from stereo_acoustools_3d_hf_common import (
     hf_run_selections,
@@ -355,6 +356,31 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
             "separated by ';' (for example '5:fan_on;9:fan_off'). The time of each Enter is written to the "
             "session JSON under operator_actions; the run also gets the stereo preview and Enter checkpoint."
         ),
+    )
+    parser.add_argument(
+        "--thermal-prompt-every",
+        default="",
+        metavar="PLAN",
+        help=(
+            "Ask the operator for the top/bottom PAT surface temperatures, room temperature and humidity: "
+            "at the start and end of the session and every N minutes after sound on, given as "
+            "START_MIN:EVERY_MIN items (for example '0:5' or '0:5,92:10'). Scheduled sessions ask while "
+            "waiting for a run (giving up 10 s before it is due); without a schedule the prompt sits "
+            "between runs for --thermal-prompt-timeout-sec. Answers go to the session JSON "
+            "(thermal_notes) and thermal_log_<session time>.csv. Empty disables the prompts."
+        ),
+    )
+    parser.add_argument(
+        "--thermal-prompt-timeout-sec",
+        type=float,
+        default=60.0,
+        help="How long a temperature prompt waits between unscheduled runs (and at the start and end).",
+    )
+    parser.add_argument(
+        "--pat-board-gap-mm",
+        default="",
+        metavar="TEXT",
+        help="Measured gap between the top and bottom PAT boards, recorded in the session JSON (e.g. '236.5-237').",
     )
     parser.add_argument(
         "--schedule-offsets-sec",
@@ -912,6 +938,17 @@ def main(argv: list[str] | None = None) -> int:
                 "[AUTO] Operator actions (with their times recorded): "
                 + "; ".join(f"before run {n}: {', '.join(a)}" for n, a in sorted(operator_actions.items()))
             )
+        thermal_plan = None
+        if str(args.thermal_prompt_every).strip():
+            thermal_plan = thermal_prompt.parse_interval_plan(str(args.thermal_prompt_every))
+            if not math.isfinite(float(args.thermal_prompt_timeout_sec)) or args.thermal_prompt_timeout_sec <= 0.0:
+                raise ValueError("--thermal-prompt-timeout-sec must be positive")
+            print(
+                "[AUTO][THERMAL] Temperature prompts (top/bottom PAT, room, humidity) at the start and end "
+                "and every " + ", ".join(
+                    f"{every:g} min from minute {start:g}" for start, every in thermal_plan
+                ) + " after sound on."
+            )
         current_guard_rise = float(args.current_guard_rise_percent) / 100.0
         if not math.isfinite(current_guard_rise) or current_guard_rise < 0.0:
             raise ValueError("--current-guard-rise-percent must be zero or positive")
@@ -1301,6 +1338,18 @@ def main(argv: list[str] | None = None) -> int:
             session["supply_voltage_V"] = supply_voltage
             session["run_label_tag"] = run_tag
             session["psu_log"] = "" if args.psu_log is None else str(args.psu_log.resolve())
+            if str(args.pat_board_gap_mm).strip():
+                session["pat_board_gap_mm"] = str(args.pat_board_gap_mm).strip()
+            session["thermal_prompt_settings"] = (
+                {
+                    "plan_start_min_every_min": thermal_plan,
+                    "timeout_sec": float(args.thermal_prompt_timeout_sec),
+                    "fields": list(thermal_prompt.FIELDS),
+                    "csv": str(output_root / f"thermal_log_{session_stamp}.csv"),
+                }
+                if thermal_plan is not None
+                else None
+            )
             session["current_guard_settings"] = (
                 {
                     "rise_percent": float(args.current_guard_rise_percent),
@@ -1377,6 +1426,44 @@ def main(argv: list[str] | None = None) -> int:
             unattended_run_number = 0
             run_index = -1
             sound_on_wall_ns = getattr(hardware_session, "active_output_started_wall_ns", None)
+            thermal_notes = (
+                thermal_prompt.ThermalNotes(
+                    csv_path=output_root / f"thermal_log_{session_stamp}.csv",
+                    plan=thermal_plan,
+                    timeout_sec=float(args.thermal_prompt_timeout_sec),
+                    sound_on_wall_sec=None if sound_on_wall_ns is None else sound_on_wall_ns / 1e9,
+                    psu_log=args.psu_log,
+                    clock=time,
+                )
+                if thermal_plan is not None
+                else None
+            )
+            thermal_start_asked = False
+            # Runs after the last scheduled one are back to back (block 2 after block 1, or no
+            # schedule at all): there the prompt sits between runs with a timeout instead of
+            # using a scheduled wait.
+            last_scheduled_index = -1
+            if schedule_offsets is not None:
+                for index_, offset_ in enumerate(schedule_offsets):
+                    if offset_ is not None:
+                        last_scheduled_index = index_
+            elif schedule_interval_sec is not None:
+                last_scheduled_index = (
+                    (sum(condition.repeat for condition in conditions) - 1) // schedule_group_size
+                ) * schedule_group_size
+
+            def ask_temperatures(
+                kind: str, run_number: int | None, label: str, deadline: float | None,
+                covers: float | None = None,
+            ) -> None:
+                if thermal_notes is None:
+                    return
+                record = thermal_notes.ask(kind, run_number, label, deadline, covers)
+                if record is not None:
+                    session.setdefault("thermal_notes", []).append(record)
+                    session["thermal_log_csv"] = str(thermal_notes.csv_path)
+                    atomic_write_json(session_path, session)
+
             if unattended and (schedule_offsets is not None or schedule_interval_sec is not None):
                 # With a timed schedule the first run may be many minutes away; confirm the
                 # particle now, before the clock is spent waiting, and let the runs start on
@@ -1426,10 +1513,38 @@ def main(argv: list[str] | None = None) -> int:
                         )
                     else:
                         scheduled_offset = None
-                    if scheduled_offset is not None and sound_on_wall_ns is not None:
-                        try:
+                    target_wall = (
+                        sound_on_wall_ns / 1e9 + scheduled_offset
+                        if scheduled_offset is not None and sound_on_wall_ns is not None
+                        else None
+                    )
+                    try:
+                        if thermal_notes is not None:
+                            now_wall = time.time()
+                            room_before_run = (
+                                None if target_wall is None
+                                else target_wall - thermal_prompt.SCHEDULED_LEAD_SEC - now_wall
+                            )
+                            if not thermal_start_asked:
+                                thermal_start_asked = True
+                                deadline = now_wall + float(args.thermal_prompt_timeout_sec)
+                                if room_before_run is not None and room_before_run > float(args.thermal_prompt_timeout_sec):
+                                    deadline = target_wall - thermal_prompt.SCHEDULED_LEAD_SEC
+                                ask_temperatures("start", run_index + 1, condition.label, deadline, target_wall)
+                            elif thermal_notes.is_due(target_wall):
+                                if target_wall is not None and target_wall - now_wall >= thermal_prompt.SCHEDULED_MIN_WAIT_SEC:
+                                    ask_temperatures(
+                                        "periodic", run_index + 1, condition.label,
+                                        target_wall - thermal_prompt.SCHEDULED_LEAD_SEC, target_wall,
+                                    )
+                                elif target_wall is None and run_index > last_scheduled_index:
+                                    ask_temperatures(
+                                        "periodic", run_index + 1, condition.label,
+                                        time.time() + float(args.thermal_prompt_timeout_sec),
+                                    )
+                        if target_wall is not None:
                             wait_until_wall_time(
-                                sound_on_wall_ns / 1e9 + scheduled_offset,
+                                target_wall,
                                 (
                                     f"run {run_index + 1}"
                                     if schedule_offsets is not None
@@ -1437,14 +1552,14 @@ def main(argv: list[str] | None = None) -> int:
                                 )
                                 + f" (t = {scheduled_offset / 60.0:.1f} min after sound on)",
                             )
-                        except KeyboardInterrupt:
-                            session["status"] = "interrupted"
-                            session["finished_at"] = dt.datetime.now().isoformat(
-                                timespec="milliseconds"
-                            )
-                            atomic_write_json(session_path, session)
-                            print("[AUTO] Interrupted while waiting for the next group.")
-                            return 130
+                    except KeyboardInterrupt:
+                        session["status"] = "interrupted"
+                        session["finished_at"] = dt.datetime.now().isoformat(
+                            timespec="milliseconds"
+                        )
+                        atomic_write_json(session_path, session)
+                        print("[AUTO] Interrupted while waiting for the next group.")
+                        return 130
                     if current_guard_rise > 0.0 and sound_on_wall_ns is not None:
                         try:
                             verdict = current_guard_verdict(
@@ -1476,6 +1591,13 @@ def main(argv: list[str] | None = None) -> int:
                                 f"{ {k: verdict[k] for k in ('baseline_A', 'recent_A', 'rise_percent', 'event') if k in verdict} }. "
                                 "The remaining runs are not recorded; PAT output is turned off."
                             )
+                            try:
+                                ask_temperatures(
+                                    "guard_stop", run_index + 1, condition.label,
+                                    time.time() + 2.0 * float(args.thermal_prompt_timeout_sec),
+                                )
+                            except KeyboardInterrupt:
+                                pass
                             return 3
                     for action in operator_actions.get(run_index + 1, []):
                         print(
@@ -1778,6 +1900,10 @@ def main(argv: list[str] | None = None) -> int:
                             atomic_write_json(session_path, session)
                             return overall_code
 
+            try:
+                ask_temperatures("end", None, "", time.time() + 2.0 * float(args.thermal_prompt_timeout_sec))
+            except KeyboardInterrupt:
+                pass
             session["status"] = "complete" if overall_code == 0 else "complete_with_errors"
             session["finished_at"] = dt.datetime.now().isoformat(timespec="milliseconds")
             atomic_write_json(session_path, session)
