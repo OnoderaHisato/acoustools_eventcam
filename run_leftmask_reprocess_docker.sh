@@ -1,7 +1,8 @@
 #!/bin/bash
 # Re-process runs whose left 2D track was cut by the PAT-start LED mask (2026-09-26, user-approved).
-# Run INSIDE the onodera_sindy container (dngstation / deepstation rules), detached, e.g.
-#   docker exec -d onodera_sindy bash -c 'cd /root/share/eventcam/stereo_3d && \
+# Run INSIDE the user's container (dngstation: onodera_pinn since 2026-10-09, formerly onodera_sindy;
+# deepstation: onodera_sindy), detached, e.g.
+#   docker exec -d onodera_pinn bash -c 'cd /root/share/eventcam/stereo_3d && \
 #     (NPAR=6 bash run_leftmask_reprocess_docker.sh list_X.txt > logs_reprocess_20260926/X.log 2>&1 & \
 #      echo $! > logs_reprocess_20260926/X.pid)'
 # Per run: postprocess with the patched scripts in _leftmask_reacquire_20260926/

@@ -71,6 +71,12 @@ def parse_args() -> argparse.Namespace:
         ),
     )
     parser.add_argument("--post-stop-wait-sec", type=float, default=0.2, help="Wait after stopping RAW logging.")
+    parser.add_argument(
+        "--camera-reopen-wait-sec",
+        type=float,
+        default=1.0,
+        help="Wait between closing and reopening the camera when R is pressed.",
+    )
     parser.add_argument("--npz-delta-t-us", type=int, default=1_000, help="RAW read slice duration for NPZ export.")
     parser.add_argument(
         "--save-npz",
@@ -460,6 +466,8 @@ def main() -> None:
     parse_int_list(args.frame_window_us_list, args.frame_window_us, "--frame-window-us-list")
     if args.preview_fps <= 0:
         raise SystemExit("--preview-fps must be positive.")
+    if args.camera_reopen_wait_sec < 0:
+        raise SystemExit("--camera-reopen-wait-sec must not be negative.")
     if args.max_candidate_tests <= 0:
         raise SystemExit("--max-candidate-tests must be positive.")
     if args.checkerboard_image is not None and not args.checkerboard_image.exists():
@@ -510,24 +518,26 @@ def main() -> None:
     last_rate_events = 0
     processing_future: concurrent.futures.Future[dict[str, Any]] | None = None
     processing_error: BaseException | None = None
+    refresh_requested = False
+    camera_refresh_count = 0
 
-    try:
-        device = scale_capture.open_event_camera(initiate_device, metavision_hal, args.serial)
-        events_stream = device.get_i_events_stream()
-        if events_stream is None:
+    def open_stream() -> tuple[Any, Any, Any]:
+        """Open the camera and a live iterator that starts at the current camera time."""
+        opened_device = scale_capture.open_event_camera(initiate_device, metavision_hal, args.serial)
+        opened_stream = opened_device.get_i_events_stream()
+        if opened_stream is None:
             raise RuntimeError("This event camera does not expose I_EventsStream; RAW logging is unavailable.")
-
-        iterator = EventsIterator.from_device(
-            device=device,
+        opened_iterator = EventsIterator.from_device(
+            device=opened_device,
             mode="delta_t",
             delta_t=int(args.delta_t_us),
             max_duration=None,
             relative_timestamps=False,
         )
-        height, width = iterator.get_size()
-        sensor_size = {"width": int(width), "height": int(height)}
+        return opened_device, opened_stream, opened_iterator
 
-        frame_generator = PeriodicFrameGenerationAlgorithm(
+    def new_frame_generator() -> Any:
+        return PeriodicFrameGenerationAlgorithm(
             sensor_width=int(width),
             sensor_height=int(height),
             accumulation_time_us=int(args.preview_accumulation_us),
@@ -535,8 +545,15 @@ def main() -> None:
             palette=ColorPalette.Dark,
         )
 
+    try:
+        device, events_stream, iterator = open_stream()
+        height, width = iterator.get_size()
+        sensor_size = {"width": int(width), "height": int(height)}
+
+        frame_generator = new_frame_generator()
+
         print(f"Sensor: {width} x {height}")
-        print("Enter: capture one pose, Esc/Q: finish.")
+        print("Enter: capture one pose, R: reopen the camera (drops buffered events), Esc/Q: finish.")
         if pose_index > 0:
             print(f"Continuing after existing pose index {pose_index:03d}.")
         if args.duration_sec > 0:
@@ -548,7 +565,7 @@ def main() -> None:
             max_workers=1,
             thread_name_prefix="checkerboard-postprocess",
         ) as processing_executor, MTWindow(
-                title="Checkerboard Calibration Capture - Enter: Capture Pose, Esc/Q: Quit",
+                title="Checkerboard Calibration Capture - Enter: Capture Pose, R: Reopen Camera, Esc/Q: Quit",
                 width=int(width),
                 height=int(height),
                 mode=BaseWindow.RenderMode.BGR,
@@ -705,6 +722,7 @@ def main() -> None:
                 window.show_async(overlay)
 
             def keyboard_cb(key: Any, scancode: int, action: Any, mods: int) -> None:
+                nonlocal refresh_requested
                 del scancode, mods
                 if action != UIAction.PRESS:
                     return
@@ -718,52 +736,81 @@ def main() -> None:
                         stop_recording()
                     elif not is_recording:
                         start_recording()
+                    return
+                if key == UIKeyEvent.KEY_R:
+                    if is_recording:
+                        print("[REFRESH] Ignored while a pose is recording.")
+                        return
+                    refresh_requested = True
 
             frame_generator.set_output_callback(on_frame)
             window.set_keyboard_callback(keyboard_cb)
 
-            try:
-                for events in iterator:
-                    EventLoop.poll_and_dispatch()
-                    update_processing_state()
-                    preview_is_suppressed = (
-                        processing_future is not None
-                        and not bool(args.preview_during_processing)
-                    )
-                    if not preview_is_suppressed:
-                        frame_generator.process_events(events)
-                    if is_recording and current_stats is not None:
-                        if events.size:
-                            current_event_chunks.append(events.copy())
-                        update_stats(current_stats, events)
-                        now = time.perf_counter()
-                        if now - last_rate_wall >= 1.0:
-                            recent_events = int(current_stats["total_events"]) - last_rate_events
-                            recent_rate = recent_events / max(1e-9, now - last_rate_wall)
-                            print(
-                                f"Recording pose {current_stats['pose_index']:03d}: "
-                                f"{recent_rate:,.0f} events/s, total={current_stats['total_events']:,}"
-                            )
-                            last_rate_wall = now
-                            last_rate_events = int(current_stats["total_events"])
-                        if args.duration_sec > 0 and time.perf_counter() - recording_start_wall >= float(args.duration_sec):
-                            stop_recording()
-                    update_processing_state()
-                    if window.should_close():
-                        break
-            except KeyboardInterrupt:
-                print("Interrupted by user. Closing the current RAW cleanly...")
-                if is_recording:
-                    stop_recording()
-                window.set_close_flag()
-            except Exception as exc:
-                print(f"Event stream stopped with an error: {exc}")
-                if is_recording:
-                    try:
+            while True:
+                refresh_requested = False
+                try:
+                    for events in iterator:
+                        EventLoop.poll_and_dispatch()
+                        update_processing_state()
+                        if refresh_requested and not is_recording:
+                            break
+                        preview_is_suppressed = (
+                            processing_future is not None
+                            and not bool(args.preview_during_processing)
+                        )
+                        if not preview_is_suppressed:
+                            frame_generator.process_events(events)
+                        if is_recording and current_stats is not None:
+                            if events.size:
+                                current_event_chunks.append(events.copy())
+                            update_stats(current_stats, events)
+                            now = time.perf_counter()
+                            if now - last_rate_wall >= 1.0:
+                                recent_events = int(current_stats["total_events"]) - last_rate_events
+                                recent_rate = recent_events / max(1e-9, now - last_rate_wall)
+                                print(
+                                    f"Recording pose {current_stats['pose_index']:03d}: "
+                                    f"{recent_rate:,.0f} events/s, total={current_stats['total_events']:,}"
+                                )
+                                last_rate_wall = now
+                                last_rate_events = int(current_stats["total_events"])
+                            if args.duration_sec > 0 and time.perf_counter() - recording_start_wall >= float(args.duration_sec):
+                                stop_recording()
+                        update_processing_state()
+                        if window.should_close():
+                            break
+                except KeyboardInterrupt:
+                    print("Interrupted by user. Closing the current RAW cleanly...")
+                    if is_recording:
                         stop_recording()
-                    except Exception as stop_exc:
-                        print(f"Could not finalize the current RAW after stream error: {stop_exc}")
-                raise
+                    window.set_close_flag()
+                except Exception as exc:
+                    print(f"Event stream stopped with an error: {exc}")
+                    if is_recording:
+                        try:
+                            stop_recording()
+                        except Exception as stop_exc:
+                            print(f"Could not finalize the current RAW after stream error: {stop_exc}")
+                    raise
+                if not refresh_requested or is_recording or window.should_close():
+                    break
+                # Closing the iterator and device releases the USB stream and drops its
+                # backlog; the reopened stream starts at the current camera time. A pose
+                # still being exported is unaffected (it works on copied event chunks).
+                camera_refresh_count += 1
+                print(
+                    f"[REFRESH] Reopening the camera and discarding buffered events "
+                    f"(refresh={camera_refresh_count})."
+                )
+                iterator = None
+                events_stream = None
+                device = None
+                gc.collect()
+                time.sleep(float(args.camera_reopen_wait_sec))
+                device, events_stream, iterator = open_stream()
+                frame_generator = new_frame_generator()
+                frame_generator.set_output_callback(on_frame)
+                print("[REFRESH] Camera reopened. Enter: capture one pose, R: reopen again, Esc/Q: finish.")
     finally:
         if is_recording and device is not None:
             try:
@@ -797,6 +844,7 @@ def main() -> None:
             else ""
         ),
         "square_size_mm": float(args.square_mm),
+        "camera_refresh_count": int(camera_refresh_count),
     }
     manifest_path = out_dir / "capture_manifest.json"
     manifest_path.write_text(json.dumps(manifest, indent=2), encoding="utf-8")

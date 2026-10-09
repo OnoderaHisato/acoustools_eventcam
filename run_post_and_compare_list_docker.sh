@@ -1,11 +1,11 @@
 #!/bin/bash
-# dngstation (sindy-server2) version of run_post_and_compare_list.pbs: run it INSIDE the onodera_sindy
-# container, never on the host (DNGSTATION_RULES.md). Same steps as the Miyabi job: fix the Windows
+# dngstation (sindy-server2) version of run_post_and_compare_list.pbs: run it INSIDE the user's container
+# (onodera_pinn since 2026-10-09, formerly onodera_sindy), never on the host (DNGSTATION_RULES.md). Same steps as the Miyabi job: fix the Windows
 # paths in the manifests -> 2D tracking + 3D (NPAR runs at a time) -> compare with the fixed
 # camera->PAT transform.
 #
 # Launch detached from the host so it survives the ssh session ending (rule 6):
-#   docker exec -d onodera_sindy bash -c 'cd /root/share/eventcam/stereo_3d && \
+#   docker exec -d onodera_pinn bash -c 'cd /root/share/eventcam/stereo_3d && \
 #     (NPAR=6 bash run_post_and_compare_list_docker.sh list_X.txt > logs_dngstation/X.log 2>&1 & \
 #      echo $! > logs_dngstation/X.pid)'
 # NPAR is capped at 6: about 3.75 cores per run on a shared 40-core machine.

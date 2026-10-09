@@ -12,9 +12,13 @@ from typing import Any, Mapping
 import numpy as np
 
 
+# Recalibrated on 2026-10-09 after the cooling-fan mount, the camera shims and the lens remount
+# (STEREO_RECALIBRATION_20261009_JP.md). Runs recorded up to 2026-10-08 keep the 2026-08-05
+# calibration in their manifests: stereo_checkerboard_calib_extrinsics_20260805/
+# stereo_calibration_square7p12_extrinsics_final.npz.
 DEFAULT_CALIBRATION = Path(
-    "stereo_checkerboard_calib_extrinsics_20260805/"
-    "stereo_calibration_square7p12_extrinsics_final.npz"
+    "stereo_checkerboard_calib_extrinsics_20261009/"
+    "stereo_calibration_square7p12_final_41poses.npz"
 )
 
 DEFAULT_PROCESSING_CONFIG: dict[str, Any] = {
