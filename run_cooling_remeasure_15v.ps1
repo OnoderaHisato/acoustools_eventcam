@@ -68,6 +68,8 @@ param(
     [switch]$KeepFailedCaptures,
     [switch]$SkipSlowScan,
     [switch]$SkipNnTest,
+    [switch]$Block1Tail,
+    [int]$StartAt = 1,
     [switch]$NoThermalPrompts,
     [double]$ThermalPromptTimeoutSec = 180.0,
     [string]$PatBoardGapMm = "236.5-237",
@@ -96,6 +98,7 @@ if ($Block -ne "2" -and $Block -ne "2f" -and $PSBoundParameters.ContainsKey("War
 if ($Block -ne "1" -and $Block -ne "12" -and $PSBoundParameters.ContainsKey("DurationMin")) { throw "-DurationMin applies to -Block 1 / 12 only" }
 if ($Block -ne "2" -and $Block -ne "12" -and $SkipSlowScan) { throw "-SkipSlowScan applies to -Block 2 / 12 only" }
 if ($Block -ne "2" -and $Block -ne "12" -and $SkipNnTest) { throw "-SkipNnTest applies to -Block 2 / 12 only" }
+if ($Block1Tail -and ($Block -ne "2" -or $WarmupMin -ne 0.0)) { throw "-Block1Tail applies to -Block 2 -WarmupMin 0 only (resuming an interrupted block 12)" }
 if ($OutputDir -eq "") {
     # Keep the folder name this short: a longer one shortens the run names.
     $voltageTag = if ([math]::Abs($SupplyVoltage - [math]::Round($SupplyVoltage)) -lt 1e-9) { "{0:0}" -f $SupplyVoltage } else { ("{0}" -f $SupplyVoltage).Replace(".", "p") }
@@ -169,6 +172,9 @@ if ($Block -eq "1" -or $Block -eq "12") {
 }
 if ($Block -eq "2" -or $Block -eq "12") {
     if ($Block -eq "2") {
+        # -Block1Tail (resuming an interrupted block 12 while still warm): the end of block 1 first,
+        # wscan_XZ_R28 a/b and hold (its 85/90-minute runs); the kcheck x/y/z below is block 1's last.
+        if ($Block1Tail) { Add-Run "wscan_XZ_R28_a"; Add-Run "wscan_XZ_R28_b"; Add-Run "hold_center_10s" }
         if ($WarmupMin -gt 0.0) { $useClock = $true; Add-Run $kx $WarmupMin } else { Add-Run $kx }
         Add-Run $ky; Add-Run $kz
         $guardBaseline = if ($WarmupMin -gt 0.0) { $WarmupMin } else { 5.0 }
@@ -230,6 +236,25 @@ if ($Block -eq "2f") {
     foreach ($d in $nnRuns) { Add-Run $d }
     Add-Run $kx; Add-Run $ky; Add-Run $kz
     $guardBaseline = if ($WarmupMin -gt 0.0) { $WarmupMin } else { 5.0 }
+}
+
+if ($StartAt -lt 1 -or $StartAt -gt $runs.Count) { throw "-StartAt must be between 1 and $($runs.Count)" }
+if ($StartAt -gt 1) {
+    # Resume an interrupted session from run $StartAt of the same list (no clock: the later runs are untimed).
+    if ($useClock) {
+        for ($i = $StartAt - 1; $i -lt $minutes.Count; $i++) {
+            if ($null -ne $minutes[$i]) { throw "-StartAt cannot be used where later runs are on the clock (block 1 / 12 / 3)" }
+        }
+        $useClock = $false
+    }
+    $shift = $StartAt - 1
+    $runs = [System.Collections.ArrayList]@($runs[$shift..($runs.Count - 1)])
+    $minutes = [System.Collections.ArrayList]@($minutes[$shift..($minutes.Count - 1)])
+    $checkpoints = @($checkpoints | Where-Object { $_ -gt $StartAt } | ForEach-Object { $_ - $shift })
+    $particleChange = @($particleChange | Where-Object { $_ -ge $StartAt } | ForEach-Object { $_ - $shift })
+    $actions = @($actions | ForEach-Object { $n, $t = $_.Split(":", 2); if ([int]$n -ge $StartAt) { "$([int]$n - $shift):$t" } })
+    $guardBaseline = 5.0
+    Write-Host "[COOLING] -StartAt ${StartAt}: resuming from run $StartAt of the full list; runs are renumbered from 1."
 }
 
 $invariant = [System.Globalization.CultureInfo]::InvariantCulture

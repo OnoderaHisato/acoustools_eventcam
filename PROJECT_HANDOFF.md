@@ -25,6 +25,32 @@
   - hold の fanON（16:08）と fanOFF（16:13）を、1 ms ごとのイベント重心で比べた（正式な追跡ではない）。ファン ON のときだけ、28.2 Hz の線が左右のカメラの画像 y に出た（約 0.01 px、約 1 µm。静止の揺れの約 1/200）。解析側の判断は「学習にも補償にも効かない、進めてよい」。
   - ユーザーの指摘: ファンの冷却の効果は、15 V で十分に暖機したあとでないと見えない。解析側の提案に従い、`run_cooling_remeasure_15v.ps1 -Block 3`（ユーザーの選択は単独のコマンド）を追加した。ブロック 2／12 の直後に、ファン ON のまま始める。中身は 0 分 kcheck x/z・hold → ファン OFF → 8・13・18 分に kcheck x/z と hold → ファン ON → 26・31・36 分に kcheck x/z と hold（17 本、約 38 分）。温度は 5 分ごと、見張りの基準は 2 分。
   - 自動計測の入口: 時刻表つきの run に付けた `--operator-actions` は、その run の待ちの前に聞くようにした（切り替えのあと、時刻どおりに測るため）。時刻表の無い run（ブロック 0 など）は従来どおり run の直前に聞く。`test_cooling_plan` に 1 件追加し、関連 8 スイートの 76 件が成功。全ブロック（0/1/2/12/2f/3）の dry-run が成功し、本数は変わっていない。
+- **ブロック 0 の 3D 化完了（20:37）とカメラ→PAT 変換**: 9 本とも complete。3D 点は欠けなし、再捕捉は 0 回。剛体の当てはめの RMSE は kcheck 0.155〜0.204 mm、hold 0.108〜0.154 mm。
+  - 解析側が `camera_to_pat_pooled_cooled_20261010.npz` を作った（kcheck x/y/z × ON/OFF の 6 本、静止区間 42 点の pooled Kabsch、残差の中央値 0.140 mm）。置き場所は dngstation と Miyabi の `stereo_3d/` 直下、G: の `calibration_20261009/`。
+  - **以後、冷却後の記録の固定比較はこの変換で行う**（`--spatial-alignment fixed`）。`run_cooling_post_docker.sh` は、後処理のあとにこの変換で u と r の固定比較を回すようにした（`TRANSFORM_FIXED=` で省ける）。
+  - 記録を送るときは `SESSION_NOTES_20261010.md` も一緒に置く（解析側の依頼）。
+- **deepstation が使えるようになった（解析側の連絡、10-10 21 時台）**:
+  - ポート 50000 に新しいコンテナ `onodera_pinn` が立った（Python 3.12、OpenCV 5、GPU 3 枚。固定較正の比較は旧コンテナと全要素一致）。
+  - 使い方の決まりは従来どおり。同時 2 本まで、ファイルのやりとりは Docker 経由だけ、ホストの path には触らない。
+  - 新しい変換 `camera_to_pat_pooled_cooled_20261010.npz` は、コンテナの `/root/share/eventcam/stereo_3d/` にある。新しい校正と、マスクを上書きできる後処理スクリプトは、使うときに計測 PC から置く。
+  - ルートのディスクの残りが 22 GB しかない。解析側は「生データは置いたら消す運用」としているが、完全な削除は私からは行わない決まりなので、消すコマンドはユーザーに渡す。
+- **ブロック 12 の中断と再開（10-10 夕方〜夜）**: 経緯は `stereo_acoustools_3d_records_V15c/SESSION_NOTES_20261010.md` にまとめた。
+  - 17:49 のセッションは run 33（60 分の kcheck xyz）まで記録。85 分の R28 走査が、記録プロセスの失敗（code 1）で止まった。
+  - 原因: 左カメラの右端に照明の反射の輝点が現れ（18:34〜）、左のイベントが 3 → 14 → 24 M/s に増えた。30 s の走査では、左ワーカーが保存を終える前に時間切れになった。ユーザーが反射の元を直したあとは、走査が撮れている。
+  - `run_cooling_remeasure_15v.ps1` に再開用の 2 つのオプションを追加した。
+    - `-Block1Tail`（`-Block 2 -WarmupMin 0` 専用）: ブロック 1 の最後の R28 a/b・hold を先頭に足す。
+    - `-StartAt N`: 同じ並びの N 本目から始める。時刻表のある run では使えない。確認と粒子交換の番号は振り直す。
+  - 19:41 の再開は 22 本を記録し、23 本目で誤って中断した。その後 `-StartAt 23` で再開。
+  - 18:34〜18:52 の run は、左マスク `1160,0,1280,720` で処理する。
+  - 20:18 の再開（`-StartAt 23`）は 59 本すべて `complete`（撮り直し 1 回）。これでブロック 12 の 114 本がそろった（17:49 の 33 本＋19:41 の 22 本＋20:18 の 59 本）。熱は 97 分間一定（上 PAT 36.8〜38.7 °C、下 PAT 35.3〜37.6 °C、電流 4.21〜4.25 A）。
+  - **ブロック 3（21:57）は電流の見張りで停止**。ファン OFF（5.8 分）のあと、18 分の kcheck の前に 4.2045 → 4.3398 A（+3.22 %）。温度は上 35.2 → 45.4 °C、下 35.0 → 50.4 °C に上がった。記録は 7 本で、ファン ON に戻した後の区間は撮っていない。冷却が効いている証拠として、ここで終えた（解析側と合意済み）。
+  - 経緯の最終版は `SESSION_NOTES_20261010.md`（記録フォルダ、dngstation、G:）。
+- **ブロック 12・3 の 3D 化（Miyabi のプリポスト枠）**:
+  - Miyabi の `stereo_3d/` 直下の後処理 4 本（`eventcam_npz_track.py`、`stereo_process_recording.py`、`stereo_acoustools_3d_postprocess.py`、`_core.py`）を、dngstation の `_leftmask_reacquire_20260926/` と同じ版（MD5 一致）に置き換えた。元のファイルは `*.pre_leftmask_20261010` に残した。新しい校正も置いた。
+  - **プリポストのジョブは miyabi-c（x86）から投げる**。miyabi-g（ARM）では python3 が 3.9 で、numpy が読み込めず、qstat も使えない。miyabi-c2 の python3（Intel 3.9.16）に `PYTHONPATH=$HOME/.local/lib/python3.12/site-packages` を付けると、numpy 1.24.3・OpenCV 4.9.0 で動く。
+  - 解析側の手順書 `PREPOST_RESERVATION_HOWTO.md`（G: の `Experiment/20261006/`）に従う。枠の開始後に、ログインノードの tmux から `run_prepost_post_list.sh` を投げる。`EXTRA_ARGS='--left-mask-roi-override 1160,0,1280,720 --reacquire-after-sec 0.005 --reacquire-bins 3'`、第 3 引数は `camera_to_pat_pooled_cooled_20261010.npz`。r の比較は解析側が後で一括する。
+  - 転送は `miyabi_upload_missing.py stereo_acoustools_3d_records_V15c --no-qsub --gzip-level 1 --plink x10733@miyabi-c.jcahpc.jp`（131 本、263 GB、約 70 MB/s）。SSD へは robocopy で複製。
+  - Miyabi の計画停止は 10/28 09:00。
 - 解析側への連絡: ブロック 0 を dngstation で処理中であることと、冷却後の印（campaign、校正、`pat_board_gap_mm`、`thermal_notes`、`operator_actions`）の所在を伝えた。解析側は kcheck から変換を作り、hold 3 本で検算する。Miyabi のプリポスト予約枠 5 つ（10/10 16:45〜10/11 23:45）は、計測 PC の 3D 化に使ってよいとのこと。
 
 ## 2026-10-10: 冷却の再計測で、温度を計測中の画面で入力するようにした（記録用紙の代わり）
