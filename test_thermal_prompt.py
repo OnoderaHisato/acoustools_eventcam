@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import csv
 import json
+import sys
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest import mock
@@ -36,6 +37,35 @@ class ParsingTests(unittest.TestCase):
         for bad in ("", "5:5", "0:0", "0-5", "0:x"):
             with self.subTest(bad=bad), self.assertRaises(ValueError):
                 thermal_prompt.parse_interval_plan(bad)
+
+    @unittest.skipUnless(thermal_prompt.os.name == "nt", "console reader uses msvcrt on Windows")
+    def test_typing_cancels_the_deadline_until_enter(self) -> None:
+        class Clock:
+            now = 0.0
+
+            def time(self):
+                return self.now
+
+        clock = Clock()
+        keys = iter("41.5 40\r")
+        # The deadline passes right after the first key; the reader must keep going until Enter.
+        def getwche():
+            clock.now += 100.0
+            return next(keys)
+
+        fake = mock.Mock(kbhit=mock.Mock(return_value=True), getwche=getwche)
+        with mock.patch.dict(sys.modules, {"msvcrt": fake}), mock.patch("builtins.print"):
+            self.assertEqual(thermal_prompt.read_line_with_deadline("> ", 10.0, clock), "41.5 40")
+        # Nothing typed before the deadline: gives up.
+        clock.now = 0.0
+        idle = mock.Mock(kbhit=mock.Mock(return_value=False))
+
+        def tick(_):
+            clock.now += 5.0
+
+        with mock.patch.dict(sys.modules, {"msvcrt": idle}), mock.patch("builtins.print"), \
+                mock.patch.object(thermal_prompt.time, "sleep", side_effect=tick):
+            self.assertIsNone(thermal_prompt.read_line_with_deadline("> ", 10.0, clock))
 
     def test_marks_follow_the_sound_on_clock(self) -> None:
         plan = thermal_prompt.parse_interval_plan("0:5,92:10")
@@ -88,6 +118,7 @@ class SessionTests(unittest.TestCase):
         self.assertEqual(notes[0]["T_top_PAT_C"], 40.0)
         self.assertEqual(notes[0]["note"], "start")
         self.assertEqual(session["pat_board_gap_mm"], "236.5-237")
+        self.assertEqual(session["thermal_prompt_settings"]["timeout_sec"], 180.0)
         with open(session["thermal_log_csv"], encoding="utf-8-sig", newline="") as handle:
             rows = list(csv.DictReader(handle))
         self.assertEqual(len(rows), 4)

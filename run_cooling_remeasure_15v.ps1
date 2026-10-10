@@ -28,6 +28,13 @@ Remeasurement after the PAT cooling fans (Experiment/20261006/COOLING_REMEASURE_
           left out of block 2 or is taken on another day; the OFF runs to compare with are then from another session.
 -Block 12 Block 1 followed directly by block 2 in the same session (no new sound-on); the last kcheck x/y/z
           of block 1 is 2a's first, so 2a starts with the hold.
+-Block 3  Optional (analysis side, 2026-10-10): the cooling effect in the warm state, started right after block
+          2 / 12 with the fans ON, about 38 minutes, 17 runs, by the clock:
+          0 min kcheck x/z, hold_center_10s (fans ON) -> (switch the fans OFF, time recorded) ->
+          8, 13, 18 min kcheck x/z, hold at 18 -> (switch the fans ON, time recorded) -> 26, 31, 36 min kcheck x/z,
+          hold at 36. The fan prompts come right after the previous runs; the kcheck times count from sound-on
+          (about 5, 10, 15 min after each switch). The current guard's baseline is 2 minutes; if it stops the
+          block while the fans are OFF, that is itself the evidence that the cooling works.
 
 The current guard (3 %) stays on; its baseline is 40 minutes in blocks 0/1/12 (a rise after that means the
 cooling is not enough) and -WarmupMin in blocks 2 and 2f. Particle changes and fan switching are recorded in the
@@ -40,12 +47,13 @@ powershell -ExecutionPolicy Bypass -File .\run_cooling_remeasure_15v.ps1 -Block 
 powershell -ExecutionPolicy Bypass -File .\run_cooling_remeasure_15v.ps1 -Block 12 -PsuUsb
 powershell -ExecutionPolicy Bypass -File .\run_cooling_remeasure_15v.ps1 -Block 2 -WarmupMin 20 -PsuUsb
 powershell -ExecutionPolicy Bypass -File .\run_cooling_remeasure_15v.ps1 -Block 2f -WarmupMin 20 -PsuUsb
+powershell -ExecutionPolicy Bypass -File .\run_cooling_remeasure_15v.ps1 -Block 3 -PsuUsb
 powershell -ExecutionPolicy Bypass -File .\run_cooling_remeasure_15v.ps1 -Block 1 -SupplyVoltage 18 -DurationMin 60 -PsuUsb
 #>
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet("0", "1", "2", "12", "2f")]
+    [ValidateSet("0", "1", "2", "12", "2f", "3")]
     [string]$Block,
     [double]$SupplyVoltage = 15.0,
     [string]$OutputDir = "",
@@ -61,7 +69,7 @@ param(
     [switch]$SkipSlowScan,
     [switch]$SkipNnTest,
     [switch]$NoThermalPrompts,
-    [double]$ThermalPromptTimeoutSec = 60.0,
+    [double]$ThermalPromptTimeoutSec = 180.0,
     [string]$PatBoardGapMm = "236.5-237",
     [switch]$Regenerate,
     [switch]$PsuUsb,
@@ -202,6 +210,18 @@ if ($Block -eq "2" -or $Block -eq "12") {
     # 2f (optional): compensation from the learned model (UDE) trained before the cooling fans
     if (-not $SkipNnTest) { foreach ($d in $nnRuns) { Add-Run $d } }
 }
+if ($Block -eq "3") {
+    # Block 3: fans ON (steady, warm) -> OFF -> ON; kcheck x/z about 5, 10, 15 min after each switch.
+    $useClock = $true
+    Add-Run $kx 0.0; Add-Run $kz; Add-Run "hold_center_10s"
+    $actions += "$($runs.Count + 1):switch the cooling fans OFF"
+    foreach ($m in @(8.0, 13.0, 18.0)) { Add-Run $kx $m; Add-Run $kz }
+    Add-Run "hold_center_10s"
+    $actions += "$($runs.Count + 1):switch the cooling fans ON"
+    foreach ($m in @(26.0, 31.0, 36.0)) { Add-Run $kx $m; Add-Run $kz }
+    Add-Run "hold_center_10s"
+    $guardBaseline = 2.0
+}
 if ($Block -eq "2f") {
     # 2f on its own: warm-up, kcheck x/y/z, hold, the seven learned-model runs, kcheck x/y/z.
     if ($WarmupMin -gt 0.0) { $useClock = $true; Add-Run $kx $WarmupMin } else { Add-Run $kx }
@@ -236,6 +256,7 @@ if (-not $NoThermalPrompts) {
     $thermalPlan = switch ($Block) {
         "0" { "0:5" }
         "1" { "0:5" }
+        "3" { "0:5" }
         "12" { "0:5," + ($DurationMin + 2).ToString($invariant) + ":10" }
         default { "0:10" }
     }
@@ -270,9 +291,10 @@ if ($DryRunOnly) {
 
 Write-Host "[COOLING] Check before starting:"
 Write-Host "  - Supply at $SupplyVoltage V. Fans: block 0 starts with the fans OFF; blocks 1/2/12 run with the fans ON."
+if ($Block -eq "3") { Write-Host "  - Block 3 starts warm, right after block 2 / 12, with the fans ON; the script asks when to switch them OFF and back ON." }
 if ($Block -eq "0") { Write-Host "  - Before sound: fans ON, check with a strip of tissue that no air reaches the space between the boards; then fans OFF." }
 Write-Host "  - PAT-start LED bright: kcheck LED peak count 1000 or more."
-Write-Host "  - Note room / board temperatures (thermal_log_template.csv with fan_state, fan_rpm_or_V)."
+Write-Host "  - Temperatures (top/bottom PAT, room, humidity) are asked on screen; -NoThermalPrompts turns that off."
 Write-Host "  - Stop with Ctrl+C if the particle is gone; the session then stops and PAT is turned off."
 $psuTarget = Get-PsuTargetArgs -Usb:$PsuUsb -Resource $PsuResource -HostName $PsuHost
 $psuLogger = Start-PsuLogger -Python $python -OutputDir $OutputDir -TargetArgs $psuTarget -IntervalSec $PsuIntervalSec

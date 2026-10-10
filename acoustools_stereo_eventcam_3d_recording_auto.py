@@ -373,8 +373,11 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--thermal-prompt-timeout-sec",
         type=float,
-        default=60.0,
-        help="How long a temperature prompt waits between unscheduled runs (and at the start and end).",
+        default=180.0,
+        help=(
+            "How long a temperature prompt waits for typing to start between unscheduled runs (and at "
+            "the start; the end prompt waits twice as long). Once typing starts it waits for Enter."
+        ),
     )
     parser.add_argument(
         "--pat-board-gap-mm",
@@ -1464,6 +1467,39 @@ def main(argv: list[str] | None = None) -> int:
                     session["thermal_log_csv"] = str(thermal_notes.csv_path)
                     atomic_write_json(session_path, session)
 
+            def ask_operator_actions(run_number: int, label: str) -> bool:
+                """Ask the operator actions planned before ``run_number``; False when interrupted."""
+                for action in operator_actions.get(run_number, []):
+                    print(
+                        f"\n[AUTO][OPERATOR ACTION] Before run {run_number} ({label}): "
+                        f"{action}. Do it now (PAT keeps holding at the centre), then press Enter. "
+                        "The time of this Enter is recorded."
+                    )
+                    try:
+                        input(f"[AUTO][OPERATOR ACTION] Press Enter once done ({action}): ")
+                    except (EOFError, KeyboardInterrupt):
+                        session["status"] = "interrupted"
+                        session["finished_at"] = dt.datetime.now().isoformat(timespec="milliseconds")
+                        atomic_write_json(session_path, session)
+                        print(f"[AUTO] Interrupted at the operator action ({action}).")
+                        return False
+                    done_at = dt.datetime.now()
+                    session.setdefault("operator_actions", []).append(
+                        {
+                            "before_run_number": run_number,
+                            "before_label": label,
+                            "action": action,
+                            "confirmed_at": done_at.isoformat(timespec="milliseconds"),
+                            "minutes_after_sound_on": (
+                                None
+                                if sound_on_wall_ns is None
+                                else round((done_at.timestamp() - sound_on_wall_ns / 1e9) / 60.0, 2)
+                            ),
+                        }
+                    )
+                    atomic_write_json(session_path, session)
+                return True
+
             if unattended and (schedule_offsets is not None or schedule_interval_sec is not None):
                 # With a timed schedule the first run may be many minutes away; confirm the
                 # particle now, before the clock is spent waiting, and let the runs start on
@@ -1518,6 +1554,10 @@ def main(argv: list[str] | None = None) -> int:
                         if scheduled_offset is not None and sound_on_wall_ns is not None
                         else None
                     )
+                    if target_wall is not None and not ask_operator_actions(run_index + 1, condition.label):
+                        # A scheduled run asks its operator action before the wait, so the clock then
+                        # measures the state after the action (block 3: fans OFF, kcheck 5/10/15 min later).
+                        return 130
                     try:
                         if thermal_notes is not None:
                             now_wall = time.time()
@@ -1599,35 +1639,8 @@ def main(argv: list[str] | None = None) -> int:
                             except KeyboardInterrupt:
                                 pass
                             return 3
-                    for action in operator_actions.get(run_index + 1, []):
-                        print(
-                            f"\n[AUTO][OPERATOR ACTION] Before run {run_index + 1} ({condition.label}): "
-                            f"{action}. Do it now (PAT keeps holding at the centre), then press Enter. "
-                            "The time of this Enter is recorded."
-                        )
-                        try:
-                            input(f"[AUTO][OPERATOR ACTION] Press Enter once done ({action}): ")
-                        except (EOFError, KeyboardInterrupt):
-                            session["status"] = "interrupted"
-                            session["finished_at"] = dt.datetime.now().isoformat(timespec="milliseconds")
-                            atomic_write_json(session_path, session)
-                            print(f"[AUTO] Interrupted at the operator action ({action}).")
-                            return 130
-                        done_at = dt.datetime.now()
-                        session.setdefault("operator_actions", []).append(
-                            {
-                                "before_run_number": run_index + 1,
-                                "before_label": condition.label,
-                                "action": action,
-                                "confirmed_at": done_at.isoformat(timespec="milliseconds"),
-                                "minutes_after_sound_on": (
-                                    None
-                                    if sound_on_wall_ns is None
-                                    else round((done_at.timestamp() - sound_on_wall_ns / 1e9) / 60.0, 2)
-                                ),
-                            }
-                        )
-                        atomic_write_json(session_path, session)
+                    if target_wall is None and not ask_operator_actions(run_index + 1, condition.label):
+                        return 130
                     if (run_index + 1) in particle_change_run_numbers:
                         print(
                             f"\n[AUTO][PARTICLE CHANGE] Before run {run_index + 1} ({condition.label}): "

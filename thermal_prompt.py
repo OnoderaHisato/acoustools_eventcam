@@ -7,7 +7,9 @@ humidity by hand. Instead of filling in a sheet and guessing when, the recording
 * every N minutes after sound on (``--thermal-prompt-every`` "0:5" = every 5 min; "0:5,92:10" switches
   to every 10 min from minute 92). A scheduled session asks while it waits for the next run and gives
   up 10 s before that run is due; a session without a schedule asks between runs and gives up after
-  ``--thermal-prompt-timeout-sec``. The particle is held at the centre (PAT on) while it asks.
+  ``--thermal-prompt-timeout-sec`` (default 180 s). Once the operator starts typing, the prompt waits
+  for Enter regardless of the deadline (a scheduled run may then start a little late). The particle is
+  held at the centre (PAT on) while it asks.
 
 One line answers: ``top bottom room humidity [note]`` -- numbers, ``-`` for a value not measured, any
 text after the numbers is kept as a note. An empty line or no answer records nothing; the note is then
@@ -28,7 +30,7 @@ from pathlib import Path
 from typing import Any, Callable
 
 FIELDS = ("T_top_PAT_C", "T_bottom_PAT_C", "T_room_C", "RH_percent")
-FIELD_LABELS = ("上PATの表面 [°C]", "下PATの表面 [°C]", "室温 [°C]", "湿度 [%]")
+FIELD_LABELS = ("上PAT [°C]", "下PAT [°C]", "室温 [°C]", "湿度 [%]")
 CSV_COLUMNS = (
     "recorded_at", "minutes_after_sound_on", "kind", "next_run_number", "next_label",
     *FIELDS, "supply_V", "supply_A", "note",
@@ -108,7 +110,10 @@ def parse_thermal_line(text: str | None) -> tuple[dict[str, float | None], str] 
 
 
 def read_line_with_deadline(prompt: str, deadline_wall: float | None, clock: Any = time) -> str | None:
-    """Read one line from the console; None when the deadline passes first (or input ends)."""
+    """Read one line from the console; None when the deadline passes before anything is typed.
+
+    Once a character has been typed the deadline no longer applies: the line is finished with Enter.
+    """
     print(prompt, end="", flush=True)
     if deadline_wall is None:
         try:
@@ -120,7 +125,7 @@ def read_line_with_deadline(prompt: str, deadline_wall: float | None, clock: Any
 
         buffer: list[str] = []
         while True:
-            if clock.time() >= deadline_wall:
+            if not buffer and clock.time() >= deadline_wall:
                 print("\n[THERMAL] No answer in time; continuing.", flush=True)
                 return None
             if not msvcrt.kbhit():
@@ -233,7 +238,8 @@ class ThermalNotes:
         print(
             f"\n[THERMAL] 温度の記録（{kind}）: {when}{upcoming}\n"
             f"[THERMAL] {limit}「{' '.join(FIELD_LABELS)}」の順に空白区切りで入力してEnter"
-            "（測れない値は -、数字のあとの文はメモ、空のEnterは記録なし）。PAT は粒子を中央で保持しています。",
+            "（測れない値は -、数字のあとの文はメモ、空のEnterは記録なし。打ち始めたら Enter まで待ちます）。"
+            "PAT は粒子を中央で保持しています。",
             flush=True,
         )
         reader = self.reader or read_line_with_deadline

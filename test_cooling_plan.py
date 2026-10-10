@@ -12,7 +12,7 @@ import unittest
 import numpy as np
 
 from stereo_acoustools_3d_recording_core import safe_run_dir_base
-from test_thermal_hold_test import run_main, write_export
+from test_thermal_hold_test import SOUND_ON_SEC, FakeClock, run_main, write_export
 
 CAMPAIGN = Path("cooling_20261006")
 PLAN = CAMPAIGN / "cooling_plan.json"
@@ -145,6 +145,30 @@ class OperatorActionTests(unittest.TestCase):
             actions = session["operator_actions"]
             self.assertEqual([(a["before_run_number"], a["action"]) for a in actions], [(2, "fans ON"), (4, "fans OFF")])
             self.assertTrue(all("confirmed_at" in a for a in actions))
+
+    def test_scheduled_run_asks_its_action_before_the_wait(self) -> None:
+        # Block 3: the fans are switched OFF right after the previous runs, and the scheduled kcheck
+        # then comes at its clock time (the state after the switch), not prompt-then-run.
+        with TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            export_dir = write_export(root)
+            argv = ["--hf-export-dir", str(export_dir), "--output-dir", str(root / "rec")]
+            for name in ("kx", "kz", "kx", "kz"):
+                argv += ["--hf-run", f"{name}=1"]
+            argv += ["--acknowledge-step-response-risk", "--unattended-after-first-checkpoint",
+                     "--schedule-offsets-sec", "0,,480,", "--operator-actions", "3:switch the cooling fans OFF"]
+            clock = FakeClock(SOUND_ON_SEC)
+            asked_at: list[float] = []
+            with mock.patch("builtins.input", side_effect=lambda *_a: asked_at.append(clock.time()) or ""):
+                result, _events, starts = run_main(argv, clock=clock, run_seconds=50.0)
+            self.assertEqual(result, 0)
+            rel = [s - SOUND_ON_SEC for s in starts]
+            self.assertEqual(rel[2], 480.0)
+            action_rel = [t - SOUND_ON_SEC for t in asked_at]
+            # The action prompt comes right after run 2 ended, well before the 8-minute run.
+            self.assertTrue(any(rel[1] <= t < 200.0 for t in action_rel), (rel, action_rel))
+            session = json.loads(next((root / "rec").glob("auto_recording_session_*.json")).read_text(encoding="utf-8"))
+            self.assertEqual(session["operator_actions"][0]["before_run_number"], 3)
 
     def test_invalid_actions_never_open_hardware(self) -> None:
         with TemporaryDirectory() as temporary:

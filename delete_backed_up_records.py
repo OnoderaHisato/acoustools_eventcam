@@ -11,6 +11,8 @@ Targets (choose on the command line):
   steps      stereo_acoustools_3d_records_step_response_2s, _large_step, _vzr_step (whole folders)
   v15_0924   the run folders of stereo_acoustools_3d_records_V15 recorded on 2026-09-24
              (the 14 mm session; session JSONs and supply logs are kept)
+  v15_0923   the same for 2026-09-23 (kcheck and the five scanned planes at 15 V)
+  v15_0925   the same for 2026-09-25 (scale-up parts A/B, retries, field-scan rounds 1/2)
 
   python delete_backed_up_records.py ff_heart steps v15_0924            # check only
   python delete_backed_up_records.py ff_heart steps v15_0924 --delete   # check, then delete
@@ -24,6 +26,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 SSD = Path("D:/")
+V15_DAYS = {"v15_0923": "20260923", "v15_0924": "20260924", "v15_0925": "20260925"}
+TARGETS = ["ff_heart", "steps", *V15_DAYS]
 
 
 def targets(name: str) -> list[Path]:
@@ -31,9 +35,10 @@ def targets(name: str) -> list[Path]:
         return [ROOT / "stereo_acoustools_3d_records_ff_heart"]
     if name == "steps":
         return [ROOT / f"stereo_acoustools_3d_records_{n}" for n in ("step_response_2s", "large_step", "vzr_step")]
-    if name == "v15_0924":
+    if name in V15_DAYS:
         records = ROOT / "stereo_acoustools_3d_records_V15"
-        return sorted(p for p in records.iterdir() if p.is_dir() and "_V15_20260924_" in p.name)
+        tag = f"_V15_{V15_DAYS[name]}_"
+        return sorted(p for p in records.iterdir() if p.is_dir() and tag in p.name)
     raise SystemExit(f"unknown target {name!r}")
 
 
@@ -60,7 +65,7 @@ def check(path: Path) -> tuple[int, int, list[str]]:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("targets", nargs="+", choices=["ff_heart", "steps", "v15_0924"])
+    ap.add_argument("targets", nargs="+", choices=TARGETS)
     ap.add_argument("--delete", action="store_true", help="delete the targets that passed the check")
     args = ap.parse_args()
     if not SSD.is_dir():

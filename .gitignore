@@ -114,6 +114,7 @@
 # dngstation (sindy-server2) container runner for the 3D post-processing
 !/run_post_and_compare_list_docker.sh
 !/run_leftmask_reprocess_docker.sh
+!/run_cooling_post_docker.sh
 
 # Standalone camera-only code and instructions; keep SDKs/captures/calibration outputs ignored.
 !/eventcam_standalone/
