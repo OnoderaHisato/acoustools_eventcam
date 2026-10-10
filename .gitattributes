@@ -1,0 +1,2 @@
+# Shell scripts run on Linux servers (dngstation, Miyabi); keep LF so bash can read them.
+*.sh text eol=lf

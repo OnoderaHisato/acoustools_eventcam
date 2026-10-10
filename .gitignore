@@ -112,9 +112,12 @@
 !/cooling_20261006/
 !/cooling_20261006/*.json
 # dngstation (sindy-server2) container runner for the 3D post-processing
+!/.gitattributes
 !/run_post_and_compare_list_docker.sh
 !/run_leftmask_reprocess_docker.sh
 !/run_cooling_post_docker.sh
+!/prepost_main_cooling.sh
+!/prepost_part_cooling.sh
 
 # Standalone camera-only code and instructions; keep SDKs/captures/calibration outputs ignored.
 !/eventcam_standalone/

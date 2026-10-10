@@ -51,6 +51,15 @@
   - 解析側の手順書 `PREPOST_RESERVATION_HOWTO.md`（G: の `Experiment/20261006/`）に従う。枠の開始後に、ログインノードの tmux から `run_prepost_post_list.sh` を投げる。`EXTRA_ARGS='--left-mask-roi-override 1160,0,1280,720 --reacquire-after-sec 0.005 --reacquire-bins 3'`、第 3 引数は `camera_to_pat_pooled_cooled_20261010.npz`。r の比較は解析側が後で一括する。
   - 転送は `miyabi_upload_missing.py stereo_acoustools_3d_records_V15c --no-qsub --gzip-level 1 --plink x10733@miyabi-c.jcahpc.jp`（131 本、263 GB、約 70 MB/s）。SSD へは robocopy で複製。
   - Miyabi の計画停止は 10/28 09:00。
+  - **解析側の `run_prepost_post_list.sh` の不具合 2 つ（10-10 23:25 に気づいた）**:
+    - `export EXTRA_ARGS=...; qsub -I ...` では、qsub -I が環境を渡さないので左マスクが付かない（LED の ROI で処理されていた）。
+    - 2 ノード目の pbsdsh（関数の展開を bash -c に渡す形）が「exit status 2」ですぐ失敗する。
+    - 最初のジョブ 3523078 は 2 分で qdel した。新規 `prepost_main_cooling.sh`・`prepost_part_cooling.sh`（オプションはスクリプトの中に書く、2 ノード目にはファイルを pbsdsh で渡す）で 23:28 に投げ直した（job 3523111、miyabi-c4 が 50 本・miyabi-c5 が 49 本、walltime 05:28）。解析側はこちらの版を正とし、自分の版は予備（未検証）とした。
+  - 振り分け:
+    - Miyabi: `list_V15c_block12.txt`（99 本）。終わらなかった分は、枠 479（05:15:40）と枠 480（11:30:40）でまとめて投げ直す（計測 PC のスクラッチの `miyabi_slot479.sh`・`miyabi_slot480.sh`。一覧は `list_V15c_block12_rest.txt`／`_rest480.txt`）。
+    - dngstation: `list_V15c_block3_2f.txt`（14 本）→ `list_V15c_heavy_slow.txt`（8 本: 遅い走査 2 本と、輝点で左のイベントが多い 6 本）。後者は前者の `DONE` を待って始まる。
+  - **dngstation で `run_cooling_post_docker.sh` が CRLF で届き、bash が起動直後に止まった**（Git の `core.autocrlf=true` が作業コピーを CRLF に変えていた）。LF にして 23:23 に動かし直した。`.gitattributes` に `*.sh text eol=lf` を入れた。
+  - `wscan_XY_R28_a` の `..._201355` は、19:41 のセッションを中断したときに残った、生データの無いフォルダ（処理の一覧からは外した）。
 - 解析側への連絡: ブロック 0 を dngstation で処理中であることと、冷却後の印（campaign、校正、`pat_board_gap_mm`、`thermal_notes`、`operator_actions`）の所在を伝えた。解析側は kcheck から変換を作り、hold 3 本で検算する。Miyabi のプリポスト予約枠 5 つ（10/10 16:45〜10/11 23:45）は、計測 PC の 3D 化に使ってよいとのこと。
 
 ## 2026-10-10: 冷却の再計測で、温度を計測中の画面で入力するようにした（記録用紙の代わり）
