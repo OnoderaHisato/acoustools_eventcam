@@ -1,0 +1,4661 @@
+{
+ "schema_version": 1,
+ "purpose": "Extra measurement 3 on 2026-10-12 (Experiment/20261012/MESSAGE_TO_ACQUISITION_PC_20261012.md): circle speed series, stiffness grid and diagonal steps (ff_extra3), with kcheck/hold reused from cooling_20261006. Imported commands are pinned by content hash; limits are the scale-up values.",
+ "defaults": {
+  "sample_hz": 10000,
+  "duration_sec": 8.0,
+  "ramp_sec": 0.5,
+  "safety_limits": {
+   "max_offset_mm": 35.0,
+   "max_speed_mm_s": 3500.0,
+   "max_acceleration_mm_s2": 350000.0,
+   "max_endpoint_offset_mm": 0.01,
+   "max_command_reference_distance_mm": 4.5
+  }
+ },
+ "experiments": [
+  {
+   "name": "kcheck_x_S105_6jumps",
+   "kind": "staircase",
+   "tier": "C",
+   "axis": "x",
+   "duration_sec": 14.0,
+   "hold_sec": 2.0,
+   "initial_hold_sec": 2.0,
+   "final_hold_sec": 2.0,
+   "amplitudes_mm": [
+    1.05
+   ],
+   "directions": [
+    1,
+    -1,
+    1
+   ],
+   "repeats_within_run": 1,
+   "repeats": 1,
+   "safety_limits": {
+    "max_offset_mm": 1.05,
+    "max_step_mm": 1.05,
+    "max_speed_mm_s": 100.0,
+    "max_acceleration_mm_s2": 28000.0
+   },
+   "campaign": "extra3_20261012",
+   "condition": "stiffness_check_x",
+   "note": "Stiffness check at the 15 V operating point: x steps 0 -> +1.05 -> 0 -> -1.05 -> 0 -> +1.05 -> 0 mm, 7 holds of 2.0 s, 6 jumps, 14.0 s. Same command as ff_heart_20260918 so the stiffness values compare across sessions.",
+   "enabled": true,
+   "copied_from": "cooling_20261006/cooling_plan.json:kcheck_x_S105_6jumps"
+  },
+  {
+   "name": "kcheck_y_S105_6jumps",
+   "kind": "staircase",
+   "tier": "C",
+   "axis": "y",
+   "duration_sec": 14.0,
+   "hold_sec": 2.0,
+   "initial_hold_sec": 2.0,
+   "final_hold_sec": 2.0,
+   "amplitudes_mm": [
+    1.05
+   ],
+   "directions": [
+    1,
+    -1,
+    1
+   ],
+   "repeats_within_run": 1,
+   "repeats": 1,
+   "safety_limits": {
+    "max_offset_mm": 1.05,
+    "max_step_mm": 1.05,
+    "max_speed_mm_s": 100.0,
+    "max_acceleration_mm_s2": 28000.0
+   },
+   "campaign": "extra3_20261012",
+   "condition": "stiffness_check_y",
+   "note": "Stiffness check at the 15 V operating point: y steps 0 -> +1.05 -> 0 -> -1.05 -> 0 -> +1.05 -> 0 mm, 7 holds of 2.0 s, 6 jumps, 14.0 s. Same command as ff_heart_20260918 so the stiffness values compare across sessions.",
+   "enabled": true,
+   "copied_from": "cooling_20261006/cooling_plan.json:kcheck_y_S105_6jumps"
+  },
+  {
+   "name": "kcheck_z_S105_6jumps",
+   "kind": "staircase",
+   "tier": "C",
+   "axis": "z",
+   "duration_sec": 14.0,
+   "hold_sec": 2.0,
+   "initial_hold_sec": 2.0,
+   "final_hold_sec": 2.0,
+   "amplitudes_mm": [
+    1.05
+   ],
+   "directions": [
+    1,
+    -1,
+    1
+   ],
+   "repeats_within_run": 1,
+   "repeats": 1,
+   "safety_limits": {
+    "max_offset_mm": 1.05,
+    "max_step_mm": 1.05,
+    "max_speed_mm_s": 100.0,
+    "max_acceleration_mm_s2": 28000.0
+   },
+   "campaign": "extra3_20261012",
+   "condition": "stiffness_check_z",
+   "note": "Stiffness check at the 15 V operating point: z steps 0 -> +1.05 -> 0 -> -1.05 -> 0 -> +1.05 -> 0 mm, 7 holds of 2.0 s, 6 jumps, 14.0 s. Same command as ff_heart_20260918 so the stiffness values compare across sessions.",
+   "enabled": true,
+   "copied_from": "cooling_20261006/cooling_plan.json:kcheck_z_S105_6jumps"
+  },
+  {
+   "name": "hold_center_10s",
+   "kind": "imported",
+   "source_npz": "source/reused/hold_center_10s.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "2a638511358c57fd3502715df9f97f6be12b5bea719df0dc39185e291832cce8",
+   "duration_sec": 10.0,
+   "campaign": "extra3_20261012",
+   "measurement_family": "feedforward_validation",
+   "condition": "hold_center_10s",
+   "note": "Generalization session (GENERALIZATION_SESSION_PLAN.md, 15 V): hold_center_10s (u = r = 0 (particle held at the centre)). 10 s, 0.0 mm from the centre, peak speed 0 mm/s, peak acceleration 0 mm/s^2, max |u-r| 0.000 mm, y range 0.00 mm.",
+   "feedforward_design": {
+    "design": "HOLD",
+    "source_file": "hold_center_10s.npz",
+    "source_design": "OFF",
+    "command_differs_from_reference": false,
+    "description": "u = r = 0 (particle held at the centre)",
+    "shape": "hold",
+    "loop_frequency_hz": 0.0,
+    "params": {
+     "shape": "hold",
+     "purpose": "stationary particle at centre for 10 s: jitter fingerprint at the start of each block (generalization session)",
+     "duration_sec": 10.0,
+     "note": "2026-09-27"
+    }
+   },
+   "enabled": true,
+   "copied_from": "cooling_20261006/cooling_plan.json:hold_center_10s"
+  },
+  {
+   "name": "circle_s20_f7_OFF",
+   "kind": "imported",
+   "source_npz": "source/ff_extra3/circle_s20_f7_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "2d79b53128c5b648e144ff2641ccab637aa1488b3e594a7d01ef07dc927f1638",
+   "duration_sec": 8.0,
+   "campaign": "extra3_20261012",
+   "measurement_family": "feedforward_validation",
+   "condition": "circle_s20_f7_off",
+   "note": "Extra measurement 3 (ff_extra3): circle_s20_f7_OFF (u = r (no feedforward)). 8 s, 20.000 mm from the centre, peak speed 880 mm/s, peak acceleration 38804 mm/s^2, max |u-r| 0.000 mm.",
+   "feedforward_design": {
+    "design": "OFF",
+    "source_file": "circle_s20_f7_OFF.npz",
+    "source_design": "OFF",
+    "command_differs_from_reference": false,
+    "description": "u = r (no feedforward)",
+    "design_dir": "ff_extra3",
+    "params": {
+     "shape": "circle",
+     "scale_mm": 20.0,
+     "f_hz": 7.0,
+     "speed_mm_s": 879.6,
+     "speed_over_f0_mm": 3.086,
+     "f0_assumed_hz": 285.0,
+     "nearest_harmonic": {
+      "n": 41,
+      "f_hz": 287.0,
+      "detune_hz": 2.0
+     },
+     "series": "F",
+     "purpose": "円 半径 20 mm（x–z 面）の 7 Hz。速さ ÷ f0 = 3.09 mm",
+     "priority": "A",
+     "group": "circle",
+     "metrics": {
+      "max_offset_mm": 20.000000000000004,
+      "max_speed_mm_s": 879.6431069692819,
+      "max_accel_mm_s2": 38803.97902851536,
+      "max_abs_u_minus_r_mm": 0.0,
+      "endpoint_mm": 0.0,
+      "rms_inplane_mm": 20.0,
+      "rms_y_mm": 0.0,
+      "extent_mm": [
+       40.0,
+       0.0,
+       40.0
+      ],
+      "duration_sec": 8.0,
+      "safety_ok": true,
+      "accel_within_budget": true,
+      "sim_dev_xyz": [
+       0.243,
+       0.0,
+       0.014
+      ]
+     },
+     "tau0_ms": 0.85,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.23,
+      "y": 0.24,
+      "z": 3.2
+     },
+     "GAM": {
+      "x": 0.045,
+      "y": 0.04,
+      "z": 0.024
+     }
+    },
+    "loop_frequency_hz": 7.0,
+    "shape": "circle"
+   },
+   "enabled": true
+  },
+  {
+   "name": "circle_s20_f8_OFF",
+   "kind": "imported",
+   "source_npz": "source/ff_extra3/circle_s20_f8_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "80a7beb36a2b8644cf52e1fe15c72ebb58663bdec92903fdf618dcbff7c4b8b6",
+   "duration_sec": 8.0,
+   "campaign": "extra3_20261012",
+   "measurement_family": "feedforward_validation",
+   "condition": "circle_s20_f8_off",
+   "note": "Extra measurement 3 (ff_extra3): circle_s20_f8_OFF (u = r (no feedforward)). 8 s, 20.000 mm from the centre, peak speed 1005 mm/s, peak acceleration 50627 mm/s^2, max |u-r| 0.000 mm.",
+   "feedforward_design": {
+    "design": "OFF",
+    "source_file": "circle_s20_f8_OFF.npz",
+    "source_design": "OFF",
+    "command_differs_from_reference": false,
+    "description": "u = r (no feedforward)",
+    "design_dir": "ff_extra3",
+    "params": {
+     "shape": "circle",
+     "scale_mm": 20.0,
+     "f_hz": 8.0,
+     "speed_mm_s": 1005.3,
+     "speed_over_f0_mm": 3.527,
+     "f0_assumed_hz": 285.0,
+     "nearest_harmonic": {
+      "n": 36,
+      "f_hz": 288.0,
+      "detune_hz": 3.0
+     },
+     "series": "F",
+     "purpose": "円 半径 20 mm（x–z 面）の 8 Hz。速さ ÷ f0 = 3.53 mm",
+     "priority": "A",
+     "group": "circle",
+     "metrics": {
+      "max_offset_mm": 20.000000000000004,
+      "max_speed_mm_s": 1005.30541577112,
+      "max_accel_mm_s2": 50626.58023797788,
+      "max_abs_u_minus_r_mm": 0.0,
+      "endpoint_mm": 0.0,
+      "rms_inplane_mm": 20.0,
+      "rms_y_mm": 0.0,
+      "extent_mm": [
+       40.0,
+       0.0,
+       40.0
+      ],
+      "duration_sec": 8.0,
+      "safety_ok": true,
+      "accel_within_budget": true,
+      "sim_dev_xyz": [
+       0.298,
+       0.0,
+       0.018
+      ]
+     },
+     "tau0_ms": 0.85,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.23,
+      "y": 0.24,
+      "z": 3.2
+     },
+     "GAM": {
+      "x": 0.045,
+      "y": 0.04,
+      "z": 0.024
+     }
+    },
+    "loop_frequency_hz": 8.0,
+    "shape": "circle"
+   },
+   "enabled": true
+  },
+  {
+   "name": "circle_s20_f9_OFF",
+   "kind": "imported",
+   "source_npz": "source/ff_extra3/circle_s20_f9_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "45add1dfc32440bdac4c83e55ba04f9585feaa709ca7672b7252b50411dfd27f",
+   "duration_sec": 8.0,
+   "campaign": "extra3_20261012",
+   "measurement_family": "feedforward_validation",
+   "condition": "circle_s20_f9_off",
+   "note": "Extra measurement 3 (ff_extra3): circle_s20_f9_OFF (u = r (no feedforward)). 8 s, 20.000 mm from the centre, peak speed 1131 mm/s, peak acceleration 64033 mm/s^2, max |u-r| 0.000 mm.",
+   "feedforward_design": {
+    "design": "OFF",
+    "source_file": "circle_s20_f9_OFF.npz",
+    "source_design": "OFF",
+    "command_differs_from_reference": false,
+    "description": "u = r (no feedforward)",
+    "design_dir": "ff_extra3",
+    "params": {
+     "shape": "circle",
+     "scale_mm": 20.0,
+     "f_hz": 9.0,
+     "speed_mm_s": 1131.0,
+     "speed_over_f0_mm": 3.968,
+     "f0_assumed_hz": 285.0,
+     "nearest_harmonic": {
+      "n": 32,
+      "f_hz": 288.0,
+      "detune_hz": 3.0
+     },
+     "series": "F",
+     "purpose": "円 半径 20 mm（x–z 面）の 9 Hz。速さ ÷ f0 = 3.97 mm",
+     "priority": "A",
+     "group": "circle",
+     "metrics": {
+      "max_offset_mm": 20.000000000000004,
+      "max_speed_mm_s": 1130.9673276886192,
+      "max_accel_mm_s2": 64033.331138905516,
+      "max_abs_u_minus_r_mm": 0.0,
+      "endpoint_mm": 0.0,
+      "rms_inplane_mm": 20.0,
+      "rms_y_mm": 0.0,
+      "extent_mm": [
+       40.0,
+       0.0,
+       40.0
+      ],
+      "duration_sec": 8.0,
+      "safety_ok": true,
+      "accel_within_budget": true,
+      "sim_dev_xyz": [
+       0.36,
+       0.0,
+       0.022
+      ]
+     },
+     "tau0_ms": 0.85,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.23,
+      "y": 0.24,
+      "z": 3.2
+     },
+     "GAM": {
+      "x": 0.045,
+      "y": 0.04,
+      "z": 0.024
+     }
+    },
+    "loop_frequency_hz": 9.0,
+    "shape": "circle"
+   },
+   "enabled": true
+  },
+  {
+   "name": "circle_s20_f10_OFF",
+   "kind": "imported",
+   "source_npz": "source/ff_extra3/circle_s20_f10_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "3e690058c5632a971593099038b1bd879419d3def8f2ef7ae52aeae3f2633267",
+   "duration_sec": 8.0,
+   "campaign": "extra3_20261012",
+   "measurement_family": "feedforward_validation",
+   "condition": "circle_s20_f10_off",
+   "note": "Extra measurement 3 (ff_extra3): circle_s20_f10_OFF (u = r (no feedforward)). 8 s, 20.000 mm from the centre, peak speed 1257 mm/s, peak acceleration 79023 mm/s^2, max |u-r| 0.000 mm.",
+   "feedforward_design": {
+    "design": "OFF",
+    "source_file": "circle_s20_f10_OFF.npz",
+    "source_design": "OFF",
+    "command_differs_from_reference": false,
+    "description": "u = r (no feedforward)",
+    "design_dir": "ff_extra3",
+    "params": {
+     "shape": "circle",
+     "scale_mm": 20.0,
+     "f_hz": 10.0,
+     "speed_mm_s": 1256.6,
+     "speed_over_f0_mm": 4.409,
+     "f0_assumed_hz": 285.0,
+     "nearest_harmonic": {
+      "n": 28,
+      "f_hz": 280.0,
+      "detune_hz": -5.0
+     },
+     "series": "F",
+     "purpose": "円 半径 20 mm（x–z 面）の 10 Hz。速さ ÷ f0 = 4.41 mm",
+     "priority": "A",
+     "group": "circle",
+     "metrics": {
+      "max_offset_mm": 20.000000000000004,
+      "max_speed_mm_s": 1256.628793118128,
+      "max_accel_mm_s2": 79022.67863343656,
+      "max_abs_u_minus_r_mm": 0.0,
+      "endpoint_mm": 0.0,
+      "rms_inplane_mm": 20.0,
+      "rms_y_mm": 0.0,
+      "extent_mm": [
+       40.0,
+       0.0,
+       40.0
+      ],
+      "duration_sec": 8.0,
+      "safety_ok": true,
+      "accel_within_budget": true,
+      "sim_dev_xyz": [
+       0.43,
+       0.0,
+       0.026
+      ]
+     },
+     "tau0_ms": 0.85,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.23,
+      "y": 0.24,
+      "z": 3.2
+     },
+     "GAM": {
+      "x": 0.045,
+      "y": 0.04,
+      "z": 0.024
+     }
+    },
+    "loop_frequency_hz": 10.0,
+    "shape": "circle"
+   },
+   "enabled": true
+  },
+  {
+   "name": "circle_s20_f11_OFF",
+   "kind": "imported",
+   "source_npz": "source/ff_extra3/circle_s20_f11_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "426d4fc0a009017100da4c5584a6f502cd606aa39443b2d84eff5685a6915840",
+   "duration_sec": 8.0,
+   "campaign": "extra3_20261012",
+   "measurement_family": "feedforward_validation",
+   "condition": "circle_s20_f11_off",
+   "note": "Extra measurement 3 (ff_extra3): circle_s20_f11_OFF (u = r (no feedforward)). 8 s, 20.000 mm from the centre, peak speed 1382 mm/s, peak acceleration 95594 mm/s^2, max |u-r| 0.000 mm.",
+   "feedforward_design": {
+    "design": "OFF",
+    "source_file": "circle_s20_f11_OFF.npz",
+    "source_design": "OFF",
+    "command_differs_from_reference": false,
+    "description": "u = r (no feedforward)",
+    "design_dir": "ff_extra3",
+    "params": {
+     "shape": "circle",
+     "scale_mm": 20.0,
+     "f_hz": 11.0,
+     "speed_mm_s": 1382.3,
+     "speed_over_f0_mm": 4.85,
+     "f0_assumed_hz": 285.0,
+     "nearest_harmonic": {
+      "n": 26,
+      "f_hz": 286.0,
+      "detune_hz": 1.0
+     },
+     "series": "F",
+     "purpose": "円 半径 20 mm（x–z 面）の 11 Hz。速さ ÷ f0 = 4.85 mm",
+     "priority": "A",
+     "group": "circle",
+     "metrics": {
+      "max_offset_mm": 20.000000000000004,
+      "max_speed_mm_s": 1382.289762456172,
+      "max_accel_mm_s2": 95593.60000193244,
+      "max_abs_u_minus_r_mm": 0.0,
+      "endpoint_mm": 0.0,
+      "rms_inplane_mm": 20.0,
+      "rms_y_mm": 0.0,
+      "extent_mm": [
+       40.0,
+       0.0,
+       40.0
+      ],
+      "duration_sec": 8.0,
+      "safety_ok": true,
+      "accel_within_budget": true,
+      "sim_dev_xyz": [
+       0.506,
+       0.0,
+       0.032
+      ]
+     },
+     "tau0_ms": 0.85,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.23,
+      "y": 0.24,
+      "z": 3.2
+     },
+     "GAM": {
+      "x": 0.045,
+      "y": 0.04,
+      "z": 0.024
+     }
+    },
+    "loop_frequency_hz": 11.0,
+    "shape": "circle"
+   },
+   "enabled": true
+  },
+  {
+   "name": "circle_s20_f12_OFF",
+   "kind": "imported",
+   "source_npz": "source/ff_extra3/circle_s20_f12_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "b33ede1442ff0384a884d2a96a4a9cce24f88f574622958c5b20dec9e99e7b07",
+   "duration_sec": 8.0,
+   "campaign": "extra3_20261012",
+   "measurement_family": "feedforward_validation",
+   "condition": "circle_s20_f12_off",
+   "note": "Extra measurement 3 (ff_extra3): circle_s20_f12_OFF (u = r (no feedforward)). 8 s, 20.000 mm from the centre, peak speed 1508 mm/s, peak acceleration 113745 mm/s^2, max |u-r| 0.000 mm.",
+   "feedforward_design": {
+    "design": "OFF",
+    "source_file": "circle_s20_f12_OFF.npz",
+    "source_design": "OFF",
+    "command_differs_from_reference": false,
+    "description": "u = r (no feedforward)",
+    "design_dir": "ff_extra3",
+    "params": {
+     "shape": "circle",
+     "scale_mm": 20.0,
+     "f_hz": 12.0,
+     "speed_mm_s": 1508.0,
+     "speed_over_f0_mm": 5.291,
+     "f0_assumed_hz": 285.0,
+     "nearest_harmonic": {
+      "n": 24,
+      "f_hz": 288.0,
+      "detune_hz": 3.0
+     },
+     "series": "F",
+     "purpose": "円 半径 20 mm（x–z 面）の 12 Hz。速さ ÷ f0 = 5.29 mm",
+     "priority": "A",
+     "group": "circle",
+     "metrics": {
+      "max_offset_mm": 20.000000000000004,
+      "max_speed_mm_s": 1507.9501860767461,
+      "max_accel_mm_s2": 113745.3968868761,
+      "max_abs_u_minus_r_mm": 0.0,
+      "endpoint_mm": 0.0,
+      "rms_inplane_mm": 20.0,
+      "rms_y_mm": 0.0,
+      "extent_mm": [
+       40.0,
+       0.0,
+       40.0
+      ],
+      "duration_sec": 8.0,
+      "safety_ok": true,
+      "accel_within_budget": true,
+      "sim_dev_xyz": [
+       0.59,
+       0.0,
+       0.037
+      ]
+     },
+     "tau0_ms": 0.85,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.23,
+      "y": 0.24,
+      "z": 3.2
+     },
+     "GAM": {
+      "x": 0.045,
+      "y": 0.04,
+      "z": 0.024
+     }
+    },
+    "loop_frequency_hz": 12.0,
+    "shape": "circle"
+   },
+   "enabled": true
+  },
+  {
+   "name": "circle_s20_f13_OFF",
+   "kind": "imported",
+   "source_npz": "source/ff_extra3/circle_s20_f13_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "157abe6f5098b89447ad64fe6719453992cb7573be3339075d9c784deb9c534e",
+   "duration_sec": 8.0,
+   "campaign": "extra3_20261012",
+   "measurement_family": "feedforward_validation",
+   "condition": "circle_s20_f13_off",
+   "note": "Extra measurement 3 (ff_extra3): circle_s20_f13_OFF (u = r (no feedforward)). 8 s, 20.000 mm from the centre, peak speed 1634 mm/s, peak acceleration 133478 mm/s^2, max |u-r| 0.000 mm.",
+   "feedforward_design": {
+    "design": "OFF",
+    "source_file": "circle_s20_f13_OFF.npz",
+    "source_design": "OFF",
+    "command_differs_from_reference": false,
+    "description": "u = r (no feedforward)",
+    "design_dir": "ff_extra3",
+    "params": {
+     "shape": "circle",
+     "scale_mm": 20.0,
+     "f_hz": 13.0,
+     "speed_mm_s": 1633.6,
+     "speed_over_f0_mm": 5.732,
+     "f0_assumed_hz": 285.0,
+     "nearest_harmonic": {
+      "n": 22,
+      "f_hz": 286.0,
+      "detune_hz": 1.0
+     },
+     "series": "F",
+     "purpose": "円 半径 20 mm（x–z 面）の 13 Hz。速さ ÷ f0 = 5.73 mm",
+     "priority": "A",
+     "group": "circle",
+     "metrics": {
+      "max_offset_mm": 20.000000000000004,
+      "max_speed_mm_s": 1633.6100143938315,
+      "max_accel_mm_s2": 133477.57375352253,
+      "max_abs_u_minus_r_mm": 0.0,
+      "endpoint_mm": 0.0,
+      "rms_inplane_mm": 20.0,
+      "rms_y_mm": 0.0,
+      "extent_mm": [
+       40.0,
+       0.0,
+       40.0
+      ],
+      "duration_sec": 8.0,
+      "safety_ok": true,
+      "accel_within_budget": true,
+      "sim_dev_xyz": [
+       0.682,
+       0.0,
+       0.043
+      ]
+     },
+     "tau0_ms": 0.85,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.23,
+      "y": 0.24,
+      "z": 3.2
+     },
+     "GAM": {
+      "x": 0.045,
+      "y": 0.04,
+      "z": 0.024
+     }
+    },
+    "loop_frequency_hz": 13.0,
+    "shape": "circle"
+   },
+   "enabled": true
+  },
+  {
+   "name": "circle_s14_f10_OFF",
+   "kind": "imported",
+   "source_npz": "source/ff_extra3/circle_s14_f10_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "d95b17855d78afa9f5aac09e9b708563ecdaa792c17a4a94c4a293259d473a88",
+   "duration_sec": 8.0,
+   "campaign": "extra3_20261012",
+   "measurement_family": "feedforward_validation",
+   "condition": "circle_s14_f10_off",
+   "note": "Extra measurement 3 (ff_extra3): circle_s14_f10_OFF (u = r (no feedforward)). 8 s, 14.000 mm from the centre, peak speed 880 mm/s, peak acceleration 55316 mm/s^2, max |u-r| 0.000 mm.",
+   "feedforward_design": {
+    "design": "OFF",
+    "source_file": "circle_s14_f10_OFF.npz",
+    "source_design": "OFF",
+    "command_differs_from_reference": false,
+    "description": "u = r (no feedforward)",
+    "design_dir": "ff_extra3",
+    "params": {
+     "shape": "circle",
+     "scale_mm": 14.0,
+     "f_hz": 10.0,
+     "speed_mm_s": 879.6,
+     "speed_over_f0_mm": 3.086,
+     "f0_assumed_hz": 285.0,
+     "nearest_harmonic": {
+      "n": 28,
+      "f_hz": 280.0,
+      "detune_hz": -5.0
+     },
+     "series": "R",
+     "purpose": "円 半径 14 mm（x–z 面）の 10 Hz。速さ ÷ f0 = 3.09 mm（周回の高調波は半径 20 と同じ 28·10 = 280 Hz）",
+     "priority": "A",
+     "group": "circle",
+     "metrics": {
+      "max_offset_mm": 14.000000000000002,
+      "max_speed_mm_s": 879.6401551826899,
+      "max_accel_mm_s2": 55315.87504345329,
+      "max_abs_u_minus_r_mm": 0.0,
+      "endpoint_mm": 0.0,
+      "rms_inplane_mm": 14.0,
+      "rms_y_mm": 0.0,
+      "extent_mm": [
+       28.0,
+       0.0,
+       28.0
+      ],
+      "duration_sec": 8.0,
+      "safety_ok": true,
+      "accel_within_budget": true,
+      "sim_dev_xyz": [
+       0.301,
+       0.0,
+       0.018
+      ]
+     },
+     "tau0_ms": 0.85,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.23,
+      "y": 0.24,
+      "z": 3.2
+     },
+     "GAM": {
+      "x": 0.045,
+      "y": 0.04,
+      "z": 0.024
+     }
+    },
+    "loop_frequency_hz": 10.0,
+    "shape": "circle"
+   },
+   "enabled": true
+  },
+  {
+   "name": "circle_s17_f10_OFF",
+   "kind": "imported",
+   "source_npz": "source/ff_extra3/circle_s17_f10_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "2c38b9de45b43b7ea55f344925afe35e84fec81f6fced94b48d204152a4bec66",
+   "duration_sec": 8.0,
+   "campaign": "extra3_20261012",
+   "measurement_family": "feedforward_validation",
+   "condition": "circle_s17_f10_off",
+   "note": "Extra measurement 3 (ff_extra3): circle_s17_f10_OFF (u = r (no feedforward)). 8 s, 17.000 mm from the centre, peak speed 1068 mm/s, peak acceleration 67169 mm/s^2, max |u-r| 0.000 mm.",
+   "feedforward_design": {
+    "design": "OFF",
+    "source_file": "circle_s17_f10_OFF.npz",
+    "source_design": "OFF",
+    "command_differs_from_reference": false,
+    "description": "u = r (no feedforward)",
+    "design_dir": "ff_extra3",
+    "params": {
+     "shape": "circle",
+     "scale_mm": 17.0,
+     "f_hz": 10.0,
+     "speed_mm_s": 1068.1,
+     "speed_over_f0_mm": 3.748,
+     "f0_assumed_hz": 285.0,
+     "nearest_harmonic": {
+      "n": 28,
+      "f_hz": 280.0,
+      "detune_hz": -5.0
+     },
+     "series": "R",
+     "purpose": "円 半径 17 mm（x–z 面）の 10 Hz。速さ ÷ f0 = 3.75 mm（周回の高調波は半径 20 と同じ 28·10 = 280 Hz）",
+     "priority": "A",
+     "group": "circle",
+     "metrics": {
+      "max_offset_mm": 17.000000000000004,
+      "max_speed_mm_s": 1068.1344741504079,
+      "max_accel_mm_s2": 67169.27683841443,
+      "max_abs_u_minus_r_mm": 0.0,
+      "endpoint_mm": 0.0,
+      "rms_inplane_mm": 17.0,
+      "rms_y_mm": 0.0,
+      "extent_mm": [
+       34.0,
+       0.0,
+       34.0
+      ],
+      "duration_sec": 8.0,
+      "safety_ok": true,
+      "accel_within_budget": true,
+      "sim_dev_xyz": [
+       0.365,
+       0.0,
+       0.022
+      ]
+     },
+     "tau0_ms": 0.85,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.23,
+      "y": 0.24,
+      "z": 3.2
+     },
+     "GAM": {
+      "x": 0.045,
+      "y": 0.04,
+      "z": 0.024
+     }
+    },
+    "loop_frequency_hz": 10.0,
+    "shape": "circle"
+   },
+   "enabled": true
+  },
+  {
+   "name": "circle_s23_f10_OFF",
+   "kind": "imported",
+   "source_npz": "source/ff_extra3/circle_s23_f10_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "810b739513dab79bd3993232a6576abae859f2b9e6c91278f8412f8d13183cce",
+   "duration_sec": 8.0,
+   "campaign": "extra3_20261012",
+   "measurement_family": "feedforward_validation",
+   "condition": "circle_s23_f10_off",
+   "note": "Extra measurement 3 (ff_extra3): circle_s23_f10_OFF (u = r (no feedforward)). 8 s, 23.000 mm from the centre, peak speed 1445 mm/s, peak acceleration 90876 mm/s^2, max |u-r| 0.000 mm.",
+   "feedforward_design": {
+    "design": "OFF",
+    "source_file": "circle_s23_f10_OFF.npz",
+    "source_design": "OFF",
+    "command_differs_from_reference": false,
+    "description": "u = r (no feedforward)",
+    "design_dir": "ff_extra3",
+    "params": {
+     "shape": "circle",
+     "scale_mm": 23.0,
+     "f_hz": 10.0,
+     "speed_mm_s": 1445.1,
+     "speed_over_f0_mm": 5.071,
+     "f0_assumed_hz": 285.0,
+     "nearest_harmonic": {
+      "n": 28,
+      "f_hz": 280.0,
+      "detune_hz": -5.0
+     },
+     "series": "R",
+     "purpose": "円 半径 23 mm（x–z 面）の 10 Hz。速さ ÷ f0 = 5.07 mm（周回の高調波は半径 20 と同じ 28·10 = 280 Hz）",
+     "priority": "A",
+     "group": "circle",
+     "metrics": {
+      "max_offset_mm": 23.000000000000004,
+      "max_speed_mm_s": 1445.1231120858472,
+      "max_accel_mm_s2": 90876.08042834078,
+      "max_abs_u_minus_r_mm": 0.0,
+      "endpoint_mm": 0.0,
+      "rms_inplane_mm": 23.0,
+      "rms_y_mm": 0.0,
+      "extent_mm": [
+       46.0,
+       0.0,
+       46.0
+      ],
+      "duration_sec": 8.0,
+      "safety_ok": true,
+      "accel_within_budget": true,
+      "sim_dev_xyz": [
+       0.494,
+       0.0,
+       0.03
+      ]
+     },
+     "tau0_ms": 0.85,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.23,
+      "y": 0.24,
+      "z": 3.2
+     },
+     "GAM": {
+      "x": 0.045,
+      "y": 0.04,
+      "z": 0.024
+     }
+    },
+    "loop_frequency_hz": 10.0,
+    "shape": "circle"
+   },
+   "enabled": true
+  },
+  {
+   "name": "kgrid_x3_OFF",
+   "kind": "imported",
+   "source_npz": "source/ff_extra3/kgrid_x3_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "c867853befe75cc363b9fb5322fe446a7b1235e2a1764228d71cac0aadfc9712",
+   "duration_sec": 22.9,
+   "campaign": "extra3_20261012",
+   "measurement_family": "feedforward_validation",
+   "condition": "kgrid_x3_off",
+   "note": "Extra measurement 3 (ff_extra3): kgrid_x3_OFF (u = r (no feedforward)). 22.9 s, 12.020 mm from the centre, peak speed 105 mm/s, peak acceleration 21180 mm/s^2, max |u-r| 0.000 mm.",
+   "feedforward_design": {
+    "design": "OFF",
+    "source_file": "kgrid_x3_OFF.npz",
+    "source_design": "OFF",
+    "command_differs_from_reference": false,
+    "description": "u = r (no feedforward)",
+    "design_dir": "ff_extra3",
+    "params": {
+     "shape": "stiffness_grid",
+     "points_mm": [
+      [
+       -4.0,
+       0.0,
+       0.0
+      ],
+      [
+       -8.0,
+       0.0,
+       0.0
+      ],
+      [
+       -12.0,
+       0.0,
+       0.0
+      ]
+     ],
+     "segments": [
+      {
+       "slot": 0,
+       "role": "ref",
+       "point_mm": [
+        0.0,
+        0.0,
+        0.0
+       ],
+       "axis": "z",
+       "t_start_sec": 0.35,
+       "t_end_sec": 1.85,
+       "f_lo": 240.0,
+       "f_hi": 330.0,
+       "amp_mm": 0.005
+      },
+      {
+       "slot": 0,
+       "role": "ref",
+       "point_mm": [
+        0.0,
+        0.0,
+        0.0
+       ],
+       "axis": "x",
+       "t_start_sec": 2.1,
+       "t_end_sec": 3.5,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 0,
+       "role": "ref",
+       "point_mm": [
+        0.0,
+        0.0,
+        0.0
+       ],
+       "axis": "y",
+       "t_start_sec": 3.6,
+       "t_end_sec": 4.4,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 1,
+       "role": "point",
+       "point_mm": [
+        -4.0,
+        0.0,
+        0.0
+       ],
+       "axis": "z",
+       "t_start_sec": 4.9,
+       "t_end_sec": 6.4,
+       "f_lo": 240.0,
+       "f_hi": 330.0,
+       "amp_mm": 0.005
+      },
+      {
+       "slot": 1,
+       "role": "point",
+       "point_mm": [
+        -4.0,
+        0.0,
+        0.0
+       ],
+       "axis": "x",
+       "t_start_sec": 6.65,
+       "t_end_sec": 8.05,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 1,
+       "role": "point",
+       "point_mm": [
+        -4.0,
+        0.0,
+        0.0
+       ],
+       "axis": "y",
+       "t_start_sec": 8.15,
+       "t_end_sec": 8.95,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 2,
+       "role": "point",
+       "point_mm": [
+        -8.0,
+        0.0,
+        0.0
+       ],
+       "axis": "z",
+       "t_start_sec": 9.45,
+       "t_end_sec": 10.95,
+       "f_lo": 240.0,
+       "f_hi": 330.0,
+       "amp_mm": 0.005
+      },
+      {
+       "slot": 2,
+       "role": "point",
+       "point_mm": [
+        -8.0,
+        0.0,
+        0.0
+       ],
+       "axis": "x",
+       "t_start_sec": 11.2,
+       "t_end_sec": 12.6,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 2,
+       "role": "point",
+       "point_mm": [
+        -8.0,
+        0.0,
+        0.0
+       ],
+       "axis": "y",
+       "t_start_sec": 12.7,
+       "t_end_sec": 13.5,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 3,
+       "role": "point",
+       "point_mm": [
+        -12.0,
+        0.0,
+        0.0
+       ],
+       "axis": "z",
+       "t_start_sec": 14.0,
+       "t_end_sec": 15.5,
+       "f_lo": 240.0,
+       "f_hi": 330.0,
+       "amp_mm": 0.005
+      },
+      {
+       "slot": 3,
+       "role": "point",
+       "point_mm": [
+        -12.0,
+        0.0,
+        0.0
+       ],
+       "axis": "x",
+       "t_start_sec": 15.75,
+       "t_end_sec": 17.15,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 3,
+       "role": "point",
+       "point_mm": [
+        -12.0,
+        0.0,
+        0.0
+       ],
+       "axis": "y",
+       "t_start_sec": 17.25,
+       "t_end_sec": 18.05,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 4,
+       "role": "ref",
+       "point_mm": [
+        0.0,
+        0.0,
+        0.0
+       ],
+       "axis": "z",
+       "t_start_sec": 18.55,
+       "t_end_sec": 20.05,
+       "f_lo": 240.0,
+       "f_hi": 330.0,
+       "amp_mm": 0.005
+      },
+      {
+       "slot": 4,
+       "role": "ref",
+       "point_mm": [
+        0.0,
+        0.0,
+        0.0
+       ],
+       "axis": "x",
+       "t_start_sec": 20.3,
+       "t_end_sec": 21.7,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 4,
+       "role": "ref",
+       "point_mm": [
+        0.0,
+        0.0,
+        0.0
+       ],
+       "axis": "y",
+       "t_start_sec": 21.8,
+       "t_end_sec": 22.6,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      }
+     ],
+     "chirp": {
+      "z": {
+       "f_lo": 240.0,
+       "f_hi": 330.0,
+       "amp_mm": 0.005
+      },
+      "x": {
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      "y": {
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      }
+     },
+     "timing_sec": {
+      "settle": 0.15,
+      "z_T": 1.5,
+      "ring_z": 0.25,
+      "x_T": 1.4,
+      "gap_x": 0.1,
+      "y_T": 0.8,
+      "gap_y": 0.1,
+      "hold0": 0.2,
+      "hold_end": 0.2,
+      "taper": 0.05
+     },
+     "move_accel_cap_mm_s2": 20000.0,
+     "recommended_order": 1,
+     "purpose": "静止の格子: 中央 → (-4, 0) → (-8, 0) → (-12, 0) → 中央（x, z [mm]）",
+     "priority": "A",
+     "group": "grid",
+     "metrics": {
+      "max_offset_mm": 12.019999999122613,
+      "max_speed_mm_s": 104.99993280005171,
+      "max_accel_mm_s2": 21179.670426775887,
+      "max_abs_u_minus_r_mm": 0.0,
+      "endpoint_mm": 0.0,
+      "rms_inplane_mm": 6.8066334268175925,
+      "rms_y_mm": 0.005679154844055791,
+      "extent_mm": [
+       12.04,
+       0.04,
+       0.01
+      ],
+      "duration_sec": 22.9,
+      "safety_ok": true,
+      "accel_within_budget": true,
+      "sim_dev_xyz": [
+       0.202,
+       0.212,
+       0.254
+      ]
+     },
+     "tau0_ms": 0.85,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.23,
+      "y": 0.24,
+      "z": 3.2
+     },
+     "GAM": {
+      "x": 0.045,
+      "y": 0.04,
+      "z": 0.024
+     }
+    },
+    "shape": "stiffness_grid"
+   },
+   "enabled": true
+  },
+  {
+   "name": "kgrid_x4_OFF",
+   "kind": "imported",
+   "source_npz": "source/ff_extra3/kgrid_x4_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "2e80bed29670e49e1dac8e3a17501bb27c0d8940a87f3437a2c76184d1ac7335",
+   "duration_sec": 22.9,
+   "campaign": "extra3_20261012",
+   "measurement_family": "feedforward_validation",
+   "condition": "kgrid_x4_off",
+   "note": "Extra measurement 3 (ff_extra3): kgrid_x4_OFF (u = r (no feedforward)). 22.9 s, 12.020 mm from the centre, peak speed 105 mm/s, peak acceleration 21180 mm/s^2, max |u-r| 0.000 mm.",
+   "feedforward_design": {
+    "design": "OFF",
+    "source_file": "kgrid_x4_OFF.npz",
+    "source_design": "OFF",
+    "command_differs_from_reference": false,
+    "description": "u = r (no feedforward)",
+    "design_dir": "ff_extra3",
+    "params": {
+     "shape": "stiffness_grid",
+     "points_mm": [
+      [
+       4.0,
+       0.0,
+       0.0
+      ],
+      [
+       8.0,
+       0.0,
+       0.0
+      ],
+      [
+       12.0,
+       0.0,
+       0.0
+      ]
+     ],
+     "segments": [
+      {
+       "slot": 0,
+       "role": "ref",
+       "point_mm": [
+        0.0,
+        0.0,
+        0.0
+       ],
+       "axis": "z",
+       "t_start_sec": 0.35,
+       "t_end_sec": 1.85,
+       "f_lo": 240.0,
+       "f_hi": 330.0,
+       "amp_mm": 0.005
+      },
+      {
+       "slot": 0,
+       "role": "ref",
+       "point_mm": [
+        0.0,
+        0.0,
+        0.0
+       ],
+       "axis": "x",
+       "t_start_sec": 2.1,
+       "t_end_sec": 3.5,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 0,
+       "role": "ref",
+       "point_mm": [
+        0.0,
+        0.0,
+        0.0
+       ],
+       "axis": "y",
+       "t_start_sec": 3.6,
+       "t_end_sec": 4.4,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 1,
+       "role": "point",
+       "point_mm": [
+        4.0,
+        0.0,
+        0.0
+       ],
+       "axis": "z",
+       "t_start_sec": 4.9,
+       "t_end_sec": 6.4,
+       "f_lo": 240.0,
+       "f_hi": 330.0,
+       "amp_mm": 0.005
+      },
+      {
+       "slot": 1,
+       "role": "point",
+       "point_mm": [
+        4.0,
+        0.0,
+        0.0
+       ],
+       "axis": "x",
+       "t_start_sec": 6.65,
+       "t_end_sec": 8.05,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 1,
+       "role": "point",
+       "point_mm": [
+        4.0,
+        0.0,
+        0.0
+       ],
+       "axis": "y",
+       "t_start_sec": 8.15,
+       "t_end_sec": 8.95,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 2,
+       "role": "point",
+       "point_mm": [
+        8.0,
+        0.0,
+        0.0
+       ],
+       "axis": "z",
+       "t_start_sec": 9.45,
+       "t_end_sec": 10.95,
+       "f_lo": 240.0,
+       "f_hi": 330.0,
+       "amp_mm": 0.005
+      },
+      {
+       "slot": 2,
+       "role": "point",
+       "point_mm": [
+        8.0,
+        0.0,
+        0.0
+       ],
+       "axis": "x",
+       "t_start_sec": 11.2,
+       "t_end_sec": 12.6,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 2,
+       "role": "point",
+       "point_mm": [
+        8.0,
+        0.0,
+        0.0
+       ],
+       "axis": "y",
+       "t_start_sec": 12.7,
+       "t_end_sec": 13.5,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 3,
+       "role": "point",
+       "point_mm": [
+        12.0,
+        0.0,
+        0.0
+       ],
+       "axis": "z",
+       "t_start_sec": 14.0,
+       "t_end_sec": 15.5,
+       "f_lo": 240.0,
+       "f_hi": 330.0,
+       "amp_mm": 0.005
+      },
+      {
+       "slot": 3,
+       "role": "point",
+       "point_mm": [
+        12.0,
+        0.0,
+        0.0
+       ],
+       "axis": "x",
+       "t_start_sec": 15.75,
+       "t_end_sec": 17.15,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 3,
+       "role": "point",
+       "point_mm": [
+        12.0,
+        0.0,
+        0.0
+       ],
+       "axis": "y",
+       "t_start_sec": 17.25,
+       "t_end_sec": 18.05,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 4,
+       "role": "ref",
+       "point_mm": [
+        0.0,
+        0.0,
+        0.0
+       ],
+       "axis": "z",
+       "t_start_sec": 18.55,
+       "t_end_sec": 20.05,
+       "f_lo": 240.0,
+       "f_hi": 330.0,
+       "amp_mm": 0.005
+      },
+      {
+       "slot": 4,
+       "role": "ref",
+       "point_mm": [
+        0.0,
+        0.0,
+        0.0
+       ],
+       "axis": "x",
+       "t_start_sec": 20.3,
+       "t_end_sec": 21.7,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 4,
+       "role": "ref",
+       "point_mm": [
+        0.0,
+        0.0,
+        0.0
+       ],
+       "axis": "y",
+       "t_start_sec": 21.8,
+       "t_end_sec": 22.6,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      }
+     ],
+     "chirp": {
+      "z": {
+       "f_lo": 240.0,
+       "f_hi": 330.0,
+       "amp_mm": 0.005
+      },
+      "x": {
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      "y": {
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      }
+     },
+     "timing_sec": {
+      "settle": 0.15,
+      "z_T": 1.5,
+      "ring_z": 0.25,
+      "x_T": 1.4,
+      "gap_x": 0.1,
+      "y_T": 0.8,
+      "gap_y": 0.1,
+      "hold0": 0.2,
+      "hold_end": 0.2,
+      "taper": 0.05
+     },
+     "move_accel_cap_mm_s2": 20000.0,
+     "recommended_order": 2,
+     "purpose": "静止の格子: 中央 → (4, 0) → (8, 0) → (12, 0) → 中央（x, z [mm]）",
+     "priority": "A",
+     "group": "grid",
+     "metrics": {
+      "max_offset_mm": 12.019999999954681,
+      "max_speed_mm_s": 104.99993280005171,
+      "max_accel_mm_s2": 21179.670426775887,
+      "max_abs_u_minus_r_mm": 0.0,
+      "endpoint_mm": 0.0,
+      "rms_inplane_mm": 6.806633432412618,
+      "rms_y_mm": 0.005679154844055791,
+      "extent_mm": [
+       12.04,
+       0.04,
+       0.01
+      ],
+      "duration_sec": 22.9,
+      "safety_ok": true,
+      "accel_within_budget": true,
+      "sim_dev_xyz": [
+       0.202,
+       0.212,
+       0.254
+      ]
+     },
+     "tau0_ms": 0.85,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.23,
+      "y": 0.24,
+      "z": 3.2
+     },
+     "GAM": {
+      "x": 0.045,
+      "y": 0.04,
+      "z": 0.024
+     }
+    },
+    "shape": "stiffness_grid"
+   },
+   "enabled": true
+  },
+  {
+   "name": "kgrid_z1_OFF",
+   "kind": "imported",
+   "source_npz": "source/ff_extra3/kgrid_z1_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "ec0ede3712bc4cfa90771c887725791d36da6f5e8ebf3ce250c375c16108c7b9",
+   "duration_sec": 22.9,
+   "campaign": "extra3_20261012",
+   "measurement_family": "feedforward_validation",
+   "condition": "kgrid_z1_off",
+   "note": "Extra measurement 3 (ff_extra3): kgrid_z1_OFF (u = r (no feedforward)). 22.9 s, 8.005 mm from the centre, peak speed 70 mm/s, peak acceleration 21180 mm/s^2, max |u-r| 0.000 mm.",
+   "feedforward_design": {
+    "design": "OFF",
+    "source_file": "kgrid_z1_OFF.npz",
+    "source_design": "OFF",
+    "command_differs_from_reference": false,
+    "description": "u = r (no feedforward)",
+    "design_dir": "ff_extra3",
+    "params": {
+     "shape": "stiffness_grid",
+     "points_mm": [
+      [
+       0.0,
+       0.0,
+       -2.0
+      ],
+      [
+       0.0,
+       0.0,
+       -4.0
+      ],
+      [
+       0.0,
+       0.0,
+       -8.0
+      ]
+     ],
+     "segments": [
+      {
+       "slot": 0,
+       "role": "ref",
+       "point_mm": [
+        0.0,
+        0.0,
+        0.0
+       ],
+       "axis": "z",
+       "t_start_sec": 0.35,
+       "t_end_sec": 1.85,
+       "f_lo": 240.0,
+       "f_hi": 330.0,
+       "amp_mm": 0.005
+      },
+      {
+       "slot": 0,
+       "role": "ref",
+       "point_mm": [
+        0.0,
+        0.0,
+        0.0
+       ],
+       "axis": "x",
+       "t_start_sec": 2.1,
+       "t_end_sec": 3.5,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 0,
+       "role": "ref",
+       "point_mm": [
+        0.0,
+        0.0,
+        0.0
+       ],
+       "axis": "y",
+       "t_start_sec": 3.6,
+       "t_end_sec": 4.4,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 1,
+       "role": "point",
+       "point_mm": [
+        0.0,
+        0.0,
+        -2.0
+       ],
+       "axis": "z",
+       "t_start_sec": 4.9,
+       "t_end_sec": 6.4,
+       "f_lo": 240.0,
+       "f_hi": 330.0,
+       "amp_mm": 0.005
+      },
+      {
+       "slot": 1,
+       "role": "point",
+       "point_mm": [
+        0.0,
+        0.0,
+        -2.0
+       ],
+       "axis": "x",
+       "t_start_sec": 6.65,
+       "t_end_sec": 8.05,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 1,
+       "role": "point",
+       "point_mm": [
+        0.0,
+        0.0,
+        -2.0
+       ],
+       "axis": "y",
+       "t_start_sec": 8.15,
+       "t_end_sec": 8.95,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 2,
+       "role": "point",
+       "point_mm": [
+        0.0,
+        0.0,
+        -4.0
+       ],
+       "axis": "z",
+       "t_start_sec": 9.45,
+       "t_end_sec": 10.95,
+       "f_lo": 240.0,
+       "f_hi": 330.0,
+       "amp_mm": 0.005
+      },
+      {
+       "slot": 2,
+       "role": "point",
+       "point_mm": [
+        0.0,
+        0.0,
+        -4.0
+       ],
+       "axis": "x",
+       "t_start_sec": 11.2,
+       "t_end_sec": 12.6,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 2,
+       "role": "point",
+       "point_mm": [
+        0.0,
+        0.0,
+        -4.0
+       ],
+       "axis": "y",
+       "t_start_sec": 12.7,
+       "t_end_sec": 13.5,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 3,
+       "role": "point",
+       "point_mm": [
+        0.0,
+        0.0,
+        -8.0
+       ],
+       "axis": "z",
+       "t_start_sec": 14.0,
+       "t_end_sec": 15.5,
+       "f_lo": 240.0,
+       "f_hi": 330.0,
+       "amp_mm": 0.005
+      },
+      {
+       "slot": 3,
+       "role": "point",
+       "point_mm": [
+        0.0,
+        0.0,
+        -8.0
+       ],
+       "axis": "x",
+       "t_start_sec": 15.75,
+       "t_end_sec": 17.15,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 3,
+       "role": "point",
+       "point_mm": [
+        0.0,
+        0.0,
+        -8.0
+       ],
+       "axis": "y",
+       "t_start_sec": 17.25,
+       "t_end_sec": 18.05,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 4,
+       "role": "ref",
+       "point_mm": [
+        0.0,
+        0.0,
+        0.0
+       ],
+       "axis": "z",
+       "t_start_sec": 18.55,
+       "t_end_sec": 20.05,
+       "f_lo": 240.0,
+       "f_hi": 330.0,
+       "amp_mm": 0.005
+      },
+      {
+       "slot": 4,
+       "role": "ref",
+       "point_mm": [
+        0.0,
+        0.0,
+        0.0
+       ],
+       "axis": "x",
+       "t_start_sec": 20.3,
+       "t_end_sec": 21.7,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 4,
+       "role": "ref",
+       "point_mm": [
+        0.0,
+        0.0,
+        0.0
+       ],
+       "axis": "y",
+       "t_start_sec": 21.8,
+       "t_end_sec": 22.6,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      }
+     ],
+     "chirp": {
+      "z": {
+       "f_lo": 240.0,
+       "f_hi": 330.0,
+       "amp_mm": 0.005
+      },
+      "x": {
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      "y": {
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      }
+     },
+     "timing_sec": {
+      "settle": 0.15,
+      "z_T": 1.5,
+      "ring_z": 0.25,
+      "x_T": 1.4,
+      "gap_x": 0.1,
+      "y_T": 0.8,
+      "gap_y": 0.1,
+      "hold0": 0.2,
+      "hold_end": 0.2,
+      "taper": 0.05
+     },
+     "move_accel_cap_mm_s2": 20000.0,
+     "recommended_order": 3,
+     "purpose": "静止の格子: 中央 → (0, -2) → (0, -4) → (0, -8) → 中央（x, z [mm]）",
+     "priority": "A",
+     "group": "grid",
+     "metrics": {
+      "max_offset_mm": 8.004999999476928,
+      "max_speed_mm_s": 69.99995520003299,
+      "max_accel_mm_s2": 21179.67042678526,
+      "max_abs_u_minus_r_mm": 0.0,
+      "endpoint_mm": 0.0,
+      "rms_inplane_mm": 4.166113635116512,
+      "rms_y_mm": 0.005679154844055791,
+      "extent_mm": [
+       0.04,
+       0.04,
+       8.01
+      ],
+      "duration_sec": 22.9,
+      "safety_ok": true,
+      "accel_within_budget": true,
+      "sim_dev_xyz": [
+       0.202,
+       0.212,
+       0.254
+      ]
+     },
+     "tau0_ms": 0.85,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.23,
+      "y": 0.24,
+      "z": 3.2
+     },
+     "GAM": {
+      "x": 0.045,
+      "y": 0.04,
+      "z": 0.024
+     }
+    },
+    "shape": "stiffness_grid"
+   },
+   "enabled": true
+  },
+  {
+   "name": "kgrid_z2_OFF",
+   "kind": "imported",
+   "source_npz": "source/ff_extra3/kgrid_z2_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "e05a63c49aaa5860960188cef8cfe795e655d9e1b0b2adf6425eb1021e5a5b5e",
+   "duration_sec": 22.9,
+   "campaign": "extra3_20261012",
+   "measurement_family": "feedforward_validation",
+   "condition": "kgrid_z2_off",
+   "note": "Extra measurement 3 (ff_extra3): kgrid_z2_OFF (u = r (no feedforward)). 22.9 s, 8.005 mm from the centre, peak speed 70 mm/s, peak acceleration 21180 mm/s^2, max |u-r| 0.000 mm.",
+   "feedforward_design": {
+    "design": "OFF",
+    "source_file": "kgrid_z2_OFF.npz",
+    "source_design": "OFF",
+    "command_differs_from_reference": false,
+    "description": "u = r (no feedforward)",
+    "design_dir": "ff_extra3",
+    "params": {
+     "shape": "stiffness_grid",
+     "points_mm": [
+      [
+       0.0,
+       0.0,
+       2.0
+      ],
+      [
+       0.0,
+       0.0,
+       4.0
+      ],
+      [
+       0.0,
+       0.0,
+       8.0
+      ]
+     ],
+     "segments": [
+      {
+       "slot": 0,
+       "role": "ref",
+       "point_mm": [
+        0.0,
+        0.0,
+        0.0
+       ],
+       "axis": "z",
+       "t_start_sec": 0.35,
+       "t_end_sec": 1.85,
+       "f_lo": 240.0,
+       "f_hi": 330.0,
+       "amp_mm": 0.005
+      },
+      {
+       "slot": 0,
+       "role": "ref",
+       "point_mm": [
+        0.0,
+        0.0,
+        0.0
+       ],
+       "axis": "x",
+       "t_start_sec": 2.1,
+       "t_end_sec": 3.5,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 0,
+       "role": "ref",
+       "point_mm": [
+        0.0,
+        0.0,
+        0.0
+       ],
+       "axis": "y",
+       "t_start_sec": 3.6,
+       "t_end_sec": 4.4,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 1,
+       "role": "point",
+       "point_mm": [
+        0.0,
+        0.0,
+        2.0
+       ],
+       "axis": "z",
+       "t_start_sec": 4.9,
+       "t_end_sec": 6.4,
+       "f_lo": 240.0,
+       "f_hi": 330.0,
+       "amp_mm": 0.005
+      },
+      {
+       "slot": 1,
+       "role": "point",
+       "point_mm": [
+        0.0,
+        0.0,
+        2.0
+       ],
+       "axis": "x",
+       "t_start_sec": 6.65,
+       "t_end_sec": 8.05,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 1,
+       "role": "point",
+       "point_mm": [
+        0.0,
+        0.0,
+        2.0
+       ],
+       "axis": "y",
+       "t_start_sec": 8.15,
+       "t_end_sec": 8.95,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 2,
+       "role": "point",
+       "point_mm": [
+        0.0,
+        0.0,
+        4.0
+       ],
+       "axis": "z",
+       "t_start_sec": 9.45,
+       "t_end_sec": 10.95,
+       "f_lo": 240.0,
+       "f_hi": 330.0,
+       "amp_mm": 0.005
+      },
+      {
+       "slot": 2,
+       "role": "point",
+       "point_mm": [
+        0.0,
+        0.0,
+        4.0
+       ],
+       "axis": "x",
+       "t_start_sec": 11.2,
+       "t_end_sec": 12.6,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 2,
+       "role": "point",
+       "point_mm": [
+        0.0,
+        0.0,
+        4.0
+       ],
+       "axis": "y",
+       "t_start_sec": 12.7,
+       "t_end_sec": 13.5,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 3,
+       "role": "point",
+       "point_mm": [
+        0.0,
+        0.0,
+        8.0
+       ],
+       "axis": "z",
+       "t_start_sec": 14.0,
+       "t_end_sec": 15.5,
+       "f_lo": 240.0,
+       "f_hi": 330.0,
+       "amp_mm": 0.005
+      },
+      {
+       "slot": 3,
+       "role": "point",
+       "point_mm": [
+        0.0,
+        0.0,
+        8.0
+       ],
+       "axis": "x",
+       "t_start_sec": 15.75,
+       "t_end_sec": 17.15,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 3,
+       "role": "point",
+       "point_mm": [
+        0.0,
+        0.0,
+        8.0
+       ],
+       "axis": "y",
+       "t_start_sec": 17.25,
+       "t_end_sec": 18.05,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 4,
+       "role": "ref",
+       "point_mm": [
+        0.0,
+        0.0,
+        0.0
+       ],
+       "axis": "z",
+       "t_start_sec": 18.55,
+       "t_end_sec": 20.05,
+       "f_lo": 240.0,
+       "f_hi": 330.0,
+       "amp_mm": 0.005
+      },
+      {
+       "slot": 4,
+       "role": "ref",
+       "point_mm": [
+        0.0,
+        0.0,
+        0.0
+       ],
+       "axis": "x",
+       "t_start_sec": 20.3,
+       "t_end_sec": 21.7,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 4,
+       "role": "ref",
+       "point_mm": [
+        0.0,
+        0.0,
+        0.0
+       ],
+       "axis": "y",
+       "t_start_sec": 21.8,
+       "t_end_sec": 22.6,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      }
+     ],
+     "chirp": {
+      "z": {
+       "f_lo": 240.0,
+       "f_hi": 330.0,
+       "amp_mm": 0.005
+      },
+      "x": {
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      "y": {
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      }
+     },
+     "timing_sec": {
+      "settle": 0.15,
+      "z_T": 1.5,
+      "ring_z": 0.25,
+      "x_T": 1.4,
+      "gap_x": 0.1,
+      "y_T": 0.8,
+      "gap_y": 0.1,
+      "hold0": 0.2,
+      "hold_end": 0.2,
+      "taper": 0.05
+     },
+     "move_accel_cap_mm_s2": 20000.0,
+     "recommended_order": 4,
+     "purpose": "静止の格子: 中央 → (0, 2) → (0, 4) → (0, 8) → 中央（x, z [mm]）",
+     "priority": "A",
+     "group": "grid",
+     "metrics": {
+      "max_offset_mm": 8.004999999973455,
+      "max_speed_mm_s": 69.99995520003299,
+      "max_accel_mm_s2": 21179.67042678526,
+      "max_abs_u_minus_r_mm": 0.0,
+      "endpoint_mm": 0.0,
+      "rms_inplane_mm": 4.1661136354475845,
+      "rms_y_mm": 0.005679154844055791,
+      "extent_mm": [
+       0.04,
+       0.04,
+       8.01
+      ],
+      "duration_sec": 22.9,
+      "safety_ok": true,
+      "accel_within_budget": true,
+      "sim_dev_xyz": [
+       0.202,
+       0.212,
+       0.254
+      ]
+     },
+     "tau0_ms": 0.85,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.23,
+      "y": 0.24,
+      "z": 3.2
+     },
+     "GAM": {
+      "x": 0.045,
+      "y": 0.04,
+      "z": 0.024
+     }
+    },
+    "shape": "stiffness_grid"
+   },
+   "enabled": true
+  },
+  {
+   "name": "kgrid_x2_OFF",
+   "kind": "imported",
+   "source_npz": "source/ff_extra3/kgrid_x2_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "f3cbde58ff0c1f04d2c9c2d6965f23f1fd05aaf2521375abce4717f4ca2cc9d6",
+   "duration_sec": 22.9,
+   "campaign": "extra3_20261012",
+   "measurement_family": "feedforward_validation",
+   "condition": "kgrid_x2_off",
+   "note": "Extra measurement 3 (ff_extra3): kgrid_x2_OFF (u = r (no feedforward)). 22.9 s, 22.020 mm from the centre, peak speed 192 mm/s, peak acceleration 21180 mm/s^2, max |u-r| 0.000 mm.",
+   "feedforward_design": {
+    "design": "OFF",
+    "source_file": "kgrid_x2_OFF.npz",
+    "source_design": "OFF",
+    "command_differs_from_reference": false,
+    "description": "u = r (no feedforward)",
+    "design_dir": "ff_extra3",
+    "params": {
+     "shape": "stiffness_grid",
+     "points_mm": [
+      [
+       -16.0,
+       0.0,
+       0.0
+      ],
+      [
+       -20.0,
+       0.0,
+       0.0
+      ],
+      [
+       -22.0,
+       0.0,
+       0.0
+      ]
+     ],
+     "segments": [
+      {
+       "slot": 0,
+       "role": "ref",
+       "point_mm": [
+        0.0,
+        0.0,
+        0.0
+       ],
+       "axis": "z",
+       "t_start_sec": 0.35,
+       "t_end_sec": 1.85,
+       "f_lo": 240.0,
+       "f_hi": 330.0,
+       "amp_mm": 0.005
+      },
+      {
+       "slot": 0,
+       "role": "ref",
+       "point_mm": [
+        0.0,
+        0.0,
+        0.0
+       ],
+       "axis": "x",
+       "t_start_sec": 2.1,
+       "t_end_sec": 3.5,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 0,
+       "role": "ref",
+       "point_mm": [
+        0.0,
+        0.0,
+        0.0
+       ],
+       "axis": "y",
+       "t_start_sec": 3.6,
+       "t_end_sec": 4.4,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 1,
+       "role": "point",
+       "point_mm": [
+        -16.0,
+        0.0,
+        0.0
+       ],
+       "axis": "z",
+       "t_start_sec": 4.9,
+       "t_end_sec": 6.4,
+       "f_lo": 240.0,
+       "f_hi": 330.0,
+       "amp_mm": 0.005
+      },
+      {
+       "slot": 1,
+       "role": "point",
+       "point_mm": [
+        -16.0,
+        0.0,
+        0.0
+       ],
+       "axis": "x",
+       "t_start_sec": 6.65,
+       "t_end_sec": 8.05,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 1,
+       "role": "point",
+       "point_mm": [
+        -16.0,
+        0.0,
+        0.0
+       ],
+       "axis": "y",
+       "t_start_sec": 8.15,
+       "t_end_sec": 8.95,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 2,
+       "role": "point",
+       "point_mm": [
+        -20.0,
+        0.0,
+        0.0
+       ],
+       "axis": "z",
+       "t_start_sec": 9.45,
+       "t_end_sec": 10.95,
+       "f_lo": 240.0,
+       "f_hi": 330.0,
+       "amp_mm": 0.005
+      },
+      {
+       "slot": 2,
+       "role": "point",
+       "point_mm": [
+        -20.0,
+        0.0,
+        0.0
+       ],
+       "axis": "x",
+       "t_start_sec": 11.2,
+       "t_end_sec": 12.6,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 2,
+       "role": "point",
+       "point_mm": [
+        -20.0,
+        0.0,
+        0.0
+       ],
+       "axis": "y",
+       "t_start_sec": 12.7,
+       "t_end_sec": 13.5,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 3,
+       "role": "point",
+       "point_mm": [
+        -22.0,
+        0.0,
+        0.0
+       ],
+       "axis": "z",
+       "t_start_sec": 14.0,
+       "t_end_sec": 15.5,
+       "f_lo": 240.0,
+       "f_hi": 330.0,
+       "amp_mm": 0.005
+      },
+      {
+       "slot": 3,
+       "role": "point",
+       "point_mm": [
+        -22.0,
+        0.0,
+        0.0
+       ],
+       "axis": "x",
+       "t_start_sec": 15.75,
+       "t_end_sec": 17.15,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 3,
+       "role": "point",
+       "point_mm": [
+        -22.0,
+        0.0,
+        0.0
+       ],
+       "axis": "y",
+       "t_start_sec": 17.25,
+       "t_end_sec": 18.05,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 4,
+       "role": "ref",
+       "point_mm": [
+        0.0,
+        0.0,
+        0.0
+       ],
+       "axis": "z",
+       "t_start_sec": 18.55,
+       "t_end_sec": 20.05,
+       "f_lo": 240.0,
+       "f_hi": 330.0,
+       "amp_mm": 0.005
+      },
+      {
+       "slot": 4,
+       "role": "ref",
+       "point_mm": [
+        0.0,
+        0.0,
+        0.0
+       ],
+       "axis": "x",
+       "t_start_sec": 20.3,
+       "t_end_sec": 21.7,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 4,
+       "role": "ref",
+       "point_mm": [
+        0.0,
+        0.0,
+        0.0
+       ],
+       "axis": "y",
+       "t_start_sec": 21.8,
+       "t_end_sec": 22.6,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      }
+     ],
+     "chirp": {
+      "z": {
+       "f_lo": 240.0,
+       "f_hi": 330.0,
+       "amp_mm": 0.005
+      },
+      "x": {
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      "y": {
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      }
+     },
+     "timing_sec": {
+      "settle": 0.15,
+      "z_T": 1.5,
+      "ring_z": 0.25,
+      "x_T": 1.4,
+      "gap_x": 0.1,
+      "y_T": 0.8,
+      "gap_y": 0.1,
+      "hold0": 0.2,
+      "hold_end": 0.2,
+      "taper": 0.05
+     },
+     "move_accel_cap_mm_s2": 20000.0,
+     "recommended_order": 5,
+     "purpose": "静止の格子: 中央 → (-16, 0) → (-20, 0) → (-22, 0) → 中央（x, z [mm]）",
+     "priority": "A",
+     "group": "grid",
+     "metrics": {
+      "max_offset_mm": 22.01999999912261,
+      "max_speed_mm_s": 192.49987680009184,
+      "max_accel_mm_s2": 21179.670426775887,
+      "max_abs_u_minus_r_mm": 0.0,
+      "endpoint_mm": 0.0,
+      "rms_inplane_mm": 15.363059433282343,
+      "rms_y_mm": 0.005679154844055791,
+      "extent_mm": [
+       22.04,
+       0.04,
+       0.01
+      ],
+      "duration_sec": 22.9,
+      "safety_ok": true,
+      "accel_within_budget": true,
+      "sim_dev_xyz": [
+       0.202,
+       0.212,
+       0.254
+      ]
+     },
+     "tau0_ms": 0.85,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.23,
+      "y": 0.24,
+      "z": 3.2
+     },
+     "GAM": {
+      "x": 0.045,
+      "y": 0.04,
+      "z": 0.024
+     }
+    },
+    "shape": "stiffness_grid"
+   },
+   "enabled": true
+  },
+  {
+   "name": "kgrid_x5_OFF",
+   "kind": "imported",
+   "source_npz": "source/ff_extra3/kgrid_x5_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "9ef50dfd93ffd6fbbe819f1127c10f0a9e12c90f3f5505db064ee12512682a94",
+   "duration_sec": 22.9,
+   "campaign": "extra3_20261012",
+   "measurement_family": "feedforward_validation",
+   "condition": "kgrid_x5_off",
+   "note": "Extra measurement 3 (ff_extra3): kgrid_x5_OFF (u = r (no feedforward)). 22.9 s, 22.020 mm from the centre, peak speed 192 mm/s, peak acceleration 21180 mm/s^2, max |u-r| 0.000 mm.",
+   "feedforward_design": {
+    "design": "OFF",
+    "source_file": "kgrid_x5_OFF.npz",
+    "source_design": "OFF",
+    "command_differs_from_reference": false,
+    "description": "u = r (no feedforward)",
+    "design_dir": "ff_extra3",
+    "params": {
+     "shape": "stiffness_grid",
+     "points_mm": [
+      [
+       16.0,
+       0.0,
+       0.0
+      ],
+      [
+       20.0,
+       0.0,
+       0.0
+      ],
+      [
+       22.0,
+       0.0,
+       0.0
+      ]
+     ],
+     "segments": [
+      {
+       "slot": 0,
+       "role": "ref",
+       "point_mm": [
+        0.0,
+        0.0,
+        0.0
+       ],
+       "axis": "z",
+       "t_start_sec": 0.35,
+       "t_end_sec": 1.85,
+       "f_lo": 240.0,
+       "f_hi": 330.0,
+       "amp_mm": 0.005
+      },
+      {
+       "slot": 0,
+       "role": "ref",
+       "point_mm": [
+        0.0,
+        0.0,
+        0.0
+       ],
+       "axis": "x",
+       "t_start_sec": 2.1,
+       "t_end_sec": 3.5,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 0,
+       "role": "ref",
+       "point_mm": [
+        0.0,
+        0.0,
+        0.0
+       ],
+       "axis": "y",
+       "t_start_sec": 3.6,
+       "t_end_sec": 4.4,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 1,
+       "role": "point",
+       "point_mm": [
+        16.0,
+        0.0,
+        0.0
+       ],
+       "axis": "z",
+       "t_start_sec": 4.9,
+       "t_end_sec": 6.4,
+       "f_lo": 240.0,
+       "f_hi": 330.0,
+       "amp_mm": 0.005
+      },
+      {
+       "slot": 1,
+       "role": "point",
+       "point_mm": [
+        16.0,
+        0.0,
+        0.0
+       ],
+       "axis": "x",
+       "t_start_sec": 6.65,
+       "t_end_sec": 8.05,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 1,
+       "role": "point",
+       "point_mm": [
+        16.0,
+        0.0,
+        0.0
+       ],
+       "axis": "y",
+       "t_start_sec": 8.15,
+       "t_end_sec": 8.95,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 2,
+       "role": "point",
+       "point_mm": [
+        20.0,
+        0.0,
+        0.0
+       ],
+       "axis": "z",
+       "t_start_sec": 9.45,
+       "t_end_sec": 10.95,
+       "f_lo": 240.0,
+       "f_hi": 330.0,
+       "amp_mm": 0.005
+      },
+      {
+       "slot": 2,
+       "role": "point",
+       "point_mm": [
+        20.0,
+        0.0,
+        0.0
+       ],
+       "axis": "x",
+       "t_start_sec": 11.2,
+       "t_end_sec": 12.6,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 2,
+       "role": "point",
+       "point_mm": [
+        20.0,
+        0.0,
+        0.0
+       ],
+       "axis": "y",
+       "t_start_sec": 12.7,
+       "t_end_sec": 13.5,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 3,
+       "role": "point",
+       "point_mm": [
+        22.0,
+        0.0,
+        0.0
+       ],
+       "axis": "z",
+       "t_start_sec": 14.0,
+       "t_end_sec": 15.5,
+       "f_lo": 240.0,
+       "f_hi": 330.0,
+       "amp_mm": 0.005
+      },
+      {
+       "slot": 3,
+       "role": "point",
+       "point_mm": [
+        22.0,
+        0.0,
+        0.0
+       ],
+       "axis": "x",
+       "t_start_sec": 15.75,
+       "t_end_sec": 17.15,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 3,
+       "role": "point",
+       "point_mm": [
+        22.0,
+        0.0,
+        0.0
+       ],
+       "axis": "y",
+       "t_start_sec": 17.25,
+       "t_end_sec": 18.05,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 4,
+       "role": "ref",
+       "point_mm": [
+        0.0,
+        0.0,
+        0.0
+       ],
+       "axis": "z",
+       "t_start_sec": 18.55,
+       "t_end_sec": 20.05,
+       "f_lo": 240.0,
+       "f_hi": 330.0,
+       "amp_mm": 0.005
+      },
+      {
+       "slot": 4,
+       "role": "ref",
+       "point_mm": [
+        0.0,
+        0.0,
+        0.0
+       ],
+       "axis": "x",
+       "t_start_sec": 20.3,
+       "t_end_sec": 21.7,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 4,
+       "role": "ref",
+       "point_mm": [
+        0.0,
+        0.0,
+        0.0
+       ],
+       "axis": "y",
+       "t_start_sec": 21.8,
+       "t_end_sec": 22.6,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      }
+     ],
+     "chirp": {
+      "z": {
+       "f_lo": 240.0,
+       "f_hi": 330.0,
+       "amp_mm": 0.005
+      },
+      "x": {
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      "y": {
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      }
+     },
+     "timing_sec": {
+      "settle": 0.15,
+      "z_T": 1.5,
+      "ring_z": 0.25,
+      "x_T": 1.4,
+      "gap_x": 0.1,
+      "y_T": 0.8,
+      "gap_y": 0.1,
+      "hold0": 0.2,
+      "hold_end": 0.2,
+      "taper": 0.05
+     },
+     "move_accel_cap_mm_s2": 20000.0,
+     "recommended_order": 6,
+     "purpose": "静止の格子: 中央 → (16, 0) → (20, 0) → (22, 0) → 中央（x, z [mm]）",
+     "priority": "A",
+     "group": "grid",
+     "metrics": {
+      "max_offset_mm": 22.01999999995468,
+      "max_speed_mm_s": 192.49987680009184,
+      "max_accel_mm_s2": 21179.670426775887,
+      "max_abs_u_minus_r_mm": 0.0,
+      "endpoint_mm": 0.0,
+      "rms_inplane_mm": 15.36305943927298,
+      "rms_y_mm": 0.005679154844055791,
+      "extent_mm": [
+       22.04,
+       0.04,
+       0.01
+      ],
+      "duration_sec": 22.9,
+      "safety_ok": true,
+      "accel_within_budget": true,
+      "sim_dev_xyz": [
+       0.202,
+       0.212,
+       0.254
+      ]
+     },
+     "tau0_ms": 0.85,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.23,
+      "y": 0.24,
+      "z": 3.2
+     },
+     "GAM": {
+      "x": 0.045,
+      "y": 0.04,
+      "z": 0.024
+     }
+    },
+    "shape": "stiffness_grid"
+   },
+   "enabled": true
+  },
+  {
+   "name": "kgrid_z3_OFF",
+   "kind": "imported",
+   "source_npz": "source/ff_extra3/kgrid_z3_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "ad2ec183798124f344d618d2ec6d479640af3ea1e677ecbfec0ea52fdd470277",
+   "duration_sec": 22.9,
+   "campaign": "extra3_20261012",
+   "measurement_family": "feedforward_validation",
+   "condition": "kgrid_z3_off",
+   "note": "Extra measurement 3 (ff_extra3): kgrid_z3_OFF (u = r (no feedforward)). 22.9 s, 20.005 mm from the centre, peak speed 175 mm/s, peak acceleration 21180 mm/s^2, max |u-r| 0.000 mm.",
+   "feedforward_design": {
+    "design": "OFF",
+    "source_file": "kgrid_z3_OFF.npz",
+    "source_design": "OFF",
+    "command_differs_from_reference": false,
+    "description": "u = r (no feedforward)",
+    "design_dir": "ff_extra3",
+    "params": {
+     "shape": "stiffness_grid",
+     "points_mm": [
+      [
+       0.0,
+       0.0,
+       -12.0
+      ],
+      [
+       0.0,
+       0.0,
+       -16.0
+      ],
+      [
+       0.0,
+       0.0,
+       -20.0
+      ]
+     ],
+     "segments": [
+      {
+       "slot": 0,
+       "role": "ref",
+       "point_mm": [
+        0.0,
+        0.0,
+        0.0
+       ],
+       "axis": "z",
+       "t_start_sec": 0.35,
+       "t_end_sec": 1.85,
+       "f_lo": 240.0,
+       "f_hi": 330.0,
+       "amp_mm": 0.005
+      },
+      {
+       "slot": 0,
+       "role": "ref",
+       "point_mm": [
+        0.0,
+        0.0,
+        0.0
+       ],
+       "axis": "x",
+       "t_start_sec": 2.1,
+       "t_end_sec": 3.5,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 0,
+       "role": "ref",
+       "point_mm": [
+        0.0,
+        0.0,
+        0.0
+       ],
+       "axis": "y",
+       "t_start_sec": 3.6,
+       "t_end_sec": 4.4,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 1,
+       "role": "point",
+       "point_mm": [
+        0.0,
+        0.0,
+        -12.0
+       ],
+       "axis": "z",
+       "t_start_sec": 4.9,
+       "t_end_sec": 6.4,
+       "f_lo": 240.0,
+       "f_hi": 330.0,
+       "amp_mm": 0.005
+      },
+      {
+       "slot": 1,
+       "role": "point",
+       "point_mm": [
+        0.0,
+        0.0,
+        -12.0
+       ],
+       "axis": "x",
+       "t_start_sec": 6.65,
+       "t_end_sec": 8.05,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 1,
+       "role": "point",
+       "point_mm": [
+        0.0,
+        0.0,
+        -12.0
+       ],
+       "axis": "y",
+       "t_start_sec": 8.15,
+       "t_end_sec": 8.95,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 2,
+       "role": "point",
+       "point_mm": [
+        0.0,
+        0.0,
+        -16.0
+       ],
+       "axis": "z",
+       "t_start_sec": 9.45,
+       "t_end_sec": 10.95,
+       "f_lo": 240.0,
+       "f_hi": 330.0,
+       "amp_mm": 0.005
+      },
+      {
+       "slot": 2,
+       "role": "point",
+       "point_mm": [
+        0.0,
+        0.0,
+        -16.0
+       ],
+       "axis": "x",
+       "t_start_sec": 11.2,
+       "t_end_sec": 12.6,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 2,
+       "role": "point",
+       "point_mm": [
+        0.0,
+        0.0,
+        -16.0
+       ],
+       "axis": "y",
+       "t_start_sec": 12.7,
+       "t_end_sec": 13.5,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 3,
+       "role": "point",
+       "point_mm": [
+        0.0,
+        0.0,
+        -20.0
+       ],
+       "axis": "z",
+       "t_start_sec": 14.0,
+       "t_end_sec": 15.5,
+       "f_lo": 240.0,
+       "f_hi": 330.0,
+       "amp_mm": 0.005
+      },
+      {
+       "slot": 3,
+       "role": "point",
+       "point_mm": [
+        0.0,
+        0.0,
+        -20.0
+       ],
+       "axis": "x",
+       "t_start_sec": 15.75,
+       "t_end_sec": 17.15,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 3,
+       "role": "point",
+       "point_mm": [
+        0.0,
+        0.0,
+        -20.0
+       ],
+       "axis": "y",
+       "t_start_sec": 17.25,
+       "t_end_sec": 18.05,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 4,
+       "role": "ref",
+       "point_mm": [
+        0.0,
+        0.0,
+        0.0
+       ],
+       "axis": "z",
+       "t_start_sec": 18.55,
+       "t_end_sec": 20.05,
+       "f_lo": 240.0,
+       "f_hi": 330.0,
+       "amp_mm": 0.005
+      },
+      {
+       "slot": 4,
+       "role": "ref",
+       "point_mm": [
+        0.0,
+        0.0,
+        0.0
+       ],
+       "axis": "x",
+       "t_start_sec": 20.3,
+       "t_end_sec": 21.7,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 4,
+       "role": "ref",
+       "point_mm": [
+        0.0,
+        0.0,
+        0.0
+       ],
+       "axis": "y",
+       "t_start_sec": 21.8,
+       "t_end_sec": 22.6,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      }
+     ],
+     "chirp": {
+      "z": {
+       "f_lo": 240.0,
+       "f_hi": 330.0,
+       "amp_mm": 0.005
+      },
+      "x": {
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      "y": {
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      }
+     },
+     "timing_sec": {
+      "settle": 0.15,
+      "z_T": 1.5,
+      "ring_z": 0.25,
+      "x_T": 1.4,
+      "gap_x": 0.1,
+      "y_T": 0.8,
+      "gap_y": 0.1,
+      "hold0": 0.2,
+      "hold_end": 0.2,
+      "taper": 0.05
+     },
+     "move_accel_cap_mm_s2": 20000.0,
+     "recommended_order": 7,
+     "purpose": "静止の格子: 中央 → (0, -12) → (0, -16) → (0, -20) → 中央（x, z [mm]）",
+     "priority": "A",
+     "group": "grid",
+     "metrics": {
+      "max_offset_mm": 20.004999999476926,
+      "max_speed_mm_s": 174.99988800008026,
+      "max_accel_mm_s2": 21179.670426775887,
+      "max_abs_u_minus_r_mm": 0.0,
+      "endpoint_mm": 0.0,
+      "rms_inplane_mm": 12.86795448949576,
+      "rms_y_mm": 0.005679154844055791,
+      "extent_mm": [
+       0.04,
+       0.04,
+       20.01
+      ],
+      "duration_sec": 22.9,
+      "safety_ok": true,
+      "accel_within_budget": true,
+      "sim_dev_xyz": [
+       0.202,
+       0.212,
+       0.254
+      ]
+     },
+     "tau0_ms": 0.85,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.23,
+      "y": 0.24,
+      "z": 3.2
+     },
+     "GAM": {
+      "x": 0.045,
+      "y": 0.04,
+      "z": 0.024
+     }
+    },
+    "shape": "stiffness_grid"
+   },
+   "enabled": true
+  },
+  {
+   "name": "kgrid_z4_OFF",
+   "kind": "imported",
+   "source_npz": "source/ff_extra3/kgrid_z4_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "c224282295aedad71065d2f414272e8d4e5559afafab1eba0955d9a6bc7daa03",
+   "duration_sec": 22.9,
+   "campaign": "extra3_20261012",
+   "measurement_family": "feedforward_validation",
+   "condition": "kgrid_z4_off",
+   "note": "Extra measurement 3 (ff_extra3): kgrid_z4_OFF (u = r (no feedforward)). 22.9 s, 20.005 mm from the centre, peak speed 175 mm/s, peak acceleration 21180 mm/s^2, max |u-r| 0.000 mm.",
+   "feedforward_design": {
+    "design": "OFF",
+    "source_file": "kgrid_z4_OFF.npz",
+    "source_design": "OFF",
+    "command_differs_from_reference": false,
+    "description": "u = r (no feedforward)",
+    "design_dir": "ff_extra3",
+    "params": {
+     "shape": "stiffness_grid",
+     "points_mm": [
+      [
+       0.0,
+       0.0,
+       12.0
+      ],
+      [
+       0.0,
+       0.0,
+       16.0
+      ],
+      [
+       0.0,
+       0.0,
+       20.0
+      ]
+     ],
+     "segments": [
+      {
+       "slot": 0,
+       "role": "ref",
+       "point_mm": [
+        0.0,
+        0.0,
+        0.0
+       ],
+       "axis": "z",
+       "t_start_sec": 0.35,
+       "t_end_sec": 1.85,
+       "f_lo": 240.0,
+       "f_hi": 330.0,
+       "amp_mm": 0.005
+      },
+      {
+       "slot": 0,
+       "role": "ref",
+       "point_mm": [
+        0.0,
+        0.0,
+        0.0
+       ],
+       "axis": "x",
+       "t_start_sec": 2.1,
+       "t_end_sec": 3.5,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 0,
+       "role": "ref",
+       "point_mm": [
+        0.0,
+        0.0,
+        0.0
+       ],
+       "axis": "y",
+       "t_start_sec": 3.6,
+       "t_end_sec": 4.4,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 1,
+       "role": "point",
+       "point_mm": [
+        0.0,
+        0.0,
+        12.0
+       ],
+       "axis": "z",
+       "t_start_sec": 4.9,
+       "t_end_sec": 6.4,
+       "f_lo": 240.0,
+       "f_hi": 330.0,
+       "amp_mm": 0.005
+      },
+      {
+       "slot": 1,
+       "role": "point",
+       "point_mm": [
+        0.0,
+        0.0,
+        12.0
+       ],
+       "axis": "x",
+       "t_start_sec": 6.65,
+       "t_end_sec": 8.05,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 1,
+       "role": "point",
+       "point_mm": [
+        0.0,
+        0.0,
+        12.0
+       ],
+       "axis": "y",
+       "t_start_sec": 8.15,
+       "t_end_sec": 8.95,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 2,
+       "role": "point",
+       "point_mm": [
+        0.0,
+        0.0,
+        16.0
+       ],
+       "axis": "z",
+       "t_start_sec": 9.45,
+       "t_end_sec": 10.95,
+       "f_lo": 240.0,
+       "f_hi": 330.0,
+       "amp_mm": 0.005
+      },
+      {
+       "slot": 2,
+       "role": "point",
+       "point_mm": [
+        0.0,
+        0.0,
+        16.0
+       ],
+       "axis": "x",
+       "t_start_sec": 11.2,
+       "t_end_sec": 12.6,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 2,
+       "role": "point",
+       "point_mm": [
+        0.0,
+        0.0,
+        16.0
+       ],
+       "axis": "y",
+       "t_start_sec": 12.7,
+       "t_end_sec": 13.5,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 3,
+       "role": "point",
+       "point_mm": [
+        0.0,
+        0.0,
+        20.0
+       ],
+       "axis": "z",
+       "t_start_sec": 14.0,
+       "t_end_sec": 15.5,
+       "f_lo": 240.0,
+       "f_hi": 330.0,
+       "amp_mm": 0.005
+      },
+      {
+       "slot": 3,
+       "role": "point",
+       "point_mm": [
+        0.0,
+        0.0,
+        20.0
+       ],
+       "axis": "x",
+       "t_start_sec": 15.75,
+       "t_end_sec": 17.15,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 3,
+       "role": "point",
+       "point_mm": [
+        0.0,
+        0.0,
+        20.0
+       ],
+       "axis": "y",
+       "t_start_sec": 17.25,
+       "t_end_sec": 18.05,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 4,
+       "role": "ref",
+       "point_mm": [
+        0.0,
+        0.0,
+        0.0
+       ],
+       "axis": "z",
+       "t_start_sec": 18.55,
+       "t_end_sec": 20.05,
+       "f_lo": 240.0,
+       "f_hi": 330.0,
+       "amp_mm": 0.005
+      },
+      {
+       "slot": 4,
+       "role": "ref",
+       "point_mm": [
+        0.0,
+        0.0,
+        0.0
+       ],
+       "axis": "x",
+       "t_start_sec": 20.3,
+       "t_end_sec": 21.7,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 4,
+       "role": "ref",
+       "point_mm": [
+        0.0,
+        0.0,
+        0.0
+       ],
+       "axis": "y",
+       "t_start_sec": 21.8,
+       "t_end_sec": 22.6,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      }
+     ],
+     "chirp": {
+      "z": {
+       "f_lo": 240.0,
+       "f_hi": 330.0,
+       "amp_mm": 0.005
+      },
+      "x": {
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      "y": {
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      }
+     },
+     "timing_sec": {
+      "settle": 0.15,
+      "z_T": 1.5,
+      "ring_z": 0.25,
+      "x_T": 1.4,
+      "gap_x": 0.1,
+      "y_T": 0.8,
+      "gap_y": 0.1,
+      "hold0": 0.2,
+      "hold_end": 0.2,
+      "taper": 0.05
+     },
+     "move_accel_cap_mm_s2": 20000.0,
+     "recommended_order": 8,
+     "purpose": "静止の格子: 中央 → (0, 12) → (0, 16) → (0, 20) → 中央（x, z [mm]）",
+     "priority": "A",
+     "group": "grid",
+     "metrics": {
+      "max_offset_mm": 20.004999999973453,
+      "max_speed_mm_s": 174.99988800008026,
+      "max_accel_mm_s2": 21179.670426775887,
+      "max_abs_u_minus_r_mm": 0.0,
+      "endpoint_mm": 0.0,
+      "rms_inplane_mm": 12.86795448986326,
+      "rms_y_mm": 0.005679154844055791,
+      "extent_mm": [
+       0.04,
+       0.04,
+       20.01
+      ],
+      "duration_sec": 22.9,
+      "safety_ok": true,
+      "accel_within_budget": true,
+      "sim_dev_xyz": [
+       0.202,
+       0.212,
+       0.254
+      ]
+     },
+     "tau0_ms": 0.85,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.23,
+      "y": 0.24,
+      "z": 3.2
+     },
+     "GAM": {
+      "x": 0.045,
+      "y": 0.04,
+      "z": 0.024
+     }
+    },
+    "shape": "stiffness_grid"
+   },
+   "enabled": true
+  },
+  {
+   "name": "kgrid_x1_OFF",
+   "kind": "imported",
+   "source_npz": "source/ff_extra3/kgrid_x1_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "fc528bbe72a3d10f09db1604ae1255fd99d8566c8faae2a9b4c5c5343ba15236",
+   "duration_sec": 22.9,
+   "campaign": "extra3_20261012",
+   "measurement_family": "feedforward_validation",
+   "condition": "kgrid_x1_off",
+   "note": "Extra measurement 3 (ff_extra3): kgrid_x1_OFF (u = r (no feedforward)). 22.9 s, 28.020 mm from the centre, peak speed 245 mm/s, peak acceleration 21180 mm/s^2, max |u-r| 0.000 mm.",
+   "feedforward_design": {
+    "design": "OFF",
+    "source_file": "kgrid_x1_OFF.npz",
+    "source_design": "OFF",
+    "command_differs_from_reference": false,
+    "description": "u = r (no feedforward)",
+    "design_dir": "ff_extra3",
+    "params": {
+     "shape": "stiffness_grid",
+     "points_mm": [
+      [
+       -24.0,
+       0.0,
+       0.0
+      ],
+      [
+       -26.0,
+       0.0,
+       0.0
+      ],
+      [
+       -28.0,
+       0.0,
+       0.0
+      ]
+     ],
+     "segments": [
+      {
+       "slot": 0,
+       "role": "ref",
+       "point_mm": [
+        0.0,
+        0.0,
+        0.0
+       ],
+       "axis": "z",
+       "t_start_sec": 0.35,
+       "t_end_sec": 1.85,
+       "f_lo": 240.0,
+       "f_hi": 330.0,
+       "amp_mm": 0.005
+      },
+      {
+       "slot": 0,
+       "role": "ref",
+       "point_mm": [
+        0.0,
+        0.0,
+        0.0
+       ],
+       "axis": "x",
+       "t_start_sec": 2.1,
+       "t_end_sec": 3.5,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 0,
+       "role": "ref",
+       "point_mm": [
+        0.0,
+        0.0,
+        0.0
+       ],
+       "axis": "y",
+       "t_start_sec": 3.6,
+       "t_end_sec": 4.4,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 1,
+       "role": "point",
+       "point_mm": [
+        -24.0,
+        0.0,
+        0.0
+       ],
+       "axis": "z",
+       "t_start_sec": 4.9,
+       "t_end_sec": 6.4,
+       "f_lo": 240.0,
+       "f_hi": 330.0,
+       "amp_mm": 0.005
+      },
+      {
+       "slot": 1,
+       "role": "point",
+       "point_mm": [
+        -24.0,
+        0.0,
+        0.0
+       ],
+       "axis": "x",
+       "t_start_sec": 6.65,
+       "t_end_sec": 8.05,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 1,
+       "role": "point",
+       "point_mm": [
+        -24.0,
+        0.0,
+        0.0
+       ],
+       "axis": "y",
+       "t_start_sec": 8.15,
+       "t_end_sec": 8.95,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 2,
+       "role": "point",
+       "point_mm": [
+        -26.0,
+        0.0,
+        0.0
+       ],
+       "axis": "z",
+       "t_start_sec": 9.45,
+       "t_end_sec": 10.95,
+       "f_lo": 240.0,
+       "f_hi": 330.0,
+       "amp_mm": 0.005
+      },
+      {
+       "slot": 2,
+       "role": "point",
+       "point_mm": [
+        -26.0,
+        0.0,
+        0.0
+       ],
+       "axis": "x",
+       "t_start_sec": 11.2,
+       "t_end_sec": 12.6,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 2,
+       "role": "point",
+       "point_mm": [
+        -26.0,
+        0.0,
+        0.0
+       ],
+       "axis": "y",
+       "t_start_sec": 12.7,
+       "t_end_sec": 13.5,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 3,
+       "role": "point",
+       "point_mm": [
+        -28.0,
+        0.0,
+        0.0
+       ],
+       "axis": "z",
+       "t_start_sec": 14.0,
+       "t_end_sec": 15.5,
+       "f_lo": 240.0,
+       "f_hi": 330.0,
+       "amp_mm": 0.005
+      },
+      {
+       "slot": 3,
+       "role": "point",
+       "point_mm": [
+        -28.0,
+        0.0,
+        0.0
+       ],
+       "axis": "x",
+       "t_start_sec": 15.75,
+       "t_end_sec": 17.15,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 3,
+       "role": "point",
+       "point_mm": [
+        -28.0,
+        0.0,
+        0.0
+       ],
+       "axis": "y",
+       "t_start_sec": 17.25,
+       "t_end_sec": 18.05,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 4,
+       "role": "ref",
+       "point_mm": [
+        0.0,
+        0.0,
+        0.0
+       ],
+       "axis": "z",
+       "t_start_sec": 18.55,
+       "t_end_sec": 20.05,
+       "f_lo": 240.0,
+       "f_hi": 330.0,
+       "amp_mm": 0.005
+      },
+      {
+       "slot": 4,
+       "role": "ref",
+       "point_mm": [
+        0.0,
+        0.0,
+        0.0
+       ],
+       "axis": "x",
+       "t_start_sec": 20.3,
+       "t_end_sec": 21.7,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 4,
+       "role": "ref",
+       "point_mm": [
+        0.0,
+        0.0,
+        0.0
+       ],
+       "axis": "y",
+       "t_start_sec": 21.8,
+       "t_end_sec": 22.6,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      }
+     ],
+     "chirp": {
+      "z": {
+       "f_lo": 240.0,
+       "f_hi": 330.0,
+       "amp_mm": 0.005
+      },
+      "x": {
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      "y": {
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      }
+     },
+     "timing_sec": {
+      "settle": 0.15,
+      "z_T": 1.5,
+      "ring_z": 0.25,
+      "x_T": 1.4,
+      "gap_x": 0.1,
+      "y_T": 0.8,
+      "gap_y": 0.1,
+      "hold0": 0.2,
+      "hold_end": 0.2,
+      "taper": 0.05
+     },
+     "move_accel_cap_mm_s2": 20000.0,
+     "recommended_order": 9,
+     "purpose": "静止の格子: 中央 → (-24, 0) → (-26, 0) → (-28, 0) → 中央（x, z [mm]）",
+     "priority": "A",
+     "group": "grid",
+     "metrics": {
+      "max_offset_mm": 28.01999999912261,
+      "max_speed_mm_s": 244.99984320011768,
+      "max_accel_mm_s2": 21179.670426775887,
+      "max_abs_u_minus_r_mm": 0.0,
+      "endpoint_mm": 0.0,
+      "rms_inplane_mm": 20.53090884989005,
+      "rms_y_mm": 0.005679154844055791,
+      "extent_mm": [
+       28.04,
+       0.04,
+       0.01
+      ],
+      "duration_sec": 22.9,
+      "safety_ok": true,
+      "accel_within_budget": true,
+      "sim_dev_xyz": [
+       0.202,
+       0.212,
+       0.254
+      ]
+     },
+     "tau0_ms": 0.85,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.23,
+      "y": 0.24,
+      "z": 3.2
+     },
+     "GAM": {
+      "x": 0.045,
+      "y": 0.04,
+      "z": 0.024
+     }
+    },
+    "shape": "stiffness_grid"
+   },
+   "enabled": true
+  },
+  {
+   "name": "kgrid_x6_OFF",
+   "kind": "imported",
+   "source_npz": "source/ff_extra3/kgrid_x6_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "ca6aa612abd483cf1d57c2331d9f72fef5551904c8aa98253306e804992e06ab",
+   "duration_sec": 22.9,
+   "campaign": "extra3_20261012",
+   "measurement_family": "feedforward_validation",
+   "condition": "kgrid_x6_off",
+   "note": "Extra measurement 3 (ff_extra3): kgrid_x6_OFF (u = r (no feedforward)). 22.9 s, 28.020 mm from the centre, peak speed 245 mm/s, peak acceleration 21180 mm/s^2, max |u-r| 0.000 mm.",
+   "feedforward_design": {
+    "design": "OFF",
+    "source_file": "kgrid_x6_OFF.npz",
+    "source_design": "OFF",
+    "command_differs_from_reference": false,
+    "description": "u = r (no feedforward)",
+    "design_dir": "ff_extra3",
+    "params": {
+     "shape": "stiffness_grid",
+     "points_mm": [
+      [
+       24.0,
+       0.0,
+       0.0
+      ],
+      [
+       26.0,
+       0.0,
+       0.0
+      ],
+      [
+       28.0,
+       0.0,
+       0.0
+      ]
+     ],
+     "segments": [
+      {
+       "slot": 0,
+       "role": "ref",
+       "point_mm": [
+        0.0,
+        0.0,
+        0.0
+       ],
+       "axis": "z",
+       "t_start_sec": 0.35,
+       "t_end_sec": 1.85,
+       "f_lo": 240.0,
+       "f_hi": 330.0,
+       "amp_mm": 0.005
+      },
+      {
+       "slot": 0,
+       "role": "ref",
+       "point_mm": [
+        0.0,
+        0.0,
+        0.0
+       ],
+       "axis": "x",
+       "t_start_sec": 2.1,
+       "t_end_sec": 3.5,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 0,
+       "role": "ref",
+       "point_mm": [
+        0.0,
+        0.0,
+        0.0
+       ],
+       "axis": "y",
+       "t_start_sec": 3.6,
+       "t_end_sec": 4.4,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 1,
+       "role": "point",
+       "point_mm": [
+        24.0,
+        0.0,
+        0.0
+       ],
+       "axis": "z",
+       "t_start_sec": 4.9,
+       "t_end_sec": 6.4,
+       "f_lo": 240.0,
+       "f_hi": 330.0,
+       "amp_mm": 0.005
+      },
+      {
+       "slot": 1,
+       "role": "point",
+       "point_mm": [
+        24.0,
+        0.0,
+        0.0
+       ],
+       "axis": "x",
+       "t_start_sec": 6.65,
+       "t_end_sec": 8.05,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 1,
+       "role": "point",
+       "point_mm": [
+        24.0,
+        0.0,
+        0.0
+       ],
+       "axis": "y",
+       "t_start_sec": 8.15,
+       "t_end_sec": 8.95,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 2,
+       "role": "point",
+       "point_mm": [
+        26.0,
+        0.0,
+        0.0
+       ],
+       "axis": "z",
+       "t_start_sec": 9.45,
+       "t_end_sec": 10.95,
+       "f_lo": 240.0,
+       "f_hi": 330.0,
+       "amp_mm": 0.005
+      },
+      {
+       "slot": 2,
+       "role": "point",
+       "point_mm": [
+        26.0,
+        0.0,
+        0.0
+       ],
+       "axis": "x",
+       "t_start_sec": 11.2,
+       "t_end_sec": 12.6,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 2,
+       "role": "point",
+       "point_mm": [
+        26.0,
+        0.0,
+        0.0
+       ],
+       "axis": "y",
+       "t_start_sec": 12.7,
+       "t_end_sec": 13.5,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 3,
+       "role": "point",
+       "point_mm": [
+        28.0,
+        0.0,
+        0.0
+       ],
+       "axis": "z",
+       "t_start_sec": 14.0,
+       "t_end_sec": 15.5,
+       "f_lo": 240.0,
+       "f_hi": 330.0,
+       "amp_mm": 0.005
+      },
+      {
+       "slot": 3,
+       "role": "point",
+       "point_mm": [
+        28.0,
+        0.0,
+        0.0
+       ],
+       "axis": "x",
+       "t_start_sec": 15.75,
+       "t_end_sec": 17.15,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 3,
+       "role": "point",
+       "point_mm": [
+        28.0,
+        0.0,
+        0.0
+       ],
+       "axis": "y",
+       "t_start_sec": 17.25,
+       "t_end_sec": 18.05,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 4,
+       "role": "ref",
+       "point_mm": [
+        0.0,
+        0.0,
+        0.0
+       ],
+       "axis": "z",
+       "t_start_sec": 18.55,
+       "t_end_sec": 20.05,
+       "f_lo": 240.0,
+       "f_hi": 330.0,
+       "amp_mm": 0.005
+      },
+      {
+       "slot": 4,
+       "role": "ref",
+       "point_mm": [
+        0.0,
+        0.0,
+        0.0
+       ],
+       "axis": "x",
+       "t_start_sec": 20.3,
+       "t_end_sec": 21.7,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      {
+       "slot": 4,
+       "role": "ref",
+       "point_mm": [
+        0.0,
+        0.0,
+        0.0
+       ],
+       "axis": "y",
+       "t_start_sec": 21.8,
+       "t_end_sec": 22.6,
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      }
+     ],
+     "chirp": {
+      "z": {
+       "f_lo": 240.0,
+       "f_hi": 330.0,
+       "amp_mm": 0.005
+      },
+      "x": {
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      },
+      "y": {
+       "f_lo": 55.0,
+       "f_hi": 105.0,
+       "amp_mm": 0.02
+      }
+     },
+     "timing_sec": {
+      "settle": 0.15,
+      "z_T": 1.5,
+      "ring_z": 0.25,
+      "x_T": 1.4,
+      "gap_x": 0.1,
+      "y_T": 0.8,
+      "gap_y": 0.1,
+      "hold0": 0.2,
+      "hold_end": 0.2,
+      "taper": 0.05
+     },
+     "move_accel_cap_mm_s2": 20000.0,
+     "recommended_order": 10,
+     "purpose": "静止の格子: 中央 → (24, 0) → (26, 0) → (28, 0) → 中央（x, z [mm]）",
+     "priority": "A",
+     "group": "grid",
+     "metrics": {
+      "max_offset_mm": 28.01999999995468,
+      "max_speed_mm_s": 244.99984320011768,
+      "max_accel_mm_s2": 21179.670426775887,
+      "max_abs_u_minus_r_mm": 0.0,
+      "endpoint_mm": 0.0,
+      "rms_inplane_mm": 20.530908855918554,
+      "rms_y_mm": 0.005679154844055791,
+      "extent_mm": [
+       28.04,
+       0.04,
+       0.01
+      ],
+      "duration_sec": 22.9,
+      "safety_ok": true,
+      "accel_within_budget": true,
+      "sim_dev_xyz": [
+       0.202,
+       0.212,
+       0.254
+      ]
+     },
+     "tau0_ms": 0.85,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.23,
+      "y": 0.24,
+      "z": 3.2
+     },
+     "GAM": {
+      "x": 0.045,
+      "y": 0.04,
+      "z": 0.024
+     }
+    },
+    "shape": "stiffness_grid"
+   },
+   "enabled": true
+  },
+  {
+   "name": "kdiag_p45_OFF",
+   "kind": "imported",
+   "source_npz": "source/ff_extra3/kdiag_p45_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "027f5f4c8fcbcbd87a7827de2b2ec29247d624dda9d4d77e8bb27efdc2633322",
+   "duration_sec": 14.0,
+   "campaign": "extra3_20261012",
+   "measurement_family": "feedforward_validation",
+   "condition": "kdiag_p45_off",
+   "note": "Extra measurement 3 (ff_extra3): kdiag_p45_OFF (u = r (no feedforward)). 14 s, 1.050 mm from the centre, peak speed 402 mm/s, peak acceleration 241454 mm/s^2, max |u-r| 0.000 mm.",
+   "feedforward_design": {
+    "design": "OFF",
+    "source_file": "kdiag_p45_OFF.npz",
+    "source_design": "OFF",
+    "command_differs_from_reference": false,
+    "description": "u = r (no feedforward)",
+    "design_dir": "ff_extra3",
+    "params": {
+     "shape": "diagonal_step",
+     "direction_deg": 45.0,
+     "step_mm": 1.05,
+     "levels": [
+      0,
+      1,
+      0,
+      -1,
+      0,
+      1,
+      0
+     ],
+     "hold_sec": 2.0,
+     "step_T_sec": 0.0056500000000000074,
+     "excitation_ratio_vs_ideal_step": {
+      "79Hz": 0.896,
+      "83Hz": 0.885,
+      "285Hz": 0.184
+     },
+     "purpose": "斜めの段 x–y の +45° 方向 ±1.05 mm（kcheck と同じ並び、2 s おき）。各段は 7 次の階段 5.65 ms（加速度 245k 以下で最速）",
+     "priority": "B",
+     "group": "diag",
+     "metrics": {
+      "max_offset_mm": 1.05,
+      "max_speed_mm_s": 402.09374043859106,
+      "max_accel_mm_s2": 241453.95686658082,
+      "max_abs_u_minus_r_mm": 0.0,
+      "endpoint_mm": 0.0,
+      "rms_inplane_mm": 0.5042668361346544,
+      "rms_y_mm": 0.5042668361346542,
+      "extent_mm": [
+       1.48,
+       1.48,
+       0.0
+      ],
+      "duration_sec": 14.0,
+      "safety_ok": true,
+      "accel_within_budget": true,
+      "sim_dev_xyz": [
+       0.577,
+       0.585,
+       0.0
+      ]
+     },
+     "tau0_ms": 0.85,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.23,
+      "y": 0.24,
+      "z": 3.2
+     },
+     "GAM": {
+      "x": 0.045,
+      "y": 0.04,
+      "z": 0.024
+     }
+    },
+    "shape": "diagonal_step"
+   },
+   "enabled": true
+  },
+  {
+   "name": "kdiag_m45_OFF",
+   "kind": "imported",
+   "source_npz": "source/ff_extra3/kdiag_m45_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "6071d14158f5373519d020ee9761f600ae53c7ab97c486067cba19706820bc71",
+   "duration_sec": 14.0,
+   "campaign": "extra3_20261012",
+   "measurement_family": "feedforward_validation",
+   "condition": "kdiag_m45_off",
+   "note": "Extra measurement 3 (ff_extra3): kdiag_m45_OFF (u = r (no feedforward)). 14 s, 1.050 mm from the centre, peak speed 402 mm/s, peak acceleration 241454 mm/s^2, max |u-r| 0.000 mm.",
+   "feedforward_design": {
+    "design": "OFF",
+    "source_file": "kdiag_m45_OFF.npz",
+    "source_design": "OFF",
+    "command_differs_from_reference": false,
+    "description": "u = r (no feedforward)",
+    "design_dir": "ff_extra3",
+    "params": {
+     "shape": "diagonal_step",
+     "direction_deg": -45.0,
+     "step_mm": 1.05,
+     "levels": [
+      0,
+      1,
+      0,
+      -1,
+      0,
+      1,
+      0
+     ],
+     "hold_sec": 2.0,
+     "step_T_sec": 0.0056500000000000074,
+     "excitation_ratio_vs_ideal_step": {
+      "79Hz": 0.896,
+      "83Hz": 0.885,
+      "285Hz": 0.184
+     },
+     "purpose": "斜めの段 x–y の -45° 方向 ±1.05 mm（kcheck と同じ並び、2 s おき）。各段は 7 次の階段 5.65 ms（加速度 245k 以下で最速）",
+     "priority": "B",
+     "group": "diag",
+     "metrics": {
+      "max_offset_mm": 1.05,
+      "max_speed_mm_s": 402.09374043859106,
+      "max_accel_mm_s2": 241453.95686658082,
+      "max_abs_u_minus_r_mm": 0.0,
+      "endpoint_mm": 0.0,
+      "rms_inplane_mm": 0.5042668361346544,
+      "rms_y_mm": 0.5042668361346542,
+      "extent_mm": [
+       1.48,
+       1.48,
+       0.0
+      ],
+      "duration_sec": 14.0,
+      "safety_ok": true,
+      "accel_within_budget": true,
+      "sim_dev_xyz": [
+       0.577,
+       0.585,
+       0.0
+      ]
+     },
+     "tau0_ms": 0.85,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.23,
+      "y": 0.24,
+      "z": 3.2
+     },
+     "GAM": {
+      "x": 0.045,
+      "y": 0.04,
+      "z": 0.024
+     }
+    },
+    "shape": "diagonal_step"
+   },
+   "enabled": true
+  },
+  {
+   "name": "kdiag_p45_S105_6jumps",
+   "kind": "staircase",
+   "tier": "C",
+   "duration_sec": 14.0,
+   "hold_sec": 2.0,
+   "initial_hold_sec": 2.0,
+   "final_hold_sec": 2.0,
+   "level_sequence_mm": [
+    [
+     0.742462120245875,
+     0.7424621202458749,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -0.742462120245875,
+     -0.7424621202458749,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.742462120245875,
+     0.7424621202458749,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ]
+   ],
+   "repeats_within_run": 1,
+   "repeats": 1,
+   "safety_limits": {
+    "max_offset_mm": 1.06,
+    "max_step_mm": 1.06,
+    "max_speed_mm_s": 100.0,
+    "max_acceleration_mm_s2": 28000.0
+   },
+   "campaign": "extra3_20261012",
+   "condition": "diagonal_step_p45",
+   "reference": {
+    "plan": "Experiment/20261012/ff_extra3/README.md section 3",
+    "source_export": "ff_extra3/export_kdiag/kdiag_p45_S105_6jumps",
+    "S_mm": 1.05,
+    "direction": [
+     0.7071,
+     0.7071,
+     0.0
+    ]
+   },
+   "note": "Diagonal kcheck in the horizontal plane (ff_extra3, design_dir ff_extra3): 1.05 mm steps along (+0.7071, +0.7071, 0), levels 0,+S,0,-S,0,+S,0 every 2 s like kcheck S105 6jumps; x and y change in the same sample (0.742 mm each), vector jump 1.05 mm = 49% of the 2.144 mm escape boundary. Rebuilt from the analysis side's export_kdiag.",
+   "enabled": true,
+   "feedforward_design": {
+    "design_dir": "ff_extra3",
+    "design": "STEP",
+    "source_file": "export_kdiag/kdiag_p45_S105_6jumps"
+   }
+  },
+  {
+   "name": "kdiag_m45_S105_6jumps",
+   "kind": "staircase",
+   "tier": "C",
+   "duration_sec": 14.0,
+   "hold_sec": 2.0,
+   "initial_hold_sec": 2.0,
+   "final_hold_sec": 2.0,
+   "level_sequence_mm": [
+    [
+     0.742462120245875,
+     -0.7424621202458749,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -0.742462120245875,
+     0.7424621202458749,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.742462120245875,
+     -0.7424621202458749,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ]
+   ],
+   "repeats_within_run": 1,
+   "repeats": 1,
+   "safety_limits": {
+    "max_offset_mm": 1.06,
+    "max_step_mm": 1.06,
+    "max_speed_mm_s": 100.0,
+    "max_acceleration_mm_s2": 28000.0
+   },
+   "campaign": "extra3_20261012",
+   "condition": "diagonal_step_m45",
+   "reference": {
+    "plan": "Experiment/20261012/ff_extra3/README.md section 3",
+    "source_export": "ff_extra3/export_kdiag/kdiag_m45_S105_6jumps",
+    "S_mm": 1.05,
+    "direction": [
+     0.7071,
+     -0.7071,
+     0.0
+    ]
+   },
+   "note": "Diagonal kcheck in the horizontal plane (ff_extra3, design_dir ff_extra3): 1.05 mm steps along (+0.7071, -0.7071, 0), levels 0,+S,0,-S,0,+S,0 every 2 s like kcheck S105 6jumps; x and y change in the same sample (0.742 mm each), vector jump 1.05 mm = 49% of the 2.144 mm escape boundary. Rebuilt from the analysis side's export_kdiag.",
+   "enabled": true,
+   "feedforward_design": {
+    "design_dir": "ff_extra3",
+    "design": "STEP",
+    "source_file": "export_kdiag/kdiag_m45_S105_6jumps"
+   }
+  }
+ ]
+}

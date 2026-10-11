@@ -111,6 +111,11 @@
 !/generalization_20260927/*.json
 !/cooling_20261006/
 !/cooling_20261006/*.json
+!/session2_20261011/
+!/session2_20261011/*.json
+!/session2_20261011/*.md
+!/extra3_20261012/
+!/extra3_20261012/*.json
 # dngstation (sindy-server2) container runner for the 3D post-processing
 !/.gitattributes
 !/run_post_and_compare_list_docker.sh

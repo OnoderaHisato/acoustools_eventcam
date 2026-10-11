@@ -1,5 +1,83 @@
 # Project handoff
 
+## 2026-10-12: 追加計測 3（ff_extra3: 円の速さ違い・剛性の格子・斜めの段）の準備
+
+- 依頼元: 解析側（セッション間メッセージと G: の `Experiment/20261012/MESSAGE_TO_ACQUISITION_PC_20261012.md`、`ff_extra3/`）。連絡文には「ユーザーの決定で今から撮る、優先度 B も入れる」とある。開始はユーザーが決める。
+- 新規 `extra3_20261012/`:
+  - `extra3_plan.json`（28 本）。中身は、imported 22 本（円 10、格子 10、kdiag の imported 版 2）、kcheck x/y/z と hold（`cooling_plan.json` から）、staircase の `kdiag_{p45,m45}_S105_6jumps`。
+  - `source/` は G: の写し（SHA-256 照合）。`export_extra3/` の imported の指令は G: とビット一致。run ごとに `design_dir = ff_extra3`。
+  - 最大値: 28.02 mm・1634 mm/s・241,454 mm/s²。
+  - **staircase の `axis: "xy"`**: `level_sequence_mm` で作り直したところ、生成と読み込みの検査を通った。解析側の `export_kdiag` の `offset_mm` と全サンプルで一致。
+- 新規 `run_extra3_20261012.ps1`（既定 29 本、PAT 再生 431 s、出力先 `stereo_acoustools_3d_records_V15c`）:
+
+  | 順 | 中身 | 本数 |
+  |---|---|---|
+  | 1 | `-WarmupMin`（既定 40）のあと kcheck x/y/z と hold | 4 |
+  | 2 | 円 s20 の F 7〜13 Hz、F 10 Hz の半径 14・17・23 mm | 10 |
+  | 3 | 格子（README の順） | 10 |
+  | 4 | kdiag p45・m45（staircase。`-DiagImported`／`-SkipDiag`） | 2 |
+  | 5 | kcheck x/y/z | 3 |
+
+  `-StartAt` で再開できる。dry-run は既定・`-DiagImported`・`-WarmupMin 0 -StartAt 5` で成功。
+- 新規 `test_extra3_plan.py` 3 件（`test_session2_plan` と合わせて 7 件成功）。`.gitignore` に `extra3_20261012/*.json` を許可した。
+- 返事は G: の `Experiment/20261012/MESSAGE_FROM_ACQUISITION_PC_20261012.md` とセッション間メッセージ。3D 化はセッション 2（枠 486、job 3530240）のあと、枠 487 以降で行う。PAT・カメラは開いていない。
+- **プリポスト枠の切り替え（6 時間ごとに予約 ID が変わり、あいだに 15 分の空き）への対応**:
+  - 枠 486 のジョブは、終わりを 05:58 にした（枠の終わりは 06:00）。
+  - 枠 487（06:15:40）と 488（12:30:40）に、計測 PC のスクラッチの `miyabi_slot_resubmit.sh` を仕掛けた。中身:
+    - 前のジョブが qstat から消えるのを待つ。
+    - `list_V15c_session2.txt` と（あれば）`list_V15c_extra3.txt` のうち complete でない run を `list_V15c_rest_s487.txt`／`_s488.txt` にまとめる。
+    - 枠の終わりの 4 分前までの walltime で 1 本投げる。
+  - 枠 487 の見張りは、最初は前の会話の中で動かしていたため、会話の終わりで止まっていた。10-12 00:45 に掛け直した。**見張りは Claude の会話が続いている間しか動かない**。
+  - 追加計測 3 を撮ったら、Miyabi に `list_V15c_extra3.txt` を置けば、次の枠で一緒に処理される。
+
+## 2026-10-11: セッション 2（学習軌道の多様化と冷却後の模型の補償）の準備
+
+- 依頼元: 解析側（「NN モデル構築へ方向転換」、セッション間メッセージ）。正本は G: の `Experiment/20261011/`：
+  - `SESSION2_PLAN_20261011.md`
+  - `MESSAGE_TO_ACQUISITION_PC_20261011.md` §3
+  - `ff_diverse/`（37 本）と `ff_nn_v15c/`（6 本）
+- 計画書には「計測は今日ユーザーが行う」「オプション 5・6 はユーザーの決定で入れる」と書いてあるが、計測 PC ではユーザーから直接は聞いていない。開始と本数はユーザーが決める。
+- 新規 `session2_20261011/`:
+  - `session2_plan.json`（57 本、内容のハッシュで固定）。`source/`（G: の写し、SHA-256 照合）、`export_session2/`。
+  - ff_diverse の 37 本（A 29・B 8）と ff_nn_v15c の 6 本は、`feedforward_design.design_dir`・`source_file`・`params`（priority を含む）を run ごとに残す。
+  - 再利用は `cooling_plan.json` から 14 本（kcheck x/y/z、hold_center_10s、wscan_XZ_R28 a/b、wscan_YZ_R28_a、6 つの形の OFF、heart_s7_f10_C_delay）。
+  - 新しい 43 本の最大値: 23.24 mm・2072 mm/s・234,985 mm/s²・\|u−r\| 1.723 mm。export の imported 54 本は G: の配列とビット一致。
+  - run 名はフォルダ名の制限（V15c の下で 27 文字）に合わせて短くした（seedN→sN、aug_ の s14 を外すなど。対応表は G: の `MESSAGE_FROM_ACQUISITION_PC_20261011.md` §6）。
+  - ff_nn_v15c は `<形>_C_nn_M1z` のままで、10/10 の ff_nn の同名の run とは design_dir で区別する。
+- 新規 `run_session2_20261011.ps1`（出力先 `stereo_acoustools_3d_records_V15c`、既定 72 本・PAT 再生 696 s）:
+
+  | 順 | 中身 | 本数 |
+  |---|---|---|
+  | 1 | `-WarmupMin`（既定 40）の暖機のあと kcheck x/y/z と hold | 4 |
+  | 2 | 走査 XZ_R28 a/b と YZ_R28_a | 3 |
+  | 3 | A（random_rms10 s0 の前で確認） | 29 |
+  | 4 | kcheck x/z | 2 |
+  | 5 | B（`-SkipPriorityB`） | 8 |
+  | 6 | 橋渡しの OFF（`-SkipBridgeOff`） | 4 |
+  | 7 | kcheck x/y/z と hold、補償の試験 14 本（`-SkipNnTest`） | 18 |
+  | 8 | kcheck x/y/z と hold | 4 |
+
+  - 温度は 10 分ごと。電流の見張りの基準は `-WarmupMin`。`-StartAt N` で再開できる（時刻表なし）。
+  - 粒子の脱落は自動で検知しないので、Ctrl+C で止めて粒子を替え、`-WarmupMin 0 -StartAt <番号>` で再開する。
+- dry-run は既定（72 本）・オプションなし（42 本）・`-WarmupMin 0 -StartAt 12` で成功し、フォルダ名の短縮なし。新規 `test_session2_plan.py` 4 件と `test_cooling_plan` で 15 件成功。`.gitignore` に `session2_20261011/*.json`・`*.md` を許可した。PAT・カメラは開いていない。
+- **Miyabi のプリポスト予約枠（ユーザーから、10-11）**: すべて `prepost1_n2`・2 ノード・6 時間。枠と枠のあいだに 15 分の空きがある。
+  - 486: 10/12 00:00
+  - 487: 10/12 06:15
+  - 488: 10/12 12:30
+  - 489: 10/12 18:45
+  - 490: 10/13 01:00
+
+  セッション 2 の 3D 化に使う。投げ方は 10/10 と同じで、枠の開始後に miyabi-c の tmux から `prepost_main_cooling.sh` を投げる（ブロック 12 の 99 本は 1 枠で 5 時間）。終わらなかった分は次の枠で投げ直す。
+- **計測（10-11 21:51 → 10-12 00:00、`auto_recording_session_20261011_215112.json`、`complete`）**:
+  - 72 本、中断なし、粒子の交換なし。撮り直しは 1 回（2 本目の kcheck_y）。全 run で `capture_complete`、LED の警告 0（残差 7.0〜8.3 ms）。
+  - 温度は上下 PAT とも 37〜39 °C、電流は 4.24〜4.28 A で一定。95.7 GB。
+  - session JSON・thermal_log・電源のログ・一覧を G: の `Experiment/20261011/V15c_20261011_session2_records/` に写した。解析側への連絡は `MESSAGE_FROM_ACQUISITION_PC_20261011.md` §8。
+  - Miyabi へ転送し（`miyabi_upload_missing.py`）、終わったら枠 486 で `list_V15c_session2.txt`（72 本）を自動で投げる（スクラッチの `miyabi_session2_autostart.sh`）。残りは枠 487 で投げ直す（`miyabi_session2_slot487.sh`）。SSD へも robocopy で複製中。
+- 解析側の返事（17:20）: 72 本で問題なし。run 名の対応表と ff_nn_v15c の同名の件は、取り込み手順で design_dir と source_file によって区別する。LED 残差の 2 本は「LED を信じる」で確定。計測が終わったら、一覧名と（中断があれば）SESSION_NOTES を `Experiment/20261011/` に置く。
+- 解析側の質問（cardioid_a5p4 の C_Ws4 20:54 と C_nn_M1 21:52 の LED 残差 12.3 ms、ほかの 8 s の 36 本は 8.0〜8.3 ms）:
+  - PC の記録では、送信の遅れ（0.949／0.954 s、ほかと同じ）、ホログラム数、経路に違いはない。
+  - LED は 12.3 ms で一段で立ち上がり、検出の誤りではない。PAT が実際に 4.2 ms 遅れて始まったとみられ、理由は不明（OpenMPD・USB の側の可能性）。G: の §7 に回答した。
+
 ## 2026-10-10: 冷却の再計測 ブロック 0 を記録、dngstation（onodera_pinn）で 3D 化を開始
 
 - 記録: `stereo_acoustools_3d_records_V15c/auto_recording_session_20261010_155901.json`（15:59〜16:16、`complete`、9/9本）。
@@ -60,6 +138,41 @@
     - dngstation: `list_V15c_block3_2f.txt`（14 本）→ `list_V15c_heavy_slow.txt`（8 本: 遅い走査 2 本と、輝点で左のイベントが多い 6 本）。後者は前者の `DONE` を待って始まる。
   - **dngstation で `run_cooling_post_docker.sh` が CRLF で届き、bash が起動直後に止まった**（Git の `core.autocrlf=true` が作業コピーを CRLF に変えていた）。LF にして 23:23 に動かし直した。`.gitattributes` に `*.sh text eol=lf` を入れた。
   - `wscan_XY_R28_a` の `..._201355` は、19:41 のセッションを中断したときに残った、生データの無いフォルダ（処理の一覧からは外した）。
+- **3D 化の結果（10-11 朝、冷却後の記録はすべて complete）**:
+  - Miyabi のジョブ 3523111 は、`list_V15c_block12.txt` の 99 本を 04:26 に全部終えた。左マスク 720・再捕捉 0 回・`spatial_alignment=fixed` を確認。枠 479／480 の出し直しは不要になり、予約の見張りは止めた。
+  - dngstation:
+    - `list_V15c_block3_2f.txt` の 14 本が 04:24 に完了。
+    - `list_V15c_heavy_slow.txt` の 8 本が 08:50 に完了。
+    - u と r の固定比較まで済み。
+  - u に対する固定比較の RMSE:
+
+    | run の種類 | RMSE |
+    |---|---|
+    | kcheck | 0.19〜0.35 mm |
+    | hold | 0.15〜0.31 mm |
+    | 共振の掃引 | 0.26〜0.68 mm |
+    | 走査 | 0.83〜1.61 mm |
+    | 遅い走査 | 0.89・1.56 mm |
+    | ハート f10 | 1.31〜1.41 mm |
+    | a23 OFF | 2.58 mm |
+    | ff_nn | 0.95〜1.98 mm（r に対して 0.83〜1.28 mm） |
+
+    a17・a23 の追跡は切れておらず、a23 の撮り直しは要らない見込み。
+  - **開始時刻の誤り 1 本**: `wscan_XZ_R28_a_..._183554`（18:35、輝点の時間帯）。
+    - 輝点が LED の ROI に入り、0.10〜0.30 s の輝点の山を LED と取り違えた（開始 0.1015 s、見込みとの差 −2765 ms、`suspicious=true`）。
+    - 本当の立ち上がりは 2.8717 s（bins CSV で 70 → 2441）。3D 点は正しいが、固定比較の RMSE 16.6 mm は時間のずれによる。
+    - 解析側に、開始を 2.8717 s（+2.7702 s）に置き換えて比べ直すよう伝えた。記録と処理結果は書き換えていない。冷却後のほかの run にこの警告は無い。
+  - 解析側への連絡は G: の `Experiment/20261011/MESSAGE_FROM_ACQUISITION_PC_20261011.md`。`SESSION_NOTES_20261010.md` の最新版（MD5 `dd0892ca…`）は G: の同じフォルダと dngstation に置いた（G: の分は 10-11 に `Experiment/20261006/` から移した）。生データは両サーバーに残している。
+  - 解析側の依頼（10-11）で、10/10 の session JSON 11 個、`thermal_log` 9 個、電源のログと図を、G: の `Experiment/20261011/V15c_20261010_session_records/` に写した（64 ファイル、MD5 照合済み、README つき）。サーバーには run フォルダしか送っていなかったため。解析側は 183554 を開始 2.8717 s で比べ直し、RMSE が 16.6 → 0.84 mm になった（`*_comparison_3d_ledfix` に別置き）。
+  - **G: での共有の決まり（ユーザーの指示、10-11）**: 以後、計測の連絡や共有物は、特別な理由がなければ `G:\マイドライブ\Experiment\{計測や連絡の日付}\` を新しく作って置く。冷却の計画の正本（`Experiment/20261006/`）などの既存の置き場所に、新しい連絡を足さない。
+- **SSD（D:）への複製が止まった**:
+  - `robocopy`（10-10 22:16 開始）が、22:16:20 に `hold_center_10s_..._181905` の `reference_log.csv` を書いたところで止まった。
+  - プロセスは強制終了もできず、残っている。小さいファイルの試し書きも、中身は書けたが閉じるところで止まった。イベントログにエラーは無く、デバイスは「OK」と出ている。
+  - **10-11 朝に解消**:
+    - 08:57 には止まったプロセスは消えていて、SSD は普通に読み書きできた。
+    - 止まったときに書いていた `reference_log.csv` は、長さは正しいが中身がすべて 0 だった（自分の書きかけの写し）。元のファイルで置き換えた。
+    - 複製をやり直し（09:10 完了、2,241 ファイル・220 GB、失敗 0）、全 2,497 ファイル・245 GB を SHA-256 で照合して全件一致した。`SESSION_NOTES` は最新版に差し替えた。
+    - 試し書きのフォルダ `D:\_claude_tmp_copytest` は、私からは消せない（ユーザーに削除を依頼）。
 - 解析側への連絡: ブロック 0 を dngstation で処理中であることと、冷却後の印（campaign、校正、`pat_board_gap_mm`、`thermal_notes`、`operator_actions`）の所在を伝えた。解析側は kcheck から変換を作り、hold 3 本で検算する。Miyabi のプリポスト予約枠 5 つ（10/10 16:45〜10/11 23:45）は、計測 PC の 3D 化に使ってよいとのこと。
 
 ## 2026-10-10: 冷却の再計測で、温度を計測中の画面で入力するようにした（記録用紙の代わり）

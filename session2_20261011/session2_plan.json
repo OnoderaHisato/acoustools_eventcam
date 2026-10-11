@@ -1,0 +1,3902 @@
+{
+ "schema_version": 1,
+ "purpose": "Session 2 on 2026-10-11 (Experiment/20261011/SESSION2_PLAN_20261011.md): diverse training commands (ff_diverse, 37) and the compensation from the model learned on the cooled data (ff_nn_v15c, 6), with kcheck/hold/scans and OFF/C_delay reused from cooling_20261006. Commands are pinned by content hash; limits are the scale-up values.",
+ "defaults": {
+  "sample_hz": 10000,
+  "duration_sec": 8.0,
+  "ramp_sec": 0.5,
+  "safety_limits": {
+   "max_offset_mm": 35.0,
+   "max_speed_mm_s": 3500.0,
+   "max_acceleration_mm_s2": 350000.0,
+   "max_endpoint_offset_mm": 0.01,
+   "max_command_reference_distance_mm": 4.5
+  }
+ },
+ "experiments": [
+  {
+   "name": "kcheck_x_S105_6jumps",
+   "kind": "staircase",
+   "tier": "C",
+   "axis": "x",
+   "duration_sec": 14.0,
+   "hold_sec": 2.0,
+   "initial_hold_sec": 2.0,
+   "final_hold_sec": 2.0,
+   "amplitudes_mm": [
+    1.05
+   ],
+   "directions": [
+    1,
+    -1,
+    1
+   ],
+   "repeats_within_run": 1,
+   "repeats": 1,
+   "safety_limits": {
+    "max_offset_mm": 1.05,
+    "max_step_mm": 1.05,
+    "max_speed_mm_s": 100.0,
+    "max_acceleration_mm_s2": 28000.0
+   },
+   "campaign": "session2_20261011",
+   "condition": "stiffness_check_x",
+   "note": "Stiffness check at the 15 V operating point: x steps 0 -> +1.05 -> 0 -> -1.05 -> 0 -> +1.05 -> 0 mm, 7 holds of 2.0 s, 6 jumps, 14.0 s. Same command as ff_heart_20260918 so the stiffness values compare across sessions.",
+   "enabled": true,
+   "copied_from": "cooling_20261006/cooling_plan.json:kcheck_x_S105_6jumps"
+  },
+  {
+   "name": "kcheck_y_S105_6jumps",
+   "kind": "staircase",
+   "tier": "C",
+   "axis": "y",
+   "duration_sec": 14.0,
+   "hold_sec": 2.0,
+   "initial_hold_sec": 2.0,
+   "final_hold_sec": 2.0,
+   "amplitudes_mm": [
+    1.05
+   ],
+   "directions": [
+    1,
+    -1,
+    1
+   ],
+   "repeats_within_run": 1,
+   "repeats": 1,
+   "safety_limits": {
+    "max_offset_mm": 1.05,
+    "max_step_mm": 1.05,
+    "max_speed_mm_s": 100.0,
+    "max_acceleration_mm_s2": 28000.0
+   },
+   "campaign": "session2_20261011",
+   "condition": "stiffness_check_y",
+   "note": "Stiffness check at the 15 V operating point: y steps 0 -> +1.05 -> 0 -> -1.05 -> 0 -> +1.05 -> 0 mm, 7 holds of 2.0 s, 6 jumps, 14.0 s. Same command as ff_heart_20260918 so the stiffness values compare across sessions.",
+   "enabled": true,
+   "copied_from": "cooling_20261006/cooling_plan.json:kcheck_y_S105_6jumps"
+  },
+  {
+   "name": "kcheck_z_S105_6jumps",
+   "kind": "staircase",
+   "tier": "C",
+   "axis": "z",
+   "duration_sec": 14.0,
+   "hold_sec": 2.0,
+   "initial_hold_sec": 2.0,
+   "final_hold_sec": 2.0,
+   "amplitudes_mm": [
+    1.05
+   ],
+   "directions": [
+    1,
+    -1,
+    1
+   ],
+   "repeats_within_run": 1,
+   "repeats": 1,
+   "safety_limits": {
+    "max_offset_mm": 1.05,
+    "max_step_mm": 1.05,
+    "max_speed_mm_s": 100.0,
+    "max_acceleration_mm_s2": 28000.0
+   },
+   "campaign": "session2_20261011",
+   "condition": "stiffness_check_z",
+   "note": "Stiffness check at the 15 V operating point: z steps 0 -> +1.05 -> 0 -> -1.05 -> 0 -> +1.05 -> 0 mm, 7 holds of 2.0 s, 6 jumps, 14.0 s. Same command as ff_heart_20260918 so the stiffness values compare across sessions.",
+   "enabled": true,
+   "copied_from": "cooling_20261006/cooling_plan.json:kcheck_z_S105_6jumps"
+  },
+  {
+   "name": "hold_center_10s",
+   "kind": "imported",
+   "source_npz": "source/reused/hold_center_10s.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "2a638511358c57fd3502715df9f97f6be12b5bea719df0dc39185e291832cce8",
+   "duration_sec": 10.0,
+   "campaign": "session2_20261011",
+   "measurement_family": "feedforward_validation",
+   "condition": "hold_center_10s",
+   "note": "Generalization session (GENERALIZATION_SESSION_PLAN.md, 15 V): hold_center_10s (u = r = 0 (particle held at the centre)). 10 s, 0.0 mm from the centre, peak speed 0 mm/s, peak acceleration 0 mm/s^2, max |u-r| 0.000 mm, y range 0.00 mm.",
+   "feedforward_design": {
+    "design": "HOLD",
+    "source_file": "hold_center_10s.npz",
+    "source_design": "OFF",
+    "command_differs_from_reference": false,
+    "description": "u = r = 0 (particle held at the centre)",
+    "shape": "hold",
+    "loop_frequency_hz": 0.0,
+    "params": {
+     "shape": "hold",
+     "purpose": "stationary particle at centre for 10 s: jitter fingerprint at the start of each block (generalization session)",
+     "duration_sec": 10.0,
+     "note": "2026-09-27"
+    }
+   },
+   "enabled": true,
+   "copied_from": "cooling_20261006/cooling_plan.json:hold_center_10s"
+  },
+  {
+   "name": "wscan_XZ_R28_a",
+   "kind": "imported",
+   "source_npz": "source/reused/wscan_XZ_R28_a.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "efcec4fb4c99812c969b2d2ccc74242cf75b113c09faa74208df6e48b94a1383",
+   "duration_sec": 24.0,
+   "campaign": "session2_20261011",
+   "measurement_family": "feedforward_validation",
+   "condition": "w_scan_xz_r28_a",
+   "note": "Field-mapping scan of the equilibrium-shift field w at 15 V (FIELD_MAPPING_SESSION.md): spiral centre -> 28 mm -> centre in the XZ plane at y = +0 mm, counter-clockwise, 24 s, no compensation (u = r). Peak speed 264 mm/s, peak acceleration 2488 mm/s^2, 28.0 mm from the centre. a / b cancel the part that depends on the direction of travel; the two rounds test reproducibility once settled.",
+   "feedforward_design": {
+    "design": "WSCAN",
+    "command_differs_from_reference": false,
+    "description": "u(t) = r(t)",
+    "plane": "XZ",
+    "plane_name": "XZ_R28",
+    "direction": "counter-clockwise",
+    "radius_mm": 28.0,
+    "plane_offset_axis": "y",
+    "plane_offset_mm": 0.0
+   },
+   "enabled": true,
+   "copied_from": "cooling_20261006/cooling_plan.json:wscan_XZ_R28_a"
+  },
+  {
+   "name": "wscan_XZ_R28_b",
+   "kind": "imported",
+   "source_npz": "source/reused/wscan_XZ_R28_b.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "9d19cf2f124a2f72c6b355c278a10efe8a0990c6a2ad221e80bacdeca0572824",
+   "duration_sec": 24.0,
+   "campaign": "session2_20261011",
+   "measurement_family": "feedforward_validation",
+   "condition": "w_scan_xz_r28_b",
+   "note": "Field-mapping scan of the equilibrium-shift field w at 15 V (FIELD_MAPPING_SESSION.md): spiral centre -> 28 mm -> centre in the XZ plane at y = +0 mm, clockwise, 24 s, no compensation (u = r). Peak speed 264 mm/s, peak acceleration 2488 mm/s^2, 28.0 mm from the centre. a / b cancel the part that depends on the direction of travel; the two rounds test reproducibility once settled.",
+   "feedforward_design": {
+    "design": "WSCAN",
+    "command_differs_from_reference": false,
+    "description": "u(t) = r(t)",
+    "plane": "XZ",
+    "plane_name": "XZ_R28",
+    "direction": "clockwise",
+    "radius_mm": 28.0,
+    "plane_offset_axis": "y",
+    "plane_offset_mm": 0.0
+   },
+   "enabled": true,
+   "copied_from": "cooling_20261006/cooling_plan.json:wscan_XZ_R28_b"
+  },
+  {
+   "name": "wscan_YZ_R28_a",
+   "kind": "imported",
+   "source_npz": "source/reused/wscan_YZ_R28_a.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "b9b8081f39a6957e5c93a07ca3e67ff7a0d53f0503543cf8369f56e373837448",
+   "duration_sec": 24.0,
+   "campaign": "session2_20261011",
+   "measurement_family": "feedforward_validation",
+   "condition": "w_scan_yz_r28_a",
+   "note": "Field-mapping scan of the equilibrium-shift field w at 15 V (FIELD_MAPPING_SESSION.md): spiral centre -> 28 mm -> centre in the YZ plane at x = +0 mm, counter-clockwise, 24 s, no compensation (u = r). Peak speed 264 mm/s, peak acceleration 2488 mm/s^2, 28.0 mm from the centre. a / b cancel the part that depends on the direction of travel; the two rounds test reproducibility once settled.",
+   "feedforward_design": {
+    "design": "WSCAN",
+    "command_differs_from_reference": false,
+    "description": "u(t) = r(t)",
+    "plane": "YZ",
+    "plane_name": "YZ_R28",
+    "direction": "counter-clockwise",
+    "radius_mm": 28.0,
+    "plane_offset_axis": "x",
+    "plane_offset_mm": 0.0
+   },
+   "enabled": true,
+   "copied_from": "cooling_20261006/cooling_plan.json:wscan_YZ_R28_a"
+  },
+  {
+   "name": "heart_s7_f10_C_delay",
+   "kind": "imported",
+   "source_npz": "source/reused/heart_s7_f10_C_delay_inverse.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "08cdb5e4336fb23753416ed16561f1b96921f3590ad1196cdbcd3ffd50e6205b",
+   "duration_sec": 8.0,
+   "campaign": "session2_20261011",
+   "measurement_family": "feedforward_validation",
+   "condition": "heart_s7_f10_c_delay",
+   "note": "Generalization session (GENERALIZATION_SESSION_PLAN.md, 15 V): heart_s7_f10_C_delay_inverse (lookahead 0.9 ms + linear inverse model). 8 s, 9.1 mm from the centre, peak speed 709 mm/s, peak acceleration 92346 mm/s^2, max |u-r| 0.850 mm, y range 0.00 mm.",
+   "feedforward_design": {
+    "design": "C_delay_inverse",
+    "source_file": "heart_s7_f10_C_delay_inverse.npz",
+    "source_design": "C_delay_inverse",
+    "command_differs_from_reference": true,
+    "description": "lookahead 0.9 ms + linear inverse model",
+    "shape": "heart_s7",
+    "loop_frequency_hz": 10.0,
+    "params": {
+     "shape": "heart",
+     "scale_mm": 7.0,
+     "f_hz": 10.0,
+     "f_cmd_hz": 10.0,
+     "tau0_ms": 0.9,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.208,
+      "y": 0.198,
+      "z": 2.48
+     },
+     "GAM": {
+      "x": 0.0372,
+      "y": 0.0319,
+      "z": 0.0237
+     },
+     "ramp_sec": 0.5
+    }
+   },
+   "enabled": true,
+   "copied_from": "cooling_20261006/cooling_plan.json:heart_s7_f10_C_delay"
+  },
+  {
+   "name": "heart_s7_f10_OFF",
+   "kind": "imported",
+   "source_npz": "source/reused/heart_s7_f10_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "46c631c8cb6163a62defc3db48dbfee9a908559f4df45e2cccd09546ffe2a50a",
+   "duration_sec": 8.0,
+   "campaign": "session2_20261011",
+   "measurement_family": "feedforward_validation",
+   "condition": "heart_s7_f10_off",
+   "note": "Generalization session (GENERALIZATION_SESSION_PLAN.md, 15 V): heart_s7_f10_OFF (u = r (no feedforward)). 8 s, 9.2 mm from the centre, peak speed 745 mm/s, peak acceleration 93401 mm/s^2, max |u-r| 0.000 mm, y range 0.00 mm.",
+   "feedforward_design": {
+    "design": "OFF",
+    "source_file": "heart_s7_f10_OFF.npz",
+    "source_design": "OFF",
+    "command_differs_from_reference": false,
+    "description": "u = r (no feedforward)",
+    "shape": "heart_s7",
+    "loop_frequency_hz": 10.0,
+    "params": {
+     "shape": "heart",
+     "scale_mm": 7.0,
+     "f_hz": 10.0,
+     "f_cmd_hz": 10.0,
+     "tau0_ms": 0.9,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.208,
+      "y": 0.198,
+      "z": 2.48
+     },
+     "GAM": {
+      "x": 0.0372,
+      "y": 0.0319,
+      "z": 0.0237
+     },
+     "ramp_sec": 0.5
+    }
+   },
+   "enabled": true,
+   "copied_from": "cooling_20261006/cooling_plan.json:heart_s7_f10_OFF"
+  },
+  {
+   "name": "heart_s7_f7_OFF",
+   "kind": "imported",
+   "source_npz": "source/reused/heart_s7_f7_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "ffb35479218d51e91986ba1ac43ec67b9caf8dada6e1675059e05733c17c3aea",
+   "duration_sec": 8.0,
+   "campaign": "session2_20261011",
+   "measurement_family": "feedforward_validation",
+   "condition": "heart_off_f7",
+   "note": "15 V operating point, heart at 7 Hz, design OFF (no w compensation). Designed by the analysis side from the 15 V identification (k 0.208/0.198/2.48 1/ms^2, tau0 0.9 ms). Peak speed 521 mm/s, peak acceleration 45770 mm/s^2, max |u-r| 0.000 mm.",
+   "enabled": true,
+   "feedforward_design": {
+    "design": "OFF",
+    "command_differs_from_reference": false,
+    "shape": "heart",
+    "loop_frequency_hz": 7.0,
+    "w_compensation": "none",
+    "identified_model": {
+     "k_1_per_ms2": {
+      "x": 0.208,
+      "y": 0.198,
+      "z": 2.48
+     },
+     "gamma_1_per_ms": {
+      "x": 0.0372,
+      "y": 0.0319,
+      "z": 0.0237
+     },
+     "tau0_ms": 0.9,
+     "supply_voltage_V": 15.0,
+     "source": "identified from the 15 V recordings of 2026-09-23 (analysis side)"
+    },
+    "source_file": "heart_s7_f7_OFF.npz"
+   },
+   "copied_from": "cooling_20261006/cooling_plan.json:heart_s7_f7_OFF"
+  },
+  {
+   "name": "cardioid_a5p4_f10_OFF",
+   "kind": "imported",
+   "source_npz": "source/reused/cardioid_a5p4_f10_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "66f085753f3394a387097652055f08761522a8e4d3e05b8e553b7f0c767a4dcf",
+   "duration_sec": 8.0,
+   "campaign": "session2_20261011",
+   "measurement_family": "feedforward_validation",
+   "condition": "cardioid_off_f10",
+   "note": "15 V operating point, cardioid at 10 Hz, design OFF (no w compensation). Designed by the analysis side from the 15 V identification (k 0.208/0.198/2.48 1/ms^2, tau0 0.9 ms). Peak speed 679 mm/s, peak acceleration 64072 mm/s^2, max |u-r| 0.000 mm.",
+   "enabled": true,
+   "feedforward_design": {
+    "design": "OFF",
+    "command_differs_from_reference": false,
+    "shape": "cardioid",
+    "loop_frequency_hz": 10.0,
+    "w_compensation": "none",
+    "identified_model": {
+     "k_1_per_ms2": {
+      "x": 0.208,
+      "y": 0.198,
+      "z": 2.48
+     },
+     "gamma_1_per_ms": {
+      "x": 0.0372,
+      "y": 0.0319,
+      "z": 0.0237
+     },
+     "tau0_ms": 0.9,
+     "supply_voltage_V": 15.0,
+     "source": "identified from the 15 V recordings of 2026-09-23 (analysis side)"
+    },
+    "source_file": "cardioid_a5p4_f10_OFF.npz"
+   },
+   "copied_from": "cooling_20261006/cooling_plan.json:cardioid_a5p4_f10_OFF"
+  },
+  {
+   "name": "cardioid_a10_f10_OFF",
+   "kind": "imported",
+   "source_npz": "source/reused/cardioid_a10_f10_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "b8a05b35fb037b367ef327e2e46187d08567eddb7e6ef440f7df736694379cbc",
+   "duration_sec": 8.0,
+   "campaign": "session2_20261011",
+   "measurement_family": "feedforward_validation",
+   "condition": "cardioid_a10_f10_off",
+   "note": "Scale-up cardioid, width 26 mm, 10 Hz, design OFF (u = r (no feedforward)). 15 V operating point (k 0.208/0.198/2.48 1/ms^2, tau0 0.9 ms). Peak speed 1257 mm/s, peak acceleration 118652 mm/s^2, max |u-r| 0.000 mm. The point of the series is whether the non-linear inverse model C_nl beats the linear C once the required force approaches the limit.",
+   "feedforward_design": {
+    "design": "OFF",
+    "command_differs_from_reference": false,
+    "shape": "cardioid",
+    "size_mm": 26,
+    "loop_frequency_hz": 10.0,
+    "w_compensation": "none",
+    "identified_model": {
+     "k_1_per_ms2": {
+      "x": 0.208,
+      "y": 0.198,
+      "z": 2.48
+     },
+     "gamma_1_per_ms": {
+      "x": 0.0372,
+      "y": 0.0319,
+      "z": 0.0237
+     },
+     "tau0_ms": 0.9,
+     "supply_voltage_V": 15.0
+    },
+    "source_file": "cardioid_a10_f10_OFF.npz"
+   },
+   "enabled": true,
+   "copied_from": "cooling_20261006/cooling_plan.json:cardioid_a10_f10_OFF"
+  },
+  {
+   "name": "lissajous_s15_f10_OFF",
+   "kind": "imported",
+   "source_npz": "source/reused/lissajous_s15_f10_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "5dd0acefab2751f92398d0389eb183cc31a3aefcad9728013cbaeb700becd2e4",
+   "duration_sec": 8.0,
+   "campaign": "session2_20261011",
+   "measurement_family": "feedforward_validation",
+   "condition": "lissajous_s15_f10_off",
+   "note": "Generalization session (GENERALIZATION_SESSION_PLAN.md, 15 V): lissajous_s15_f10_OFF (u = r (no feedforward)). 8 s, 15.6 mm from the centre, peak speed 1571 mm/s, peak acceleration 163468 mm/s^2, max |u-r| 0.000 mm, y range 0.00 mm.",
+   "feedforward_design": {
+    "design": "OFF",
+    "source_file": "lissajous_s15_f10_OFF.npz",
+    "source_design": "OFF",
+    "command_differs_from_reference": false,
+    "description": "u = r (no feedforward)",
+    "shape": "lissajous_s15",
+    "loop_frequency_hz": 10.0,
+    "params": {
+     "shape": "lissajous",
+     "scale_mm": 15.0,
+     "f_hz": 10.0,
+     "tau0_ms": 0.9,
+     "ramp_sec": 0.5,
+     "offset_mm": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "f_cmd_hz": 10.0,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.208,
+      "y": 0.198,
+      "z": 2.48
+     },
+     "GAM": {
+      "x": 0.0372,
+      "y": 0.0319,
+      "z": 0.0237
+     },
+     "VXR": 0.2,
+     "VZ": 0.95
+    }
+   },
+   "enabled": true,
+   "copied_from": "cooling_20261006/cooling_plan.json:lissajous_s15_f10_OFF"
+  },
+  {
+   "name": "circle_s20_f10_OFF",
+   "kind": "imported",
+   "source_npz": "source/reused/circle_s20_f10_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "3e690058c5632a971593099038b1bd879419d3def8f2ef7ae52aeae3f2633267",
+   "duration_sec": 8.0,
+   "campaign": "session2_20261011",
+   "measurement_family": "feedforward_validation",
+   "condition": "circle_s20_f10_off",
+   "note": "Generalization session (GENERALIZATION_SESSION_PLAN.md, 15 V): circle_s20_f10_OFF (u = r (no feedforward)). 8 s, 20.0 mm from the centre, peak speed 1257 mm/s, peak acceleration 79023 mm/s^2, max |u-r| 0.000 mm, y range 0.00 mm.",
+   "feedforward_design": {
+    "design": "OFF",
+    "source_file": "circle_s20_f10_OFF.npz",
+    "source_design": "OFF",
+    "command_differs_from_reference": false,
+    "description": "u = r (no feedforward)",
+    "shape": "circle_s20",
+    "loop_frequency_hz": 10.0,
+    "params": {
+     "shape": "circle",
+     "scale_mm": 20.0,
+     "f_hz": 10.0,
+     "tau0_ms": 0.9,
+     "ramp_sec": 0.5,
+     "offset_mm": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "f_cmd_hz": 10.0,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.208,
+      "y": 0.198,
+      "z": 2.48
+     },
+     "GAM": {
+      "x": 0.0372,
+      "y": 0.0319,
+      "z": 0.0237
+     },
+     "VXR": 0.2,
+     "VZ": 0.95
+    }
+   },
+   "enabled": true,
+   "copied_from": "cooling_20261006/cooling_plan.json:circle_s20_f10_OFF"
+  },
+  {
+   "name": "random_rms3_5-40Hz_s0_OFF",
+   "kind": "imported",
+   "source_npz": "source/ff_diverse/random_rms3_5-40Hz_seed0_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "1d73478c8983a9ae064f3f5325ae16b1b52b21cca63d1465f50075bf9bfad3d2",
+   "duration_sec": 8.0,
+   "campaign": "session2_20261011",
+   "measurement_family": "feedforward_validation",
+   "condition": "random_rms3_5-40hz_s0_off",
+   "note": "Session 2 (SESSION2_PLAN_20261011.md), diverse training command: random_rms3_5-40Hz_seed0_OFF (u = r (no feedforward)). 8 s, 7.472 mm from the centre, peak speed 1289 mm/s, peak acceleration 230294 mm/s^2, max |u-r| 0.000 mm.",
+   "feedforward_design": {
+    "design": "OFF",
+    "source_file": "random_rms3_5-40Hz_seed0_OFF.npz",
+    "source_design": "OFF",
+    "command_differs_from_reference": false,
+    "description": "u = r (no feedforward)",
+    "design_dir": "ff_diverse",
+    "params": {
+     "shape": "band_random",
+     "f_lo_hz": 5.0,
+     "f_hi_hz": 40,
+     "rms_inplane_mm": 3.0,
+     "y_ratio": 0.5,
+     "seed": 20261011,
+     "work_box_mm": [
+      22.0,
+      11.0,
+      22.0
+     ],
+     "n_lines": 123,
+     "df_hz": 0.2857142857142857,
+     "phases_seed": 20261011,
+     "shape_group": "random",
+     "purpose": "帯域制限した乱数（5〜40 Hz 平坦、面内 rms 3 mm、y は半分）。周期性のない広帯域の励起",
+     "priority": "A",
+     "metrics": {
+      "max_offset_mm": 7.471646164284711,
+      "max_speed_mm_s": 1289.38952791893,
+      "max_accel_mm_s2": 230293.6766569871,
+      "max_abs_u_minus_r_mm": 0.0,
+      "endpoint_mm": 0.0,
+      "rms_inplane_mm": 2.9885708025104476,
+      "rms_y_mm": 1.0472275635322477,
+      "extent_mm": [
+       13.69,
+       6.31,
+       13.57
+      ],
+      "duration_sec": 8.0,
+      "safety_ok": true,
+      "accel_within_budget": true,
+      "sim_dev_xyz": [
+       1.04,
+       0.52,
+       0.06
+      ]
+     },
+     "ramp_sec": 0.5,
+     "tau0_ms": 0.85,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.23,
+      "y": 0.24,
+      "z": 3.2
+     },
+     "GAM": {
+      "x": 0.045,
+      "y": 0.04,
+      "z": 0.024
+     }
+    },
+    "shape": "band_random",
+    "priority": "A"
+   },
+   "enabled": true
+  },
+  {
+   "name": "random_rms3_5-40Hz_s1_OFF",
+   "kind": "imported",
+   "source_npz": "source/ff_diverse/random_rms3_5-40Hz_seed1_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "fdc4c54a3691efc8b5db5b09f3d3f9b0d33016296308c44e36dfe767b0e2c937",
+   "duration_sec": 8.0,
+   "campaign": "session2_20261011",
+   "measurement_family": "feedforward_validation",
+   "condition": "random_rms3_5-40hz_s1_off",
+   "note": "Session 2 (SESSION2_PLAN_20261011.md), diverse training command: random_rms3_5-40Hz_seed1_OFF (u = r (no feedforward)). 8 s, 7.811 mm from the centre, peak speed 1236 mm/s, peak acceleration 222661 mm/s^2, max |u-r| 0.000 mm.",
+   "feedforward_design": {
+    "design": "OFF",
+    "source_file": "random_rms3_5-40Hz_seed1_OFF.npz",
+    "source_design": "OFF",
+    "command_differs_from_reference": false,
+    "description": "u = r (no feedforward)",
+    "design_dir": "ff_diverse",
+    "params": {
+     "shape": "band_random",
+     "f_lo_hz": 5.0,
+     "f_hi_hz": 40,
+     "rms_inplane_mm": 3.0,
+     "y_ratio": 0.5,
+     "seed": 20261111,
+     "work_box_mm": [
+      22.0,
+      11.0,
+      22.0
+     ],
+     "n_lines": 123,
+     "df_hz": 0.2857142857142857,
+     "phases_seed": 20261111,
+     "shape_group": "random",
+     "purpose": "帯域制限した乱数（5〜40 Hz 平坦、面内 rms 3 mm、y は半分）。周期性のない広帯域の励起",
+     "priority": "A",
+     "metrics": {
+      "max_offset_mm": 7.8112894865186435,
+      "max_speed_mm_s": 1235.6934359600054,
+      "max_accel_mm_s2": 222660.9000099141,
+      "max_abs_u_minus_r_mm": 0.0,
+      "endpoint_mm": 0.0,
+      "rms_inplane_mm": 2.9956880566146675,
+      "rms_y_mm": 1.0758774390542254,
+      "extent_mm": [
+       14.8,
+       7.2,
+       12.64
+      ],
+      "duration_sec": 8.0,
+      "safety_ok": true,
+      "accel_within_budget": true,
+      "sim_dev_xyz": [
+       1.04,
+       0.49,
+       0.07
+      ]
+     },
+     "ramp_sec": 0.5,
+     "tau0_ms": 0.85,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.23,
+      "y": 0.24,
+      "z": 3.2
+     },
+     "GAM": {
+      "x": 0.045,
+      "y": 0.04,
+      "z": 0.024
+     }
+    },
+    "shape": "band_random",
+    "priority": "A"
+   },
+   "enabled": true
+  },
+  {
+   "name": "random_rms6_5-30Hz_s0_OFF",
+   "kind": "imported",
+   "source_npz": "source/ff_diverse/random_rms6_5-30Hz_seed0_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "62e59e9c505fed14adf4de51b58fbcc3c273d73c27c603b7b5e1ec85982de54c",
+   "duration_sec": 8.0,
+   "campaign": "session2_20261011",
+   "measurement_family": "feedforward_validation",
+   "condition": "random_rms6_5-30hz_s0_off",
+   "note": "Session 2 (SESSION2_PLAN_20261011.md), diverse training command: random_rms6_5-30Hz_seed0_OFF (u = r (no feedforward)). 8 s, 14.301 mm from the centre, peak speed 1589 mm/s, peak acceleration 217556 mm/s^2, max |u-r| 0.000 mm.",
+   "feedforward_design": {
+    "design": "OFF",
+    "source_file": "random_rms6_5-30Hz_seed0_OFF.npz",
+    "source_design": "OFF",
+    "command_differs_from_reference": false,
+    "description": "u = r (no feedforward)",
+    "design_dir": "ff_diverse",
+    "params": {
+     "shape": "band_random",
+     "f_lo_hz": 5.0,
+     "f_hi_hz": 30,
+     "rms_inplane_mm": 6.0,
+     "y_ratio": 0.5,
+     "seed": 20261014,
+     "work_box_mm": [
+      22.0,
+      11.0,
+      22.0
+     ],
+     "n_lines": 88,
+     "df_hz": 0.2857142857142857,
+     "phases_seed": 20261014,
+     "shape_group": "random",
+     "purpose": "帯域制限した乱数（5〜30 Hz 平坦、面内 rms 6 mm、y は半分）。周期性のない広帯域の励起",
+     "priority": "A",
+     "metrics": {
+      "max_offset_mm": 14.301433401725818,
+      "max_speed_mm_s": 1588.9589510519208,
+      "max_accel_mm_s2": 217555.99031000375,
+      "max_abs_u_minus_r_mm": 0.0,
+      "endpoint_mm": 0.0,
+      "rms_inplane_mm": 5.941328975534567,
+      "rms_y_mm": 2.1083945371579285,
+      "extent_mm": [
+       24.62,
+       15.01,
+       28.26
+      ],
+      "duration_sec": 8.0,
+      "safety_ok": true,
+      "accel_within_budget": true,
+      "sim_dev_xyz": [
+       1.0,
+       0.56,
+       0.06
+      ]
+     },
+     "ramp_sec": 0.5,
+     "tau0_ms": 0.85,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.23,
+      "y": 0.24,
+      "z": 3.2
+     },
+     "GAM": {
+      "x": 0.045,
+      "y": 0.04,
+      "z": 0.024
+     }
+    },
+    "shape": "band_random",
+    "priority": "A"
+   },
+   "enabled": true
+  },
+  {
+   "name": "random_rms6_5-30Hz_s1_OFF",
+   "kind": "imported",
+   "source_npz": "source/ff_diverse/random_rms6_5-30Hz_seed1_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "e793ad36451709797e5ddf87f0c699010ad84428d2aa1dfabb77c92819c06e57",
+   "duration_sec": 8.0,
+   "campaign": "session2_20261011",
+   "measurement_family": "feedforward_validation",
+   "condition": "random_rms6_5-30hz_s1_off",
+   "note": "Session 2 (SESSION2_PLAN_20261011.md), diverse training command: random_rms6_5-30Hz_seed1_OFF (u = r (no feedforward)). 8 s, 15.614 mm from the centre, peak speed 1859 mm/s, peak acceleration 234985 mm/s^2, max |u-r| 0.000 mm.",
+   "feedforward_design": {
+    "design": "OFF",
+    "source_file": "random_rms6_5-30Hz_seed1_OFF.npz",
+    "source_design": "OFF",
+    "command_differs_from_reference": false,
+    "description": "u = r (no feedforward)",
+    "design_dir": "ff_diverse",
+    "params": {
+     "shape": "band_random",
+     "f_lo_hz": 5.0,
+     "f_hi_hz": 30,
+     "rms_inplane_mm": 6.0,
+     "y_ratio": 0.5,
+     "seed": 20261113,
+     "work_box_mm": [
+      22.0,
+      11.0,
+      22.0
+     ],
+     "n_lines": 88,
+     "df_hz": 0.2857142857142857,
+     "phases_seed": 20261113,
+     "shape_group": "random",
+     "purpose": "帯域制限した乱数（5〜30 Hz 平坦、面内 rms 6 mm、y は半分）。周期性のない広帯域の励起",
+     "priority": "A",
+     "metrics": {
+      "max_offset_mm": 15.61438882114345,
+      "max_speed_mm_s": 1859.0245420940153,
+      "max_accel_mm_s2": 234984.96887588527,
+      "max_abs_u_minus_r_mm": 0.0,
+      "endpoint_mm": 0.0,
+      "rms_inplane_mm": 5.9919900260673336,
+      "rms_y_mm": 2.124620879569132,
+      "extent_mm": [
+       25.19,
+       12.96,
+       24.25
+      ],
+      "duration_sec": 8.0,
+      "safety_ok": true,
+      "accel_within_budget": true,
+      "sim_dev_xyz": [
+       1.05,
+       0.67,
+       0.06
+      ]
+     },
+     "ramp_sec": 0.5,
+     "tau0_ms": 0.85,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.23,
+      "y": 0.24,
+      "z": 3.2
+     },
+     "GAM": {
+      "x": 0.045,
+      "y": 0.04,
+      "z": 0.024
+     }
+    },
+    "shape": "band_random",
+    "priority": "A"
+   },
+   "enabled": true
+  },
+  {
+   "name": "random_rms10_5-20Hz_s0_OFF",
+   "kind": "imported",
+   "source_npz": "source/ff_diverse/random_rms10_5-20Hz_seed0_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "7089cda00efd56c1ec5356abf2801ea2e381986f137be1c451a01b817dcc0fe8",
+   "duration_sec": 8.0,
+   "campaign": "session2_20261011",
+   "measurement_family": "feedforward_validation",
+   "condition": "random_rms10_5-20hz_s0_off",
+   "note": "Session 2 (SESSION2_PLAN_20261011.md), diverse training command: random_rms10_5-20Hz_seed0_OFF (u = r (no feedforward)). 8 s, 22.758 mm from the centre, peak speed 1886 mm/s, peak acceleration 181485 mm/s^2, max |u-r| 0.000 mm.",
+   "feedforward_design": {
+    "design": "OFF",
+    "source_file": "random_rms10_5-20Hz_seed0_OFF.npz",
+    "source_design": "OFF",
+    "command_differs_from_reference": false,
+    "description": "u = r (no feedforward)",
+    "design_dir": "ff_diverse",
+    "params": {
+     "shape": "band_random",
+     "f_lo_hz": 5.0,
+     "f_hi_hz": 20,
+     "rms_inplane_mm": 10.0,
+     "y_ratio": 0.5,
+     "seed": 20261022,
+     "work_box_mm": [
+      22.0,
+      11.0,
+      22.0
+     ],
+     "n_lines": 53,
+     "df_hz": 0.2857142857142857,
+     "phases_seed": 20261022,
+     "shape_group": "random",
+     "purpose": "帯域制限した乱数（5〜20 Hz 平坦、面内 rms 10 mm、y は半分）。周期性のない広帯域の励起",
+     "priority": "A",
+     "metrics": {
+      "max_offset_mm": 22.75761162867102,
+      "max_speed_mm_s": 1885.7863857336167,
+      "max_accel_mm_s2": 181484.96784903313,
+      "max_abs_u_minus_r_mm": 0.0,
+      "endpoint_mm": 0.0,
+      "rms_inplane_mm": 9.975868924839133,
+      "rms_y_mm": 3.525388910836419,
+      "extent_mm": [
+       41.35,
+       21.54,
+       42.91
+      ],
+      "duration_sec": 8.0,
+      "safety_ok": true,
+      "accel_within_budget": true,
+      "sim_dev_xyz": [
+       0.85,
+       0.4,
+       0.06
+      ]
+     },
+     "ramp_sec": 0.5,
+     "tau0_ms": 0.85,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.23,
+      "y": 0.24,
+      "z": 3.2
+     },
+     "GAM": {
+      "x": 0.045,
+      "y": 0.04,
+      "z": 0.024
+     }
+    },
+    "shape": "band_random",
+    "priority": "A"
+   },
+   "enabled": true
+  },
+  {
+   "name": "random_rms10_5-20Hz_s1_OFF",
+   "kind": "imported",
+   "source_npz": "source/ff_diverse/random_rms10_5-20Hz_seed1_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "8797804d1bdcb778f418d343dc21304b127096360e756d3b14879371253f0c9a",
+   "duration_sec": 8.0,
+   "campaign": "session2_20261011",
+   "measurement_family": "feedforward_validation",
+   "condition": "random_rms10_5-20hz_s1_off",
+   "note": "Session 2 (SESSION2_PLAN_20261011.md), diverse training command: random_rms10_5-20Hz_seed1_OFF (u = r (no feedforward)). 8 s, 23.243 mm from the centre, peak speed 2072 mm/s, peak acceleration 217967 mm/s^2, max |u-r| 0.000 mm.",
+   "feedforward_design": {
+    "design": "OFF",
+    "source_file": "random_rms10_5-20Hz_seed1_OFF.npz",
+    "source_design": "OFF",
+    "command_differs_from_reference": false,
+    "description": "u = r (no feedforward)",
+    "design_dir": "ff_diverse",
+    "params": {
+     "shape": "band_random",
+     "f_lo_hz": 5.0,
+     "f_hi_hz": 20,
+     "rms_inplane_mm": 10.0,
+     "y_ratio": 0.5,
+     "seed": 20261128,
+     "work_box_mm": [
+      22.0,
+      11.0,
+      22.0
+     ],
+     "n_lines": 53,
+     "df_hz": 0.2857142857142857,
+     "phases_seed": 20261128,
+     "shape_group": "random",
+     "purpose": "帯域制限した乱数（5〜20 Hz 平坦、面内 rms 10 mm、y は半分）。周期性のない広帯域の励起",
+     "priority": "A",
+     "metrics": {
+      "max_offset_mm": 23.243124901493395,
+      "max_speed_mm_s": 2072.0336474381065,
+      "max_accel_mm_s2": 217967.07366007892,
+      "max_abs_u_minus_r_mm": 0.0,
+      "endpoint_mm": 0.0,
+      "rms_inplane_mm": 10.104812150032211,
+      "rms_y_mm": 3.586178414913219,
+      "extent_mm": [
+       39.77,
+       20.62,
+       41.12
+      ],
+      "duration_sec": 8.0,
+      "safety_ok": true,
+      "accel_within_budget": true,
+      "sim_dev_xyz": [
+       0.94,
+       0.42,
+       0.06
+      ]
+     },
+     "ramp_sec": 0.5,
+     "tau0_ms": 0.85,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.23,
+      "y": 0.24,
+      "z": 3.2
+     },
+     "GAM": {
+      "x": 0.045,
+      "y": 0.04,
+      "z": 0.024
+     }
+    },
+    "shape": "band_random",
+    "priority": "A"
+   },
+   "enabled": true
+  },
+  {
+   "name": "random_rms6_slow_s0_OFF",
+   "kind": "imported",
+   "source_npz": "source/ff_diverse/random_rms6_slow_2.5-15Hz_seed0_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "b758c6cce1b74e891e8aa68cda5b0daf9b382a4a4a6909b3230e225b68676249",
+   "duration_sec": 8.0,
+   "campaign": "session2_20261011",
+   "measurement_family": "feedforward_validation",
+   "condition": "random_rms6_slow_s0_off",
+   "note": "Session 2 (SESSION2_PLAN_20261011.md), diverse training command: random_rms6_slow_2.5-15Hz_seed0_OFF (u = r (no feedforward)). 8 s, 14.448 mm from the centre, peak speed 799 mm/s, peak acceleration 54503 mm/s^2, max |u-r| 0.000 mm.",
+   "feedforward_design": {
+    "design": "OFF",
+    "source_file": "random_rms6_slow_2.5-15Hz_seed0_OFF.npz",
+    "source_design": "OFF",
+    "command_differs_from_reference": false,
+    "description": "u = r (no feedforward)",
+    "design_dir": "ff_diverse",
+    "params": {
+     "shape": "band_random_slow",
+     "rms_inplane_mm": 6.0,
+     "y_ratio": 0.5,
+     "seed": 20261014,
+     "freq_factor": 0.5,
+     "n_lines": 88,
+     "df_hz": 0.14285714285714285,
+     "phases_seed": 20261014,
+     "f_lo_hz": 2.5,
+     "f_hi_hz": 14.928571428571423,
+     "shape_group": "random",
+     "purpose": "上の rms 6 mm・種 0 と同じ乱数列で周波数を半分（2.5〜15 Hz）。時間の伸縮に対する模型の整合",
+     "priority": "A",
+     "metrics": {
+      "max_offset_mm": 14.448018941698999,
+      "max_speed_mm_s": 799.0034394351003,
+      "max_accel_mm_s2": 54502.630480841144,
+      "max_abs_u_minus_r_mm": 0.0,
+      "endpoint_mm": 0.0,
+      "rms_inplane_mm": 5.951999927760819,
+      "rms_y_mm": 2.07236353507129,
+      "extent_mm": [
+       22.43,
+       13.61,
+       26.16
+      ],
+      "duration_sec": 8.0,
+      "safety_ok": true,
+      "accel_within_budget": true,
+      "sim_dev_xyz": [
+       0.25,
+       0.15,
+       0.02
+      ]
+     },
+     "ramp_sec": 0.5,
+     "tau0_ms": 0.85,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.23,
+      "y": 0.24,
+      "z": 3.2
+     },
+     "GAM": {
+      "x": 0.045,
+      "y": 0.04,
+      "z": 0.024
+     }
+    },
+    "shape": "band_random_slow",
+    "priority": "A"
+   },
+   "enabled": true
+  },
+  {
+   "name": "random_rms6_slow_s1_OFF",
+   "kind": "imported",
+   "source_npz": "source/ff_diverse/random_rms6_slow_2.5-15Hz_seed1_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "b5b4f4974710c0bb1527c204a33af30f0c1f991fa540d931519e41042380f93d",
+   "duration_sec": 8.0,
+   "campaign": "session2_20261011",
+   "measurement_family": "feedforward_validation",
+   "condition": "random_rms6_slow_s1_off",
+   "note": "Session 2 (SESSION2_PLAN_20261011.md), diverse training command: random_rms6_slow_2.5-15Hz_seed1_OFF (u = r (no feedforward)). 8 s, 15.607 mm from the centre, peak speed 932 mm/s, peak acceleration 58864 mm/s^2, max |u-r| 0.000 mm.",
+   "feedforward_design": {
+    "design": "OFF",
+    "source_file": "random_rms6_slow_2.5-15Hz_seed1_OFF.npz",
+    "source_design": "OFF",
+    "command_differs_from_reference": false,
+    "description": "u = r (no feedforward)",
+    "design_dir": "ff_diverse",
+    "params": {
+     "shape": "band_random_slow",
+     "rms_inplane_mm": 6.0,
+     "y_ratio": 0.5,
+     "seed": 20261113,
+     "freq_factor": 0.5,
+     "n_lines": 88,
+     "df_hz": 0.14285714285714285,
+     "phases_seed": 20261113,
+     "f_lo_hz": 2.5,
+     "f_hi_hz": 14.928571428571423,
+     "shape_group": "random",
+     "purpose": "上の rms 6 mm・種 1 と同じ乱数列で周波数を半分（2.5〜15 Hz）。時間の伸縮に対する模型の整合",
+     "priority": "B",
+     "metrics": {
+      "max_offset_mm": 15.60664724009449,
+      "max_speed_mm_s": 931.7100217310665,
+      "max_accel_mm_s2": 58863.919456774456,
+      "max_abs_u_minus_r_mm": 0.0,
+      "endpoint_mm": 0.0,
+      "rms_inplane_mm": 5.9814770504229005,
+      "rms_y_mm": 2.1525459479019537,
+      "extent_mm": [
+       25.26,
+       13.01,
+       23.98
+      ],
+      "duration_sec": 8.0,
+      "safety_ok": true,
+      "accel_within_budget": true,
+      "sim_dev_xyz": [
+       0.28,
+       0.17,
+       0.02
+      ]
+     },
+     "ramp_sec": 0.5,
+     "tau0_ms": 0.85,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.23,
+      "y": 0.24,
+      "z": 3.2
+     },
+     "GAM": {
+      "x": 0.045,
+      "y": 0.04,
+      "z": 0.024
+     }
+    },
+    "shape": "band_random_slow",
+    "priority": "B"
+   },
+   "enabled": true
+  },
+  {
+   "name": "eight_v_s7_f7_OFF",
+   "kind": "imported",
+   "source_npz": "source/ff_diverse/eight_v_s7_f7_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "f5d82b6974cfebd911848fc67147eeecb20c7bb4bd9ae68a89233dc592517e19",
+   "duration_sec": 8.0,
+   "campaign": "session2_20261011",
+   "measurement_family": "feedforward_validation",
+   "condition": "eight_v_s7_f7_off",
+   "note": "Session 2 (SESSION2_PLAN_20261011.md), diverse training command: eight_v_s7_f7_OFF (u = r (no feedforward)). 8 s, 7.292 mm from the centre, peak speed 513 mm/s, peak acceleration 37388 mm/s^2, max |u-r| 0.000 mm.",
+   "feedforward_design": {
+    "design": "OFF",
+    "source_file": "eight_v_s7_f7_OFF.npz",
+    "source_design": "OFF",
+    "command_differs_from_reference": false,
+    "description": "u = r (no feedforward)",
+    "design_dir": "ff_diverse",
+    "params": {
+     "shape": "eight_v",
+     "scale_mm": 7.0,
+     "f_hz": 7.0,
+     "shape_group": "eight",
+     "purpose": "縦の 8 の字（x–z 面、高さ 14 × 幅 9.3 mm）。∞ を 90° 回した形で x と z の非対称を見る",
+     "priority": "A",
+     "metrics": {
+      "max_offset_mm": 7.2916664074628015,
+      "max_speed_mm_s": 513.1219693872927,
+      "max_accel_mm_s2": 37388.095073481614,
+      "max_abs_u_minus_r_mm": 0.0,
+      "endpoint_mm": 0.0,
+      "rms_inplane_mm": 5.948856099191582,
+      "rms_y_mm": 0.0,
+      "extent_mm": [
+       9.33,
+       0.0,
+       14.0
+      ],
+      "duration_sec": 8.0,
+      "safety_ok": true,
+      "accel_within_budget": true,
+      "sim_dev_xyz": [
+       0.18,
+       0.0,
+       0.0
+      ]
+     },
+     "ramp_sec": 0.5,
+     "tau0_ms": 0.85,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.23,
+      "y": 0.24,
+      "z": 3.2
+     },
+     "GAM": {
+      "x": 0.045,
+      "y": 0.04,
+      "z": 0.024
+     }
+    },
+    "loop_frequency_hz": 7.0,
+    "shape": "eight_v",
+    "priority": "A"
+   },
+   "enabled": true
+  },
+  {
+   "name": "infinity_s7_f7_OFF",
+   "kind": "imported",
+   "source_npz": "source/ff_diverse/infinity_s7_f7_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "1bbad0ab6ca25f0c1d7dcfcb078513bb1e0b74388683a9bee70c6f8aadcde61f",
+   "duration_sec": 8.0,
+   "campaign": "session2_20261011",
+   "measurement_family": "feedforward_validation",
+   "condition": "infinity_s7_f7_off",
+   "note": "Session 2 (SESSION2_PLAN_20261011.md), diverse training command: infinity_s7_f7_OFF (u = r (no feedforward)). 8 s, 7.292 mm from the centre, peak speed 513 mm/s, peak acceleration 37388 mm/s^2, max |u-r| 0.000 mm.",
+   "feedforward_design": {
+    "design": "OFF",
+    "source_file": "infinity_s7_f7_OFF.npz",
+    "source_design": "OFF",
+    "command_differs_from_reference": false,
+    "description": "u = r (no feedforward)",
+    "design_dir": "ff_diverse",
+    "params": {
+     "shape": "infinity_h",
+     "scale_mm": 7.0,
+     "f_hz": 7.0,
+     "shape_group": "eight",
+     "purpose": "横の ∞（x–z 面、幅 14 × 高さ 9.3 mm）。lissajous_s15 と同じ式で大きさ半分",
+     "priority": "A",
+     "metrics": {
+      "max_offset_mm": 7.2916664074628015,
+      "max_speed_mm_s": 513.1219693872927,
+      "max_accel_mm_s2": 37388.095073481614,
+      "max_abs_u_minus_r_mm": 0.0,
+      "endpoint_mm": 0.0,
+      "rms_inplane_mm": 5.948856099191582,
+      "rms_y_mm": 0.0,
+      "extent_mm": [
+       14.0,
+       0.0,
+       9.33
+      ],
+      "duration_sec": 8.0,
+      "safety_ok": true,
+      "accel_within_budget": true,
+      "sim_dev_xyz": [
+       0.08,
+       0.0,
+       0.01
+      ]
+     },
+     "ramp_sec": 0.5,
+     "tau0_ms": 0.85,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.23,
+      "y": 0.24,
+      "z": 3.2
+     },
+     "GAM": {
+      "x": 0.045,
+      "y": 0.04,
+      "z": 0.024
+     }
+    },
+    "loop_frequency_hz": 7.0,
+    "shape": "infinity_h",
+    "priority": "A"
+   },
+   "enabled": true
+  },
+  {
+   "name": "eight_v_s7_f10_OFF",
+   "kind": "imported",
+   "source_npz": "source/ff_diverse/eight_v_s7_f10_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "f9521b0f5840ee7203245d5480b9742cbb99ff188a98fcfb233751bd2ccc921d",
+   "duration_sec": 8.0,
+   "campaign": "session2_20261011",
+   "measurement_family": "feedforward_validation",
+   "condition": "eight_v_s7_f10_off",
+   "note": "Session 2 (SESSION2_PLAN_20261011.md), diverse training command: eight_v_s7_f10_OFF (u = r (no feedforward)). 8 s, 7.292 mm from the centre, peak speed 733 mm/s, peak acceleration 76285 mm/s^2, max |u-r| 0.000 mm.",
+   "feedforward_design": {
+    "design": "OFF",
+    "source_file": "eight_v_s7_f10_OFF.npz",
+    "source_design": "OFF",
+    "command_differs_from_reference": false,
+    "description": "u = r (no feedforward)",
+    "design_dir": "ff_diverse",
+    "params": {
+     "shape": "eight_v",
+     "scale_mm": 7.0,
+     "f_hz": 10.0,
+     "shape_group": "eight",
+     "purpose": "縦の 8 の字（x–z 面、高さ 14 × 幅 9.3 mm）。∞ を 90° 回した形で x と z の非対称を見る",
+     "priority": "A",
+     "metrics": {
+      "max_offset_mm": 7.291632703893084,
+      "max_speed_mm_s": 733.0242022352277,
+      "max_accel_mm_s2": 76285.04016469214,
+      "max_abs_u_minus_r_mm": 0.0,
+      "endpoint_mm": 0.0,
+      "rms_inplane_mm": 5.948856099191582,
+      "rms_y_mm": 0.0,
+      "extent_mm": [
+       9.33,
+       0.0,
+       14.0
+      ],
+      "duration_sec": 8.0,
+      "safety_ok": true,
+      "accel_within_budget": true,
+      "sim_dev_xyz": [
+       0.37,
+       0.0,
+       0.01
+      ]
+     },
+     "ramp_sec": 0.5,
+     "tau0_ms": 0.85,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.23,
+      "y": 0.24,
+      "z": 3.2
+     },
+     "GAM": {
+      "x": 0.045,
+      "y": 0.04,
+      "z": 0.024
+     }
+    },
+    "loop_frequency_hz": 10.0,
+    "shape": "eight_v",
+    "priority": "A"
+   },
+   "enabled": true
+  },
+  {
+   "name": "infinity_s7_f10_OFF",
+   "kind": "imported",
+   "source_npz": "source/ff_diverse/infinity_s7_f10_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "c091a02baad6bd7648082085cb11b8c93a5bb72fc7b04c126f33a777940d99c3",
+   "duration_sec": 8.0,
+   "campaign": "session2_20261011",
+   "measurement_family": "feedforward_validation",
+   "condition": "infinity_s7_f10_off",
+   "note": "Session 2 (SESSION2_PLAN_20261011.md), diverse training command: infinity_s7_f10_OFF (u = r (no feedforward)). 8 s, 7.292 mm from the centre, peak speed 733 mm/s, peak acceleration 76285 mm/s^2, max |u-r| 0.000 mm.",
+   "feedforward_design": {
+    "design": "OFF",
+    "source_file": "infinity_s7_f10_OFF.npz",
+    "source_design": "OFF",
+    "command_differs_from_reference": false,
+    "description": "u = r (no feedforward)",
+    "design_dir": "ff_diverse",
+    "params": {
+     "shape": "infinity_h",
+     "scale_mm": 7.0,
+     "f_hz": 10.0,
+     "shape_group": "eight",
+     "purpose": "横の ∞（x–z 面、幅 14 × 高さ 9.3 mm）。lissajous_s15 と同じ式で大きさ半分",
+     "priority": "A",
+     "metrics": {
+      "max_offset_mm": 7.291632703893084,
+      "max_speed_mm_s": 733.0242022352277,
+      "max_accel_mm_s2": 76285.04016469214,
+      "max_abs_u_minus_r_mm": 0.0,
+      "endpoint_mm": 0.0,
+      "rms_inplane_mm": 5.948856099191582,
+      "rms_y_mm": 0.0,
+      "extent_mm": [
+       14.0,
+       0.0,
+       9.33
+      ],
+      "duration_sec": 8.0,
+      "safety_ok": true,
+      "accel_within_budget": true,
+      "sim_dev_xyz": [
+       0.15,
+       0.0,
+       0.02
+      ]
+     },
+     "ramp_sec": 0.5,
+     "tau0_ms": 0.85,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.23,
+      "y": 0.24,
+      "z": 3.2
+     },
+     "GAM": {
+      "x": 0.045,
+      "y": 0.04,
+      "z": 0.024
+     }
+    },
+    "loop_frequency_hz": 10.0,
+    "shape": "infinity_h",
+    "priority": "A"
+   },
+   "enabled": true
+  },
+  {
+   "name": "eight_v_s7_tilt30_f7_OFF",
+   "kind": "imported",
+   "source_npz": "source/ff_diverse/eight_v_s7_tilt30_f7_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "890f50de255c6cee09b6411a3e793b738b5a48fe961ffacc51cd0d03b0c5c05b",
+   "duration_sec": 8.0,
+   "campaign": "session2_20261011",
+   "measurement_family": "feedforward_validation",
+   "condition": "eight_v_s7_tilt30_f7_off",
+   "note": "Session 2 (SESSION2_PLAN_20261011.md), diverse training command: eight_v_s7_tilt30_f7_OFF (u = r (no feedforward)). 8 s, 7.292 mm from the centre, peak speed 513 mm/s, peak acceleration 37388 mm/s^2, max |u-r| 0.000 mm.",
+   "feedforward_design": {
+    "design": "OFF",
+    "source_file": "eight_v_s7_tilt30_f7_OFF.npz",
+    "source_design": "OFF",
+    "command_differs_from_reference": false,
+    "description": "u = r (no feedforward)",
+    "design_dir": "ff_diverse",
+    "params": {
+     "shape": "eight_v_tilt30",
+     "scale_mm": 7.0,
+     "f_hz": 7.0,
+     "tilt_deg": 30.0,
+     "shape_group": "eight",
+     "purpose": "縦の 8 の字を x 軸まわりに 30° 傾けた 3 次元版（y ±3.5 mm）",
+     "priority": "A",
+     "metrics": {
+      "max_offset_mm": 7.2916664074628015,
+      "max_speed_mm_s": 513.1219693872927,
+      "max_accel_mm_s2": 37388.095073483164,
+      "max_abs_u_minus_r_mm": 0.0,
+      "endpoint_mm": 0.0,
+      "rms_inplane_mm": 5.409610789039161,
+      "rms_y_mm": 2.4748737341529163,
+      "extent_mm": [
+       9.33,
+       7.0,
+       12.12
+      ],
+      "duration_sec": 8.0,
+      "safety_ok": true,
+      "accel_within_budget": true,
+      "sim_dev_xyz": [
+       0.18,
+       0.04,
+       0.0
+      ]
+     },
+     "ramp_sec": 0.5,
+     "tau0_ms": 0.85,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.23,
+      "y": 0.24,
+      "z": 3.2
+     },
+     "GAM": {
+      "x": 0.045,
+      "y": 0.04,
+      "z": 0.024
+     }
+    },
+    "loop_frequency_hz": 7.0,
+    "shape": "eight_v_tilt30",
+    "priority": "A"
+   },
+   "enabled": true
+  },
+  {
+   "name": "rect14x10_r2_f7_OFF",
+   "kind": "imported",
+   "source_npz": "source/ff_diverse/rect14x10_r2_f7_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "bb1ddfcf6389e8d056392520ebb01607d2682980d3c80d833c627066806e053b",
+   "duration_sec": 8.0,
+   "campaign": "session2_20261011",
+   "measurement_family": "feedforward_validation",
+   "condition": "rect14x10_r2_f7_off",
+   "note": "Session 2 (SESSION2_PLAN_20261011.md), diverse training command: rect14x10_r2_f7_OFF (u = r (no feedforward)). 8 s, 7.832 mm from the centre, peak speed 314 mm/s, peak acceleration 54895 mm/s^2, max |u-r| 0.000 mm.",
+   "feedforward_design": {
+    "design": "OFF",
+    "source_file": "rect14x10_r2_f7_OFF.npz",
+    "source_design": "OFF",
+    "command_differs_from_reference": false,
+    "description": "u = r (no feedforward)",
+    "design_dir": "ff_diverse",
+    "params": {
+     "shape": "rect14x10_r2",
+     "f_hz": 7.0,
+     "corner_radius_mm": 2.0,
+     "n_harmonics": 16,
+     "fourier_deviation_mm": 0.014,
+     "freqs_within_budget": [
+      5.0,
+      7.0,
+      10.0
+     ],
+     "shape_group": "polygon",
+     "purpose": "角を丸めた矩形 14 × 10 mm（丸め 2 mm、フーリエ 16 次）。直線区間と角の切り替わり。級数で切った形の元の形からのずれ 0.01 mm",
+     "priority": "A",
+     "metrics": {
+      "max_offset_mm": 7.832127219258096,
+      "max_speed_mm_s": 313.97863394347723,
+      "max_accel_mm_s2": 54894.57555318269,
+      "max_abs_u_minus_r_mm": 0.0,
+      "endpoint_mm": 0.0,
+      "rms_inplane_mm": 6.73940058145809,
+      "rms_y_mm": 0.0,
+      "extent_mm": [
+       14.03,
+       0.0,
+       10.02
+      ],
+      "duration_sec": 8.0,
+      "safety_ok": true,
+      "accel_within_budget": true,
+      "sim_dev_xyz": [
+       0.64,
+       0.0,
+       0.02
+      ]
+     },
+     "ramp_sec": 0.5,
+     "tau0_ms": 0.85,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.23,
+      "y": 0.24,
+      "z": 3.2
+     },
+     "GAM": {
+      "x": 0.045,
+      "y": 0.04,
+      "z": 0.024
+     }
+    },
+    "loop_frequency_hz": 7.0,
+    "shape": "rect14x10_r2",
+    "priority": "A"
+   },
+   "enabled": true
+  },
+  {
+   "name": "rect14x10_r2_f10_OFF",
+   "kind": "imported",
+   "source_npz": "source/ff_diverse/rect14x10_r2_f10_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "75346c76279625dd950574a393c5073d963b07ea7ca9133ded2cd17a9c840ad5",
+   "duration_sec": 8.0,
+   "campaign": "session2_20261011",
+   "measurement_family": "feedforward_validation",
+   "condition": "rect14x10_r2_f10_off",
+   "note": "Session 2 (SESSION2_PLAN_20261011.md), diverse training command: rect14x10_r2_f10_OFF (u = r (no feedforward)). 8 s, 7.832 mm from the centre, peak speed 449 mm/s, peak acceleration 111974 mm/s^2, max |u-r| 0.000 mm.",
+   "feedforward_design": {
+    "design": "OFF",
+    "source_file": "rect14x10_r2_f10_OFF.npz",
+    "source_design": "OFF",
+    "command_differs_from_reference": false,
+    "description": "u = r (no feedforward)",
+    "design_dir": "ff_diverse",
+    "params": {
+     "shape": "rect14x10_r2",
+     "f_hz": 10.0,
+     "corner_radius_mm": 2.0,
+     "n_harmonics": 16,
+     "fourier_deviation_mm": 0.014,
+     "freqs_within_budget": [
+      5.0,
+      7.0,
+      10.0
+     ],
+     "shape_group": "polygon",
+     "purpose": "角を丸めた矩形 14 × 10 mm（丸め 2 mm、フーリエ 16 次）。直線区間と角の切り替わり。級数で切った形の元の形からのずれ 0.01 mm",
+     "priority": "A",
+     "metrics": {
+      "max_offset_mm": 7.832107684824541,
+      "max_speed_mm_s": 448.53786608073966,
+      "max_accel_mm_s2": 111974.39005592052,
+      "max_abs_u_minus_r_mm": 0.0,
+      "endpoint_mm": 0.0,
+      "rms_inplane_mm": 6.7394005814580895,
+      "rms_y_mm": 0.0,
+      "extent_mm": [
+       14.03,
+       0.0,
+       10.02
+      ],
+      "duration_sec": 8.0,
+      "safety_ok": true,
+      "accel_within_budget": true,
+      "sim_dev_xyz": [
+       0.75,
+       0.0,
+       0.03
+      ]
+     },
+     "ramp_sec": 0.5,
+     "tau0_ms": 0.85,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.23,
+      "y": 0.24,
+      "z": 3.2
+     },
+     "GAM": {
+      "x": 0.045,
+      "y": 0.04,
+      "z": 0.024
+     }
+    },
+    "loop_frequency_hz": 10.0,
+    "shape": "rect14x10_r2",
+    "priority": "A"
+   },
+   "enabled": true
+  },
+  {
+   "name": "tri14_r2_f7_OFF",
+   "kind": "imported",
+   "source_npz": "source/ff_diverse/tri14_r2_f7_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "31e5a50c62187332f72effafe11d78c048b9c2c3c1d192e234f050d3b83aa33b",
+   "duration_sec": 8.0,
+   "campaign": "session2_20261011",
+   "measurement_family": "feedforward_validation",
+   "condition": "tri14_r2_f7_off",
+   "note": "Session 2 (SESSION2_PLAN_20261011.md), diverse training command: tri14_r2_f7_OFF (u = r (no feedforward)). 8 s, 6.677 mm from the centre, peak speed 238 mm/s, peak acceleration 30935 mm/s^2, max |u-r| 0.000 mm.",
+   "feedforward_design": {
+    "design": "OFF",
+    "source_file": "tri14_r2_f7_OFF.npz",
+    "source_design": "OFF",
+    "command_differs_from_reference": false,
+    "description": "u = r (no feedforward)",
+    "design_dir": "ff_diverse",
+    "params": {
+     "shape": "tri14_r2",
+     "f_hz": 7.0,
+     "corner_radius_mm": 2.0,
+     "n_harmonics": 16,
+     "fourier_deviation_mm": 0.007,
+     "freqs_within_budget": [
+      5.0,
+      7.0,
+      10.0
+     ],
+     "shape_group": "polygon",
+     "purpose": "角を丸めた正三角形 辺 14 mm（丸め 2 mm、頂点が上）。60° の鋭い向き変え。級数で切った形の元の形からのずれ 0.01 mm",
+     "priority": "A",
+     "metrics": {
+      "max_offset_mm": 6.676629024158037,
+      "max_speed_mm_s": 238.01945407835836,
+      "max_accel_mm_s2": 30935.030965223097,
+      "max_abs_u_minus_r_mm": 0.0,
+      "endpoint_mm": 0.0,
+      "rms_inplane_mm": 5.160395925002012,
+      "rms_y_mm": 0.0,
+      "extent_mm": [
+       11.08,
+       0.0,
+       10.13
+      ],
+      "duration_sec": 8.0,
+      "safety_ok": true,
+      "accel_within_budget": true,
+      "sim_dev_xyz": [
+       0.28,
+       0.0,
+       0.01
+      ]
+     },
+     "ramp_sec": 0.5,
+     "tau0_ms": 0.85,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.23,
+      "y": 0.24,
+      "z": 3.2
+     },
+     "GAM": {
+      "x": 0.045,
+      "y": 0.04,
+      "z": 0.024
+     }
+    },
+    "loop_frequency_hz": 7.0,
+    "shape": "tri14_r2",
+    "priority": "A"
+   },
+   "enabled": true
+  },
+  {
+   "name": "tri14_r2_f10_OFF",
+   "kind": "imported",
+   "source_npz": "source/ff_diverse/tri14_r2_f10_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "ba57ff82fbced2a1b1313926eca4acc9744a0a56bc9df71c574e6e3bc474bdc0",
+   "duration_sec": 8.0,
+   "campaign": "session2_20261011",
+   "measurement_family": "feedforward_validation",
+   "condition": "tri14_r2_f10_off",
+   "note": "Session 2 (SESSION2_PLAN_20261011.md), diverse training command: tri14_r2_f10_OFF (u = r (no feedforward)). 8 s, 6.677 mm from the centre, peak speed 340 mm/s, peak acceleration 63088 mm/s^2, max |u-r| 0.000 mm.",
+   "feedforward_design": {
+    "design": "OFF",
+    "source_file": "tri14_r2_f10_OFF.npz",
+    "source_design": "OFF",
+    "command_differs_from_reference": false,
+    "description": "u = r (no feedforward)",
+    "design_dir": "ff_diverse",
+    "params": {
+     "shape": "tri14_r2",
+     "f_hz": 10.0,
+     "corner_radius_mm": 2.0,
+     "n_harmonics": 16,
+     "fourier_deviation_mm": 0.007,
+     "freqs_within_budget": [
+      5.0,
+      7.0,
+      10.0
+     ],
+     "shape_group": "polygon",
+     "purpose": "角を丸めた正三角形 辺 14 mm（丸め 2 mm、頂点が上）。60° の鋭い向き変え。級数で切った形の元の形からのずれ 0.01 mm",
+     "priority": "A",
+     "metrics": {
+      "max_offset_mm": 6.676607217341296,
+      "max_speed_mm_s": 339.97161929082336,
+      "max_accel_mm_s2": 63088.09852915343,
+      "max_abs_u_minus_r_mm": 0.0,
+      "endpoint_mm": 0.0,
+      "rms_inplane_mm": 5.160395925002013,
+      "rms_y_mm": 0.0,
+      "extent_mm": [
+       11.08,
+       0.0,
+       10.13
+      ],
+      "duration_sec": 8.0,
+      "safety_ok": true,
+      "accel_within_budget": true,
+      "sim_dev_xyz": [
+       0.71,
+       0.0,
+       0.02
+      ]
+     },
+     "ramp_sec": 0.5,
+     "tau0_ms": 0.85,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.23,
+      "y": 0.24,
+      "z": 3.2
+     },
+     "GAM": {
+      "x": 0.045,
+      "y": 0.04,
+      "z": 0.024
+     }
+    },
+    "loop_frequency_hz": 10.0,
+    "shape": "tri14_r2",
+    "priority": "A"
+   },
+   "enabled": true
+  },
+  {
+   "name": "heart_s7_f5_OFF",
+   "kind": "imported",
+   "source_npz": "source/ff_diverse/heart_s7_f5_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "5615cc04dac04a32804e9133151e07a7b236a386bbcc9151000c44aec142af3b",
+   "duration_sec": 8.0,
+   "campaign": "session2_20261011",
+   "measurement_family": "feedforward_validation",
+   "condition": "heart_s7_f5_off",
+   "note": "Session 2 (SESSION2_PLAN_20261011.md), diverse training command: heart_s7_f5_OFF (u = r (no feedforward)). 8 s, 9.154 mm from the centre, peak speed 372 mm/s, peak acceleration 23352 mm/s^2, max |u-r| 0.000 mm.",
+   "feedforward_design": {
+    "design": "OFF",
+    "source_file": "heart_s7_f5_OFF.npz",
+    "source_design": "OFF",
+    "command_differs_from_reference": false,
+    "description": "u = r (no feedforward)",
+    "design_dir": "ff_diverse",
+    "params": {
+     "shape": "heart",
+     "scale_mm": 7.0,
+     "f_hz": 5.0,
+     "shape_group": "scale_freq",
+     "purpose": "ハート s7（幅 14 mm）の 5 Hz。既存の f7・f10 と周波数の軸を広げる",
+     "priority": "A",
+     "metrics": {
+      "max_offset_mm": 9.153846153846153,
+      "max_speed_mm_s": 372.4975104899587,
+      "max_accel_mm_s2": 23352.436253640786,
+      "max_abs_u_minus_r_mm": 0.0,
+      "endpoint_mm": 0.0,
+      "rms_inplane_mm": 6.645420410029413,
+      "rms_y_mm": 0.0,
+      "extent_mm": [
+       14.0,
+       0.0,
+       15.57
+      ],
+      "duration_sec": 8.0,
+      "safety_ok": true,
+      "accel_within_budget": true,
+      "sim_dev_xyz": [
+       0.11,
+       0.0,
+       0.01
+      ]
+     },
+     "ramp_sec": 0.5,
+     "tau0_ms": 0.85,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.23,
+      "y": 0.24,
+      "z": 3.2
+     },
+     "GAM": {
+      "x": 0.045,
+      "y": 0.04,
+      "z": 0.024
+     }
+    },
+    "loop_frequency_hz": 5.0,
+    "shape": "heart",
+    "priority": "A"
+   },
+   "enabled": true
+  },
+  {
+   "name": "heart_s7_f13_OFF",
+   "kind": "imported",
+   "source_npz": "source/ff_diverse/heart_s7_f13_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "d2f92209eb04f96cde23779c08533db985547eef5c36c9c3c06fd86ebdfe4cd9",
+   "duration_sec": 8.0,
+   "campaign": "session2_20261011",
+   "measurement_family": "feedforward_validation",
+   "condition": "heart_s7_f13_off",
+   "note": "Session 2 (SESSION2_PLAN_20261011.md), diverse training command: heart_s7_f13_OFF (u = r (no feedforward)). 8 s, 9.154 mm from the centre, peak speed 968 mm/s, peak acceleration 157837 mm/s^2, max |u-r| 0.000 mm.",
+   "feedforward_design": {
+    "design": "OFF",
+    "source_file": "heart_s7_f13_OFF.npz",
+    "source_design": "OFF",
+    "command_differs_from_reference": false,
+    "description": "u = r (no feedforward)",
+    "design_dir": "ff_diverse",
+    "params": {
+     "shape": "heart",
+     "scale_mm": 7.0,
+     "f_hz": 13.0,
+     "shape_group": "scale_freq",
+     "purpose": "ハート s7（幅 14 mm）の 13 Hz。既存の f7・f10 と周波数の軸を広げる",
+     "priority": "A",
+     "metrics": {
+      "max_offset_mm": 9.153846153846153,
+      "max_speed_mm_s": 968.4727010018211,
+      "max_accel_mm_s2": 157836.91346673173,
+      "max_abs_u_minus_r_mm": 0.0,
+      "endpoint_mm": 0.0,
+      "rms_inplane_mm": 6.645420410029414,
+      "rms_y_mm": 0.0,
+      "extent_mm": [
+       14.0,
+       0.0,
+       15.57
+      ],
+      "duration_sec": 8.0,
+      "safety_ok": true,
+      "accel_within_budget": true,
+      "sim_dev_xyz": [
+       0.79,
+       0.0,
+       0.05
+      ]
+     },
+     "ramp_sec": 0.5,
+     "tau0_ms": 0.85,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.23,
+      "y": 0.24,
+      "z": 3.2
+     },
+     "GAM": {
+      "x": 0.045,
+      "y": 0.04,
+      "z": 0.024
+     }
+    },
+    "loop_frequency_hz": 13.0,
+    "shape": "heart",
+    "priority": "A"
+   },
+   "enabled": true
+  },
+  {
+   "name": "cardioid_a5p4_f13_OFF",
+   "kind": "imported",
+   "source_npz": "source/ff_diverse/cardioid_a5p4_f13_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "db98784b0c5a8371d792b27c56aa1e55c195adcf9d583c5fd09309cfd8843b4c",
+   "duration_sec": 8.0,
+   "campaign": "session2_20261011",
+   "measurement_family": "feedforward_validation",
+   "condition": "cardioid_a5p4_f13_off",
+   "note": "Session 2 (SESSION2_PLAN_20261011.md), diverse training command: cardioid_a5p4_f13_OFF (u = r (no feedforward)). 8 s, 7.218 mm from the centre, peak speed 882 mm/s, peak acceleration 108077 mm/s^2, max |u-r| 0.000 mm.",
+   "feedforward_design": {
+    "design": "OFF",
+    "source_file": "cardioid_a5p4_f13_OFF.npz",
+    "source_design": "OFF",
+    "command_differs_from_reference": false,
+    "description": "u = r (no feedforward)",
+    "design_dir": "ff_diverse",
+    "params": {
+     "shape": "cardioid",
+     "scale_mm": 5.4,
+     "f_hz": 13.0,
+     "shape_group": "scale_freq",
+     "purpose": "カーディオイド a5p4（幅 14 mm）の 13 Hz。既存の f7・f10 の上",
+     "priority": "A",
+     "metrics": {
+      "max_offset_mm": 7.217556575286673,
+      "max_speed_mm_s": 882.1346939244017,
+      "max_accel_mm_s2": 108076.80074718106,
+      "max_abs_u_minus_r_mm": 0.0,
+      "endpoint_mm": 0.0,
+      "rms_inplane_mm": 6.367937264138208,
+      "rms_y_mm": 0.0,
+      "extent_mm": [
+       14.03,
+       0.0,
+       12.15
+      ],
+      "duration_sec": 8.0,
+      "safety_ok": true,
+      "accel_within_budget": true,
+      "sim_dev_xyz": [
+       0.54,
+       0.0,
+       0.03
+      ]
+     },
+     "ramp_sec": 0.5,
+     "tau0_ms": 0.85,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.23,
+      "y": 0.24,
+      "z": 3.2
+     },
+     "GAM": {
+      "x": 0.045,
+      "y": 0.04,
+      "z": 0.024
+     }
+    },
+    "loop_frequency_hz": 13.0,
+    "shape": "cardioid",
+    "priority": "A"
+   },
+   "enabled": true
+  },
+  {
+   "name": "heart_s5_f10_OFF",
+   "kind": "imported",
+   "source_npz": "source/ff_diverse/heart_s5_f10_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "ff7686594ecb4632138cd5d2c3ba66e5c53fed2deba44b96c06cf7e2d0ad0dc3",
+   "duration_sec": 8.0,
+   "campaign": "session2_20261011",
+   "measurement_family": "feedforward_validation",
+   "condition": "heart_s5_f10_off",
+   "note": "Session 2 (SESSION2_PLAN_20261011.md), diverse training command: heart_s5_f10_OFF (u = r (no feedforward)). 8 s, 6.538 mm from the centre, peak speed 532 mm/s, peak acceleration 66719 mm/s^2, max |u-r| 0.000 mm.",
+   "feedforward_design": {
+    "design": "OFF",
+    "source_file": "heart_s5_f10_OFF.npz",
+    "source_design": "OFF",
+    "command_differs_from_reference": false,
+    "description": "u = r (no feedforward)",
+    "design_dir": "ff_diverse",
+    "params": {
+     "shape": "heart",
+     "scale_mm": 5.0,
+     "f_hz": 10.0,
+     "shape_group": "scale_freq",
+     "purpose": "ハート s5（幅 10 mm）の 10 Hz。大きさの軸（既存は s7）",
+     "priority": "A",
+     "metrics": {
+      "max_offset_mm": 6.538461538461538,
+      "max_speed_mm_s": 532.1319671848356,
+      "max_accel_mm_s2": 66718.99580909098,
+      "max_abs_u_minus_r_mm": 0.0,
+      "endpoint_mm": 0.0,
+      "rms_inplane_mm": 4.746728864306724,
+      "rms_y_mm": 0.0,
+      "extent_mm": [
+       10.0,
+       0.0,
+       11.12
+      ],
+      "duration_sec": 8.0,
+      "safety_ok": true,
+      "accel_within_budget": true,
+      "sim_dev_xyz": [
+       0.3,
+       0.0,
+       0.02
+      ]
+     },
+     "ramp_sec": 0.5,
+     "tau0_ms": 0.85,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.23,
+      "y": 0.24,
+      "z": 3.2
+     },
+     "GAM": {
+      "x": 0.045,
+      "y": 0.04,
+      "z": 0.024
+     }
+    },
+    "loop_frequency_hz": 10.0,
+    "shape": "heart",
+    "priority": "A"
+   },
+   "enabled": true
+  },
+  {
+   "name": "heart_s10_f10_OFF",
+   "kind": "imported",
+   "source_npz": "source/ff_diverse/heart_s10_f10_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "0fac42e92ec27cf0aef93aaf6209596c8e6716bb540b47fb57e40b39cd10c3c0",
+   "duration_sec": 8.0,
+   "campaign": "session2_20261011",
+   "measurement_family": "feedforward_validation",
+   "condition": "heart_s10_f10_off",
+   "note": "Session 2 (SESSION2_PLAN_20261011.md), diverse training command: heart_s10_f10_OFF (u = r (no feedforward)). 8 s, 13.077 mm from the centre, peak speed 1064 mm/s, peak acceleration 133438 mm/s^2, max |u-r| 0.000 mm.",
+   "feedforward_design": {
+    "design": "OFF",
+    "source_file": "heart_s10_f10_OFF.npz",
+    "source_design": "OFF",
+    "command_differs_from_reference": false,
+    "description": "u = r (no feedforward)",
+    "design_dir": "ff_diverse",
+    "params": {
+     "shape": "heart",
+     "scale_mm": 10.0,
+     "f_hz": 10.0,
+     "shape_group": "scale_freq",
+     "purpose": "ハート s10（幅 20 mm）の 10 Hz。大きさの軸（既存は s7）",
+     "priority": "A",
+     "metrics": {
+      "max_offset_mm": 13.076923076923077,
+      "max_speed_mm_s": 1064.2639343696712,
+      "max_accel_mm_s2": 133437.99161818196,
+      "max_abs_u_minus_r_mm": 0.0,
+      "endpoint_mm": 0.0,
+      "rms_inplane_mm": 9.493457728613448,
+      "rms_y_mm": 0.0,
+      "extent_mm": [
+       20.0,
+       0.0,
+       22.25
+      ],
+      "duration_sec": 8.0,
+      "safety_ok": true,
+      "accel_within_budget": true,
+      "sim_dev_xyz": [
+       0.61,
+       0.0,
+       0.04
+      ]
+     },
+     "ramp_sec": 0.5,
+     "tau0_ms": 0.85,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.23,
+      "y": 0.24,
+      "z": 3.2
+     },
+     "GAM": {
+      "x": 0.045,
+      "y": 0.04,
+      "z": 0.024
+     }
+    },
+    "loop_frequency_hz": 10.0,
+    "shape": "heart",
+    "priority": "A"
+   },
+   "enabled": true
+  },
+  {
+   "name": "helix_r7_h5_f7_OFF",
+   "kind": "imported",
+   "source_npz": "source/ff_diverse/helix_r7_h5_f7_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "bbafb01742d8cae6414dd2537f04f384755db85780e8c2c106339ef0bc9782d7",
+   "duration_sec": 8.0,
+   "campaign": "session2_20261011",
+   "measurement_family": "feedforward_validation",
+   "condition": "helix_r7_h5_f7_off",
+   "note": "Session 2 (SESSION2_PLAN_20261011.md), diverse training command: helix_r7_h5_f7_OFF (u = r (no feedforward)). 8 s, 8.602 mm from the centre, peak speed 309 mm/s, peak acceleration 13582 mm/s^2, max |u-r| 0.000 mm.",
+   "feedforward_design": {
+    "design": "OFF",
+    "source_file": "helix_r7_h5_f7_OFF.npz",
+    "source_design": "OFF",
+    "command_differs_from_reference": false,
+    "description": "u = r (no feedforward)",
+    "design_dir": "ff_diverse",
+    "params": {
+     "shape": "helix",
+     "r_mm": 7.0,
+     "f_hz": 7.0,
+     "h_mm": 5.0,
+     "fz_hz": 1.0,
+     "shape_group": "three_d",
+     "purpose": "らせん: x–y の円 半径 7 mm・7 Hz、z は ±5 mm を 1 Hz（1 s で閉じる）。y を大きく動かす 3 次元",
+     "priority": "A",
+     "metrics": {
+      "max_offset_mm": 8.602325267042627,
+      "max_speed_mm_s": 309.4737949745561,
+      "max_accel_mm_s2": 13581.64279835566,
+      "max_abs_u_minus_r_mm": 0.0,
+      "endpoint_mm": 0.0,
+      "rms_inplane_mm": 6.082762530298219,
+      "rms_y_mm": 4.949747468305833,
+      "extent_mm": [
+       14.0,
+       14.0,
+       10.0
+      ],
+      "duration_sec": 8.0,
+      "safety_ok": true,
+      "accel_within_budget": true,
+      "sim_dev_xyz": [
+       0.08,
+       0.08,
+       0.0
+      ]
+     },
+     "ramp_sec": 0.5,
+     "tau0_ms": 0.85,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.23,
+      "y": 0.24,
+      "z": 3.2
+     },
+     "GAM": {
+      "x": 0.045,
+      "y": 0.04,
+      "z": 0.024
+     }
+    },
+    "loop_frequency_hz": 7.0,
+    "shape": "helix",
+    "priority": "A"
+   },
+   "enabled": true
+  },
+  {
+   "name": "aug_trefoil_f7_OFF",
+   "kind": "imported",
+   "source_npz": "source/ff_diverse/aug_trefoil_s14_f7_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "0eb7af959bc7d28e9159e4f156c81b4bc1c6b74c0d93d174ebaab66c086c4714",
+   "duration_sec": 8.0,
+   "campaign": "session2_20261011",
+   "measurement_family": "feedforward_validation",
+   "condition": "aug_trefoil_f7_off",
+   "note": "Session 2 (SESSION2_PLAN_20261011.md), diverse training command: aug_trefoil_s14_f7_OFF (u = r (no feedforward)). 8 s, 8.246 mm from the centre, peak speed 887 mm/s, peak acceleration 219344 mm/s^2, max |u-r| 0.000 mm.",
+   "feedforward_design": {
+    "design": "OFF",
+    "source_file": "aug_trefoil_s14_f7_OFF.npz",
+    "source_design": "OFF",
+    "command_differs_from_reference": false,
+    "description": "u = r (no feedforward)",
+    "design_dir": "ff_diverse",
+    "params": {
+     "shape": "aug_trefoil_s14_f7",
+     "f_hz": 7.0,
+     "width_mm": 14.0,
+     "source_run": "trefoil_knot_010_trefoil_xyz_f4_20260819_144738",
+     "source_f_hz": 4.0,
+     "source_extent_mm": [
+      5.47,
+      4.22,
+      4.0
+     ],
+     "scale_factor": 2.558,
+     "shape_group": "august",
+     "purpose": "三葉結び目（3 軸とも動く閉曲線）。8 月 trefoil_xyz_f4 を 14 mm に",
+     "priority": "A",
+     "metrics": {
+      "max_offset_mm": 8.246078858202662,
+      "max_speed_mm_s": 886.611910444962,
+      "max_accel_mm_s2": 219343.92799229635,
+      "max_abs_u_minus_r_mm": 0.0,
+      "endpoint_mm": 0.0,
+      "rms_inplane_mm": 5.427247698382653,
+      "rms_y_mm": 3.5159953634524563,
+      "extent_mm": [
+       14.0,
+       10.79,
+       10.23
+      ],
+      "duration_sec": 8.0,
+      "safety_ok": true,
+      "accel_within_budget": true,
+      "sim_dev_xyz": [
+       0.23,
+       0.18,
+       0.03
+      ]
+     },
+     "ramp_sec": 0.5,
+     "tau0_ms": 0.85,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.23,
+      "y": 0.24,
+      "z": 3.2
+     },
+     "GAM": {
+      "x": 0.045,
+      "y": 0.04,
+      "z": 0.024
+     }
+    },
+    "loop_frequency_hz": 7.0,
+    "shape": "aug_trefoil_s14_f7",
+    "priority": "A"
+   },
+   "enabled": true
+  },
+  {
+   "name": "aug_torohelix_f7_OFF",
+   "kind": "imported",
+   "source_npz": "source/ff_diverse/aug_toroidal_helix_s14_f7_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "77936e89ae9ef10186d556e5002fde76a1ce66763435f44c086fbdcf87dc1127",
+   "duration_sec": 8.0,
+   "campaign": "session2_20261011",
+   "measurement_family": "feedforward_validation",
+   "condition": "aug_torohelix_f7_off",
+   "note": "Session 2 (SESSION2_PLAN_20261011.md), diverse training command: aug_toroidal_helix_s14_f7_OFF (u = r (no feedforward)). 8 s, 7.000 mm from the centre, peak speed 454 mm/s, peak acceleration 148456 mm/s^2, max |u-r| 0.000 mm.",
+   "feedforward_design": {
+    "design": "OFF",
+    "source_file": "aug_toroidal_helix_s14_f7_OFF.npz",
+    "source_design": "OFF",
+    "command_differs_from_reference": false,
+    "description": "u = r (no feedforward)",
+    "design_dir": "ff_diverse",
+    "params": {
+     "shape": "aug_toroidal_helix_s14_f7",
+     "f_hz": 7.0,
+     "width_mm": 14.0,
+     "source_run": "closed_toroidal_helix_009_toroidal_helix_turns4_f4_20260819_144723",
+     "source_f_hz": 4.0,
+     "source_extent_mm": [
+      7.5,
+      7.5,
+      2.0
+     ],
+     "scale_factor": 1.867,
+     "shape_group": "august",
+     "purpose": "トーラスらせん（x–y の輪に 4 巻き、z ±）。8 月 toroidal_helix_turns4_f4",
+     "priority": "A",
+     "metrics": {
+      "max_offset_mm": 7.000298909173649,
+      "max_speed_mm_s": 454.448041279984,
+      "max_accel_mm_s2": 148455.75472850213,
+      "max_abs_u_minus_r_mm": 0.0,
+      "endpoint_mm": 0.0,
+      "rms_inplane_mm": 4.232291355125605,
+      "rms_y_mm": 4.021221836617699,
+      "extent_mm": [
+       14.0,
+       14.0,
+       3.73
+      ],
+      "duration_sec": 8.0,
+      "safety_ok": true,
+      "accel_within_budget": true,
+      "sim_dev_xyz": [
+       0.3,
+       0.28,
+       0.02
+      ]
+     },
+     "ramp_sec": 0.5,
+     "tau0_ms": 0.85,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.23,
+      "y": 0.24,
+      "z": 3.2
+     },
+     "GAM": {
+      "x": 0.045,
+      "y": 0.04,
+      "z": 0.024
+     }
+    },
+    "loop_frequency_hz": 7.0,
+    "shape": "aug_toroidal_helix_s14_f7",
+    "priority": "A"
+   },
+   "enabled": true
+  },
+  {
+   "name": "aug_figure8_3d_f7_OFF",
+   "kind": "imported",
+   "source_npz": "source/ff_diverse/aug_figure8_3d_s14_f7_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "1a9fc0c691fa1c9d763c1b92a83cc7f2a6750271d03389e7665ce96c1e9b1513",
+   "duration_sec": 8.0,
+   "campaign": "session2_20261011",
+   "measurement_family": "feedforward_validation",
+   "condition": "aug_figure8_3d_f7_off",
+   "note": "Session 2 (SESSION2_PLAN_20261011.md), diverse training command: aug_figure8_3d_s14_f7_OFF (u = r (no feedforward)). 8 s, 7.700 mm from the centre, peak speed 515 mm/s, peak acceleration 170162 mm/s^2, max |u-r| 0.000 mm.",
+   "feedforward_design": {
+    "design": "OFF",
+    "source_file": "aug_figure8_3d_s14_f7_OFF.npz",
+    "source_design": "OFF",
+    "command_differs_from_reference": false,
+    "description": "u = r (no feedforward)",
+    "design_dir": "ff_diverse",
+    "params": {
+     "shape": "aug_figure8_3d_s14_f7",
+     "f_hz": 7.0,
+     "width_mm": 14.0,
+     "source_run": "figure_eight_3d_circle_xy_008_figure8_xyz_f5_20260819_144708",
+     "source_f_hz": 5.0,
+     "source_extent_mm": [
+      6.0,
+      4.0,
+      4.0
+     ],
+     "scale_factor": 2.333,
+     "shape_group": "august",
+     "purpose": "3 次元の 8 の字（x 3 : y 2 : z 2）。8 月 figure8_xyz_f5",
+     "priority": "A",
+     "metrics": {
+      "max_offset_mm": 7.700321356930503,
+      "max_speed_mm_s": 514.7826207905441,
+      "max_accel_mm_s2": 170162.17398672036,
+      "max_abs_u_minus_r_mm": 0.0,
+      "endpoint_mm": 0.0,
+      "rms_inplane_mm": 5.948793556624028,
+      "rms_y_mm": 3.299840062631454,
+      "extent_mm": [
+       14.0,
+       9.33,
+       9.33
+      ],
+      "duration_sec": 8.0,
+      "safety_ok": true,
+      "accel_within_budget": true,
+      "sim_dev_xyz": [
+       0.09,
+       0.05,
+       0.01
+      ]
+     },
+     "ramp_sec": 0.5,
+     "tau0_ms": 0.85,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.23,
+      "y": 0.24,
+      "z": 3.2
+     },
+     "GAM": {
+      "x": 0.045,
+      "y": 0.04,
+      "z": 0.024
+     }
+    },
+    "loop_frequency_hz": 7.0,
+    "shape": "aug_figure8_3d_s14_f7",
+    "priority": "A"
+   },
+   "enabled": true
+  },
+  {
+   "name": "aug_deltoid_xz_y_f7_OFF",
+   "kind": "imported",
+   "source_npz": "source/ff_diverse/aug_deltoid_xz_y_s14_f7_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "cad542c3cf584d339f9e89241aefac021f3e859e639ec0f8d487ba900a0d0c7e",
+   "duration_sec": 8.0,
+   "campaign": "session2_20261011",
+   "measurement_family": "feedforward_validation",
+   "condition": "aug_deltoid_xz_y_f7_off",
+   "note": "Session 2 (SESSION2_PLAN_20261011.md), diverse training command: aug_deltoid_xz_y_s14_f7_OFF (u = r (no feedforward)). 8 s, 8.923 mm from the centre, peak speed 481 mm/s, peak acceleration 135051 mm/s^2, max |u-r| 0.000 mm.",
+   "feedforward_design": {
+    "design": "OFF",
+    "source_file": "aug_deltoid_xz_y_s14_f7_OFF.npz",
+    "source_design": "OFF",
+    "command_differs_from_reference": false,
+    "description": "u = r (no feedforward)",
+    "design_dir": "ff_diverse",
+    "params": {
+     "shape": "aug_deltoid_xz_y_s14_f7",
+     "f_hz": 7.0,
+     "width_mm": 14.0,
+     "source_run": "cusped_3d_032_deltoid_sharp_xz_y_f4_20260819_171551",
+     "source_f_hz": 4.0,
+     "source_extent_mm": [
+      4.5,
+      1.5,
+      6.0
+     ],
+     "scale_factor": 2.333,
+     "shape_group": "august",
+     "purpose": "デルトイド（3 尖点、x–z 面、y を持ち上げ）。鋭い尖点での向き変え。8 月 deltoid_sharp_xz_y_f4",
+     "priority": "A",
+     "metrics": {
+      "max_offset_mm": 8.923284148787374,
+      "max_speed_mm_s": 480.70064604929917,
+      "max_accel_mm_s2": 135051.43053499734,
+      "max_abs_u_minus_r_mm": 0.0,
+      "endpoint_mm": 0.0,
+      "rms_inplane_mm": 5.901034338982729,
+      "rms_y_mm": 1.2374432881801987,
+      "extent_mm": [
+       10.5,
+       3.5,
+       14.0
+      ],
+      "duration_sec": 8.0,
+      "safety_ok": true,
+      "accel_within_budget": true,
+      "sim_dev_xyz": [
+       0.14,
+       0.14,
+       0.01
+      ]
+     },
+     "ramp_sec": 0.5,
+     "tau0_ms": 0.85,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.23,
+      "y": 0.24,
+      "z": 3.2
+     },
+     "GAM": {
+      "x": 0.045,
+      "y": 0.04,
+      "z": 0.024
+     }
+    },
+    "loop_frequency_hz": 7.0,
+    "shape": "aug_deltoid_xz_y_s14_f7",
+    "priority": "A"
+   },
+   "enabled": true
+  },
+  {
+   "name": "aug_nephroid_xy_z_f7_OFF",
+   "kind": "imported",
+   "source_npz": "source/ff_diverse/aug_nephroid_xy_z_s14_f7_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "d8f455a079963a1d9654ddca8ec79dad7780758b297124293e44817a3bf645da",
+   "duration_sec": 8.0,
+   "campaign": "session2_20261011",
+   "measurement_family": "feedforward_validation",
+   "condition": "aug_nephroid_xy_z_f7_off",
+   "note": "Session 2 (SESSION2_PLAN_20261011.md), diverse training command: aug_nephroid_xy_z_s14_f7_OFF (u = r (no feedforward)). 8 s, 7.418 mm from the centre, peak speed 655 mm/s, peak acceleration 153451 mm/s^2, max |u-r| 0.000 mm.",
+   "feedforward_design": {
+    "design": "OFF",
+    "source_file": "aug_nephroid_xy_z_s14_f7_OFF.npz",
+    "source_design": "OFF",
+    "command_differs_from_reference": false,
+    "description": "u = r (no feedforward)",
+    "design_dir": "ff_diverse",
+    "params": {
+     "shape": "aug_nephroid_xy_z_s14_f7",
+     "f_hz": 7.0,
+     "width_mm": 14.0,
+     "source_run": "cusped_3d_031_nephroid_lifted_xy_z_f4_20260819_171514",
+     "source_f_hz": 4.0,
+     "source_extent_mm": [
+      6.0,
+      5.0,
+      1.5
+     ],
+     "scale_factor": 2.333,
+     "shape_group": "august",
+     "purpose": "ネフロイド（2 尖点、x–y 面、z を持ち上げ）。y が主役の面。8 月 nephroid_lifted_xy_z_f4",
+     "priority": "B",
+     "metrics": {
+      "max_offset_mm": 7.4178252053939495,
+      "max_speed_mm_s": 655.3718198277787,
+      "max_accel_mm_s2": 153451.0417786028,
+      "max_abs_u_minus_r_mm": 0.0,
+      "endpoint_mm": 0.0,
+      "rms_inplane_mm": 5.670549566863085,
+      "rms_y_mm": 3.260915997869311,
+      "extent_mm": [
+       14.0,
+       11.67,
+       3.5
+      ],
+      "duration_sec": 8.0,
+      "safety_ok": true,
+      "accel_within_budget": true,
+      "sim_dev_xyz": [
+       0.3,
+       0.16,
+       0.01
+      ]
+     },
+     "ramp_sec": 0.5,
+     "tau0_ms": 0.85,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.23,
+      "y": 0.24,
+      "z": 3.2
+     },
+     "GAM": {
+      "x": 0.045,
+      "y": 0.04,
+      "z": 0.024
+     }
+    },
+    "loop_frequency_hz": 7.0,
+    "shape": "aug_nephroid_xy_z_s14_f7",
+    "priority": "B"
+   },
+   "enabled": true
+  },
+  {
+   "name": "aug_astroid_yz_x_f7_OFF",
+   "kind": "imported",
+   "source_npz": "source/ff_diverse/aug_astroid_yz_x_s14_f7_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "b908a0256e87c853435bc36ff381e77d80ccc6340357e1f76c70fdebc639031a",
+   "duration_sec": 8.0,
+   "campaign": "session2_20261011",
+   "measurement_family": "feedforward_validation",
+   "condition": "aug_astroid_yz_x_f7_off",
+   "note": "Session 2 (SESSION2_PLAN_20261011.md), diverse training command: aug_astroid_yz_x_s14_f7_OFF (u = r (no feedforward)). 8 s, 7.215 mm from the centre, peak speed 485 mm/s, peak acceleration 163749 mm/s^2, max |u-r| 0.000 mm.",
+   "feedforward_design": {
+    "design": "OFF",
+    "source_file": "aug_astroid_yz_x_s14_f7_OFF.npz",
+    "source_design": "OFF",
+    "command_differs_from_reference": false,
+    "description": "u = r (no feedforward)",
+    "design_dir": "ff_diverse",
+    "params": {
+     "shape": "aug_astroid_yz_x_s14_f7",
+     "f_hz": 7.0,
+     "width_mm": 14.0,
+     "source_run": "cusped_3d_034_astroid_lifted_yz_x_f4_20260819_171929",
+     "source_f_hz": 4.0,
+     "source_extent_mm": [
+      1.5,
+      6.0,
+      6.0
+     ],
+     "scale_factor": 2.333,
+     "shape_group": "august",
+     "purpose": "アストロイド（4 尖点、y–z 面、x を持ち上げ）。8 月 astroid_lifted_yz_x_f4",
+     "priority": "B",
+     "metrics": {
+      "max_offset_mm": 7.215434844830906,
+      "max_speed_mm_s": 484.7308509073287,
+      "max_accel_mm_s2": 163749.4698921763,
+      "max_abs_u_minus_r_mm": 0.0,
+      "endpoint_mm": 0.0,
+      "rms_inplane_mm": 4.104057952956102,
+      "rms_y_mm": 3.913111992859676,
+      "extent_mm": [
+       3.5,
+       14.0,
+       14.0
+      ],
+      "duration_sec": 8.0,
+      "safety_ok": true,
+      "accel_within_budget": true,
+      "sim_dev_xyz": [
+       0.28,
+       0.19,
+       0.02
+      ]
+     },
+     "ramp_sec": 0.5,
+     "tau0_ms": 0.85,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.23,
+      "y": 0.24,
+      "z": 3.2
+     },
+     "GAM": {
+      "x": 0.045,
+      "y": 0.04,
+      "z": 0.024
+     }
+    },
+    "loop_frequency_hz": 7.0,
+    "shape": "aug_astroid_yz_x_s14_f7",
+    "priority": "B"
+   },
+   "enabled": true
+  },
+  {
+   "name": "aug_hypo5_xz_y_f7_OFF",
+   "kind": "imported",
+   "source_npz": "source/ff_diverse/aug_hypocycloid5_xz_y_s14_f7_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "d082172c57c4c9b13c52c0972f718e4d5b745aff570e75b911786f4ed77518e0",
+   "duration_sec": 8.0,
+   "campaign": "session2_20261011",
+   "measurement_family": "feedforward_validation",
+   "condition": "aug_hypo5_xz_y_f7_off",
+   "note": "Session 2 (SESSION2_PLAN_20261011.md), diverse training command: aug_hypocycloid5_xz_y_s14_f7_OFF (u = r (no feedforward)). 8 s, 8.015 mm from the centre, peak speed 650 mm/s, peak acceleration 216699 mm/s^2, max |u-r| 0.000 mm.",
+   "feedforward_design": {
+    "design": "OFF",
+    "source_file": "aug_hypocycloid5_xz_y_s14_f7_OFF.npz",
+    "source_design": "OFF",
+    "command_differs_from_reference": false,
+    "description": "u = r (no feedforward)",
+    "design_dir": "ff_diverse",
+    "params": {
+     "shape": "aug_hypocycloid5_xz_y_s14_f7",
+     "f_hz": 7.0,
+     "width_mm": 14.0,
+     "source_run": "cusped_3d_035_hypocycloid5_lifted_xyz_f4_20260819_172111",
+     "source_f_hz": 4.0,
+     "source_extent_mm": [
+      5.43,
+      2.0,
+      6.0
+     ],
+     "scale_factor": 2.333,
+     "shape_group": "august",
+     "purpose": "5 尖点のハイポサイクロイド（x–z 面、y を持ち上げ）。8 月 hypocycloid5_lifted_xyz_f4",
+     "priority": "A",
+     "metrics": {
+      "max_offset_mm": 8.01539847384049,
+      "max_speed_mm_s": 650.1338323776599,
+      "max_accel_mm_s2": 216698.71558949928,
+      "max_abs_u_minus_r_mm": 0.0,
+      "endpoint_mm": 0.0,
+      "rms_inplane_mm": 5.960280555665517,
+      "rms_y_mm": 1.6498783517648272,
+      "extent_mm": [
+       12.66,
+       4.67,
+       14.0
+      ],
+      "duration_sec": 8.0,
+      "safety_ok": true,
+      "accel_within_budget": true,
+      "sim_dev_xyz": [
+       0.29,
+       0.6,
+       0.02
+      ]
+     },
+     "ramp_sec": 0.5,
+     "tau0_ms": 0.85,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.23,
+      "y": 0.24,
+      "z": 3.2
+     },
+     "GAM": {
+      "x": 0.045,
+      "y": 0.04,
+      "z": 0.024
+     }
+    },
+    "loop_frequency_hz": 7.0,
+    "shape": "aug_hypocycloid5_xz_y_s14_f7",
+    "priority": "A"
+   },
+   "enabled": true
+  },
+  {
+   "name": "aug_nephroid_r30_f8_OFF",
+   "kind": "imported",
+   "source_npz": "source/ff_diverse/aug_nephroid_xz_y_rot30_s14_f8_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "6548a399816e56689850ba5def50c740ba2b18c2f8b9c88e7429129a5814ac98",
+   "duration_sec": 8.0,
+   "campaign": "session2_20261011",
+   "measurement_family": "feedforward_validation",
+   "condition": "aug_nephroid_r30_f8_off",
+   "note": "Session 2 (SESSION2_PLAN_20261011.md), diverse training command: aug_nephroid_xz_y_rot30_s14_f8_OFF (u = r (no feedforward)). 8 s, 7.413 mm from the centre, peak speed 697 mm/s, peak acceleration 215072 mm/s^2, max |u-r| 0.000 mm.",
+   "feedforward_design": {
+    "design": "OFF",
+    "source_file": "aug_nephroid_xz_y_rot30_s14_f8_OFF.npz",
+    "source_design": "OFF",
+    "command_differs_from_reference": false,
+    "description": "u = r (no feedforward)",
+    "design_dir": "ff_diverse",
+    "params": {
+     "shape": "aug_nephroid_xz_y_rot30_s14_f8",
+     "f_hz": 8.0,
+     "width_mm": 14.0,
+     "source_run": "cusped_3d_036_unseen_nephroid_xz_y_rot30_f8_20260819_172154",
+     "source_f_hz": 8.0,
+     "source_extent_mm": [
+      5.0,
+      2.0,
+      5.0
+     ],
+     "scale_factor": 2.8,
+     "shape_group": "august",
+     "purpose": "ネフロイドを面内で 30° 回し y を持ち上げ、8 Hz（元の周波数）。8 月 unseen_nephroid_xz_y_rot30_f8",
+     "priority": "B",
+     "metrics": {
+      "max_offset_mm": 7.413415070532613,
+      "max_speed_mm_s": 697.0256810201145,
+      "max_accel_mm_s2": 215072.0809429629,
+      "max_abs_u_minus_r_mm": 0.0,
+      "endpoint_mm": 0.0,
+      "rms_inplane_mm": 6.2835627891498875,
+      "rms_y_mm": 1.9799678093156967,
+      "extent_mm": [
+       14.0,
+       5.6,
+       14.0
+      ],
+      "duration_sec": 8.0,
+      "safety_ok": true,
+      "accel_within_budget": true,
+      "sim_dev_xyz": [
+       0.32,
+       0.13,
+       0.02
+      ]
+     },
+     "ramp_sec": 0.5,
+     "tau0_ms": 0.85,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.23,
+      "y": 0.24,
+      "z": 3.2
+     },
+     "GAM": {
+      "x": 0.045,
+      "y": 0.04,
+      "z": 0.024
+     }
+    },
+    "loop_frequency_hz": 8.0,
+    "shape": "aug_nephroid_xz_y_rot30_s14_f8",
+    "priority": "B"
+   },
+   "enabled": true
+  },
+  {
+   "name": "aug_hypo6_xy_z_f5_OFF",
+   "kind": "imported",
+   "source_npz": "source/ff_diverse/aug_hypocycloid6_xy_z_s14_f5_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "fc5af5b82bfef73ba58ef183a4653fb51ba856890dd7318d273265e0b32a4a54",
+   "duration_sec": 8.0,
+   "campaign": "session2_20261011",
+   "measurement_family": "feedforward_validation",
+   "condition": "aug_hypo6_xy_z_f5_off",
+   "note": "Session 2 (SESSION2_PLAN_20261011.md), diverse training command: aug_hypocycloid6_xy_z_s14_f5_OFF (u = r (no feedforward)). 8 s, 8.312 mm from the centre, peak speed 622 mm/s, peak acceleration 232164 mm/s^2, max |u-r| 0.000 mm.",
+   "feedforward_design": {
+    "design": "OFF",
+    "source_file": "aug_hypocycloid6_xy_z_s14_f5_OFF.npz",
+    "source_design": "OFF",
+    "command_differs_from_reference": false,
+    "description": "u = r (no feedforward)",
+    "design_dir": "ff_diverse",
+    "params": {
+     "shape": "aug_hypocycloid6_xy_z_s14_f5",
+     "f_hz": 5.0,
+     "width_mm": 14.0,
+     "source_run": "cusped_3d_037_unseen_hypocycloid6_xy_z_f5_20260819_172237",
+     "source_f_hz": 5.0,
+     "source_extent_mm": [
+      5.0,
+      5.0,
+      2.0
+     ],
+     "scale_factor": 2.8,
+     "shape_group": "august",
+     "purpose": "6 尖点のハイポサイクロイド（x–y 面、z 持ち上げ、5 Hz）。8 月 unseen_hypocycloid6_xy_z_f5",
+     "priority": "B",
+     "metrics": {
+      "max_offset_mm": 8.312039460926542,
+      "max_speed_mm_s": 622.016076965714,
+      "max_accel_mm_s2": 232163.7353251901,
+      "max_abs_u_minus_r_mm": 0.0,
+      "endpoint_mm": 0.0,
+      "rms_inplane_mm": 4.649100813619769,
+      "rms_y_mm": 4.857273479218562,
+      "extent_mm": [
+       14.0,
+       14.0,
+       5.6
+      ],
+      "duration_sec": 8.0,
+      "safety_ok": true,
+      "accel_within_budget": true,
+      "sim_dev_xyz": [
+       0.19,
+       0.2,
+       0.03
+      ]
+     },
+     "ramp_sec": 0.5,
+     "tau0_ms": 0.85,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.23,
+      "y": 0.24,
+      "z": 3.2
+     },
+     "GAM": {
+      "x": 0.045,
+      "y": 0.04,
+      "z": 0.024
+     }
+    },
+    "loop_frequency_hz": 5.0,
+    "shape": "aug_hypocycloid6_xy_z_s14_f5",
+    "priority": "B"
+   },
+   "enabled": true
+  },
+  {
+   "name": "aug_lissajous3d_f7_OFF",
+   "kind": "imported",
+   "source_npz": "source/ff_diverse/aug_lissajous3d_s14_f7_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "b87394a2ea87b448e3aba27a12ab713632cd48d4c2b0e5e501e0dd9b66b2ef9e",
+   "duration_sec": 8.0,
+   "campaign": "session2_20261011",
+   "measurement_family": "feedforward_validation",
+   "condition": "aug_lissajous3d_f7_off",
+   "note": "Session 2 (SESSION2_PLAN_20261011.md), diverse training command: aug_lissajous3d_s14_f7_OFF (u = r (no feedforward)). 8 s, 8.566 mm from the centre, peak speed 658 mm/s, peak acceleration 184097 mm/s^2, max |u-r| 0.000 mm.",
+   "feedforward_design": {
+    "design": "OFF",
+    "source_file": "aug_lissajous3d_s14_f7_OFF.npz",
+    "source_design": "OFF",
+    "command_differs_from_reference": false,
+    "description": "u = r (no feedforward)",
+    "design_dir": "ff_diverse",
+    "params": {
+     "shape": "aug_lissajous3d_s14_f7",
+     "f_hz": 7.0,
+     "width_mm": 14.0,
+     "source_run": "lissajous_3d_011_lissajous_xyz_f4_20260819_144753",
+     "source_f_hz": 4.0,
+     "source_extent_mm": [
+      6.0,
+      4.0,
+      3.0
+     ],
+     "scale_factor": 2.333,
+     "shape_group": "august",
+     "purpose": "3 次元リサージュ（x 3 : y 2 : z 1.5）。既存 lissajous3d_s13 と比の違う 3 次元。8 月 lissajous_xyz_f4",
+     "priority": "B",
+     "metrics": {
+      "max_offset_mm": 8.565936479905615,
+      "max_speed_mm_s": 657.6234146969191,
+      "max_accel_mm_s2": 184096.8947806521,
+      "max_abs_u_minus_r_mm": 0.0,
+      "endpoint_mm": 0.0,
+      "rms_inplane_mm": 5.533946559666076,
+      "rms_y_mm": 3.299802108578971,
+      "extent_mm": [
+       14.0,
+       9.33,
+       7.0
+      ],
+      "duration_sec": 8.0,
+      "safety_ok": true,
+      "accel_within_budget": true,
+      "sim_dev_xyz": [
+       0.09,
+       0.17,
+       0.03
+      ]
+     },
+     "ramp_sec": 0.5,
+     "tau0_ms": 0.85,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.23,
+      "y": 0.24,
+      "z": 3.2
+     },
+     "GAM": {
+      "x": 0.045,
+      "y": 0.04,
+      "z": 0.024
+     }
+    },
+    "loop_frequency_hz": 7.0,
+    "shape": "aug_lissajous3d_s14_f7",
+    "priority": "B"
+   },
+   "enabled": true
+  },
+  {
+   "name": "aug_random_balanced_OFF",
+   "kind": "imported",
+   "source_npz": "source/ff_diverse/aug_random_balanced_box15_8s_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "72e61823fe943a0bd391762d0d26a5654fc3fa4e3ead068f341a4ab77765cfab",
+   "duration_sec": 8.0,
+   "campaign": "session2_20261011",
+   "measurement_family": "feedforward_validation",
+   "condition": "aug_random_balanced_off",
+   "note": "Session 2 (SESSION2_PLAN_20261011.md), diverse training command: aug_random_balanced_box15_8s_OFF (u = r (no feedforward)). 8 s, 18.993 mm from the centre, peak speed 319 mm/s, peak acceleration 51137 mm/s^2, max |u-r| 0.000 mm.",
+   "feedforward_design": {
+    "design": "OFF",
+    "source_file": "aug_random_balanced_box15_8s_OFF.npz",
+    "source_design": "OFF",
+    "command_differs_from_reference": false,
+    "description": "u = r (no feedforward)",
+    "design_dir": "ff_diverse",
+    "params": {
+     "shape": "aug_random_balanced_box15_8s",
+     "box_mm": 15.0,
+     "source_run": "long_random_3d_000_balanced_xyz_8s_seed2101_20260807_185506",
+     "source_f_range_hz": [
+      0.25,
+      10.0
+     ],
+     "source_duration_sec": 8.0,
+     "source_absmax_mm": [
+      22.0,
+      22.0,
+      22.0
+     ],
+     "scale_factor": 0.682,
+     "shape_group": "august",
+     "purpose": "8 月の長い乱数（0.25〜10 Hz、3 軸均等、うねり＋チャープ＋経由点）を ±15 mm に縮尺。低周波の大きな移動",
+     "priority": "A",
+     "metrics": {
+      "max_offset_mm": 18.993308765539286,
+      "max_speed_mm_s": 319.32827713998745,
+      "max_accel_mm_s2": 51136.94284376831,
+      "max_abs_u_minus_r_mm": 0.0,
+      "endpoint_mm": 0.0,
+      "rms_inplane_mm": 7.917892790497674,
+      "rms_y_mm": 4.537575372475425,
+      "extent_mm": [
+       27.88,
+       27.15,
+       26.99
+      ],
+      "duration_sec": 8.0,
+      "safety_ok": true,
+      "accel_within_budget": true,
+      "sim_dev_xyz": [
+       0.06,
+       0.06,
+       0.0
+      ]
+     },
+     "ramp_sec": 0.5,
+     "tau0_ms": 0.85,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.23,
+      "y": 0.24,
+      "z": 3.2
+     },
+     "GAM": {
+      "x": 0.045,
+      "y": 0.04,
+      "z": 0.024
+     }
+    },
+    "shape": "aug_random_balanced_box15_8s",
+    "priority": "A"
+   },
+   "enabled": true
+  },
+  {
+   "name": "aug_random_depth_rich_OFF",
+   "kind": "imported",
+   "source_npz": "source/ff_diverse/aug_random_depth_rich_box15_8s_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "1423e4e1db392122b9064a80e9cef2252e2d2a9ae84e8ca35b133fe5d5cfc8e2",
+   "duration_sec": 8.0,
+   "campaign": "session2_20261011",
+   "measurement_family": "feedforward_validation",
+   "condition": "aug_random_depth_rich_off",
+   "note": "Session 2 (SESSION2_PLAN_20261011.md), diverse training command: aug_random_depth_rich_box15_8s_OFF (u = r (no feedforward)). 8 s, 17.922 mm from the centre, peak speed 173 mm/s, peak acceleration 55005 mm/s^2, max |u-r| 0.000 mm.",
+   "feedforward_design": {
+    "design": "OFF",
+    "source_file": "aug_random_depth_rich_box15_8s_OFF.npz",
+    "source_design": "OFF",
+    "command_differs_from_reference": false,
+    "description": "u = r (no feedforward)",
+    "design_dir": "ff_diverse",
+    "params": {
+     "shape": "aug_random_depth_rich_box15_8s",
+     "box_mm": 15.0,
+     "source_run": "long_random_3d_002_depth_rich_10s_seed2303_20260807_185658",
+     "source_f_range_hz": [
+      0.15,
+      9.0
+     ],
+     "source_duration_sec": 10.0,
+     "source_absmax_mm": [
+      18.0,
+      28.0,
+      24.0
+     ],
+     "scale_factor": 0.733,
+     "shape_group": "august",
+     "purpose": "8 月の長い乱数（y が主役、0.15〜9 Hz）を ±15 mm に。カメラの奥行き方向の大きな移動",
+     "priority": "A",
+     "metrics": {
+      "max_offset_mm": 17.92169219940926,
+      "max_speed_mm_s": 172.54421422648105,
+      "max_accel_mm_s2": 55005.08648228116,
+      "max_abs_u_minus_r_mm": 0.0,
+      "endpoint_mm": 0.0,
+      "rms_inplane_mm": 8.154666051197987,
+      "rms_y_mm": 6.7227344135949965,
+      "extent_mm": [
+       25.05,
+       28.87,
+       25.59
+      ],
+      "duration_sec": 8.0,
+      "safety_ok": true,
+      "accel_within_budget": true,
+      "sim_dev_xyz": [
+       0.03,
+       0.03,
+       0.0
+      ]
+     },
+     "ramp_sec": 0.5,
+     "tau0_ms": 0.85,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.23,
+      "y": 0.24,
+      "z": 3.2
+     },
+     "GAM": {
+      "x": 0.045,
+      "y": 0.04,
+      "z": 0.024
+     }
+    },
+    "shape": "aug_random_depth_rich_box15_8s",
+    "priority": "A"
+   },
+   "enabled": true
+  },
+  {
+   "name": "aug_random_vertical_OFF",
+   "kind": "imported",
+   "source_npz": "source/ff_diverse/aug_random_vertical_rich_box15_8s_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "f3e8910a2725b38fbc21dde80be7e2c393bfc4150e1794d4bb83383ba25572db",
+   "duration_sec": 8.0,
+   "campaign": "session2_20261011",
+   "measurement_family": "feedforward_validation",
+   "condition": "aug_random_vertical_off",
+   "note": "Session 2 (SESSION2_PLAN_20261011.md), diverse training command: aug_random_vertical_rich_box15_8s_OFF (u = r (no feedforward)). 8 s, 16.005 mm from the centre, peak speed 222 mm/s, peak acceleration 39355 mm/s^2, max |u-r| 0.000 mm.",
+   "feedforward_design": {
+    "design": "OFF",
+    "source_file": "aug_random_vertical_rich_box15_8s_OFF.npz",
+    "source_design": "OFF",
+    "command_differs_from_reference": false,
+    "description": "u = r (no feedforward)",
+    "design_dir": "ff_diverse",
+    "params": {
+     "shape": "aug_random_vertical_rich_box15_8s",
+     "box_mm": 15.0,
+     "source_run": "long_random_3d_003_vertical_rich_10s_seed2404_20260807_185751",
+     "source_f_range_hz": [
+      0.15,
+      9.0
+     ],
+     "source_duration_sec": 10.0,
+     "source_absmax_mm": [
+      18.0,
+      18.0,
+      28.0
+     ],
+     "scale_factor": 0.525,
+     "shape_group": "august",
+     "purpose": "8 月の長い乱数（z が主役、0.15〜9 Hz）を ±15 mm に。鉛直の大きな移動",
+     "priority": "B",
+     "metrics": {
+      "max_offset_mm": 16.0047336255682,
+      "max_speed_mm_s": 221.7742155921764,
+      "max_accel_mm_s2": 39355.11577362975,
+      "max_abs_u_minus_r_mm": 0.0,
+      "endpoint_mm": 0.0,
+      "rms_inplane_mm": 6.201647543981528,
+      "rms_y_mm": 3.4860007617115314,
+      "extent_mm": [
+       15.31,
+       15.94,
+       29.28
+      ],
+      "duration_sec": 8.0,
+      "safety_ok": true,
+      "accel_within_budget": true,
+      "sim_dev_xyz": [
+       0.01,
+       0.02,
+       0.0
+      ]
+     },
+     "ramp_sec": 0.5,
+     "tau0_ms": 0.85,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.23,
+      "y": 0.24,
+      "z": 3.2
+     },
+     "GAM": {
+      "x": 0.045,
+      "y": 0.04,
+      "z": 0.024
+     }
+    },
+    "shape": "aug_random_vertical_rich_box15_8s",
+    "priority": "B"
+   },
+   "enabled": true
+  },
+  {
+   "name": "aug_random_highfreq_OFF",
+   "kind": "imported",
+   "source_npz": "source/ff_diverse/aug_random_highfreq_box15_8s_OFF.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "93c60f735fce9e2d2e585a54e497a080cae9930bdf09fdb825e5c134037d71fe",
+   "duration_sec": 8.0,
+   "campaign": "session2_20261011",
+   "measurement_family": "feedforward_validation",
+   "condition": "aug_random_highfreq_off",
+   "note": "Session 2 (SESSION2_PLAN_20261011.md), diverse training command: aug_random_highfreq_box15_8s_OFF (u = r (no feedforward)). 8 s, 19.441 mm from the centre, peak speed 459 mm/s, peak acceleration 82060 mm/s^2, max |u-r| 0.000 mm.",
+   "feedforward_design": {
+    "design": "OFF",
+    "source_file": "aug_random_highfreq_box15_8s_OFF.npz",
+    "source_design": "OFF",
+    "command_differs_from_reference": false,
+    "description": "u = r (no feedforward)",
+    "design_dir": "ff_diverse",
+    "params": {
+     "shape": "aug_random_highfreq_box15_8s",
+     "box_mm": 15.0,
+     "source_run": "long_random_3d_004_high_frequency_xyz_8s_seed2505_20260807_185846",
+     "source_f_range_hz": [
+      0.5,
+      16.0
+     ],
+     "source_duration_sec": 8.0,
+     "source_absmax_mm": [
+      18.0,
+      18.0,
+      18.0
+     ],
+     "scale_factor": 0.833,
+     "shape_group": "august",
+     "purpose": "8 月の長い乱数（0.5〜16 Hz）を ±15 mm に。上の random_* と 8 月の乱数の中間の帯域",
+     "priority": "B",
+     "metrics": {
+      "max_offset_mm": 19.441382903177537,
+      "max_speed_mm_s": 458.65679031342984,
+      "max_accel_mm_s2": 82060.18400960596,
+      "max_abs_u_minus_r_mm": 0.0,
+      "endpoint_mm": 0.0,
+      "rms_inplane_mm": 6.698790666853951,
+      "rms_y_mm": 5.813374590322757,
+      "extent_mm": [
+       27.38,
+       29.22,
+       26.14
+      ],
+      "duration_sec": 8.0,
+      "safety_ok": true,
+      "accel_within_budget": true,
+      "sim_dev_xyz": [
+       0.17,
+       0.12,
+       0.01
+      ]
+     },
+     "ramp_sec": 0.5,
+     "tau0_ms": 0.85,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.23,
+      "y": 0.24,
+      "z": 3.2
+     },
+     "GAM": {
+      "x": 0.045,
+      "y": 0.04,
+      "z": 0.024
+     }
+    },
+    "shape": "aug_random_highfreq_box15_8s",
+    "priority": "B"
+   },
+   "enabled": true
+  },
+  {
+   "name": "heart_s7_f10_C_nn_M1z",
+   "kind": "imported",
+   "source_npz": "source/ff_nn_v15c/heart_s7_f10_C_nn_M1z.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "b7f3a77b7f3b48a9ff01e12af4b686d554401539b754d9fcc69c1e04437bff7a",
+   "duration_sec": 8.0,
+   "campaign": "session2_20261011",
+   "measurement_family": "feedforward_validation",
+   "condition": "heart_s7_f10_c_nn_m1z",
+   "note": "Session 2, compensation from the model learned on the cooled data: heart_s7_f10_C_nn_M1z (inverse of the learned model M1z (trained on the 10/10 cooled data, V15c block 2)). 8 s, 8.892 mm from the centre, peak speed 738 mm/s, peak acceleration 100541 mm/s^2, max |u-r| 0.860 mm.",
+   "feedforward_design": {
+    "design": "C_nn_M1z",
+    "source_file": "heart_s7_f10_C_nn_M1z.npz",
+    "source_design": "C_nn_M1z",
+    "command_differs_from_reference": true,
+    "description": "inverse of the learned model M1z (trained on the 10/10 cooled data, V15c block 2)",
+    "design_dir": "ff_nn_v15c",
+    "params": {
+     "shape": "heart",
+     "scale_mm": 7.0,
+     "f_hz": 10.0,
+     "f_cmd_hz": 10.0,
+     "tau0_ms": 0.9,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.208,
+      "y": 0.198,
+      "z": 2.48
+     },
+     "GAM": {
+      "x": 0.0372,
+      "y": 0.0319,
+      "z": 0.0237
+     },
+     "ramp_sec": 0.5,
+     "nn_compensation": {
+      "model": "M1z-fast",
+      "method": "fast_newton",
+      "model_dir": "results/b2g_M1z/M1z/2",
+      "nmax": 9,
+      "loops": 2,
+      "iters": 3,
+      "probe_mm": 0.1,
+      "remeasure": false,
+      "base_design": "OFF",
+      "inplane_before": 0.6812520317971861,
+      "inplane_after": 0.04137975677729402,
+      "sec_probe": 14.136099338531494,
+      "sec_iter": [
+       12.279936790466309,
+       12.245572328567505,
+       12.211273431777954
+      ],
+      "sec_total": 91.20119738578796,
+      "limits_ok": true,
+      "offset": 8.89235357376427,
+      "speed": 737.8748360828745,
+      "accel": 100541.02772752596,
+      "endpoint": 0.0,
+      "dist": 0.8597475024707807
+     }
+    },
+    "loop_frequency_hz": 10.0,
+    "shape": "heart"
+   },
+   "enabled": true
+  },
+  {
+   "name": "heart_s7_f7_C_nn_M1z",
+   "kind": "imported",
+   "source_npz": "source/ff_nn_v15c/heart_s7_f7_C_nn_M1z.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "efde7219f8aa5f97655f834b51e16deaf6cc6f1c3ac94af49e10057ab9284ca5",
+   "duration_sec": 8.0,
+   "campaign": "session2_20261011",
+   "measurement_family": "feedforward_validation",
+   "condition": "heart_s7_f7_c_nn_m1z",
+   "note": "Session 2, compensation from the model learned on the cooled data: heart_s7_f7_C_nn_M1z (inverse of the learned model M1z (trained on the 10/10 cooled data, V15c block 2)). 8 s, 8.902 mm from the centre, peak speed 524 mm/s, peak acceleration 50468 mm/s^2, max |u-r| 0.664 mm.",
+   "feedforward_design": {
+    "design": "C_nn_M1z",
+    "source_file": "heart_s7_f7_C_nn_M1z.npz",
+    "source_design": "C_nn_M1z",
+    "command_differs_from_reference": true,
+    "description": "inverse of the learned model M1z (trained on the 10/10 cooled data, V15c block 2)",
+    "design_dir": "ff_nn_v15c",
+    "params": {
+     "shape": "heart",
+     "scale_mm": 7.0,
+     "f_hz": 7.0,
+     "f_cmd_hz": 7.0,
+     "tau0_ms": 0.9,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.208,
+      "y": 0.198,
+      "z": 2.48
+     },
+     "GAM": {
+      "x": 0.0372,
+      "y": 0.0319,
+      "z": 0.0237
+     },
+     "ramp_sec": 0.5,
+     "nn_compensation": {
+      "model": "M1z-fast",
+      "method": "fast_newton",
+      "model_dir": "results/b2g_M1z/M1z/2",
+      "nmax": 9,
+      "loops": 2,
+      "iters": 3,
+      "probe_mm": 0.1,
+      "remeasure": false,
+      "base_design": "OFF",
+      "inplane_before": 0.47571746186500874,
+      "inplane_after": 0.09711327219938637,
+      "sec_probe": 16.541897296905518,
+      "sec_iter": [
+       13.700514316558838,
+       13.762531042098999,
+       13.787184000015259
+      ],
+      "sec_total": 103.93506908416748,
+      "limits_ok": true,
+      "offset": 8.902114839100905,
+      "speed": 524.3656277684453,
+      "accel": 50467.95510441711,
+      "endpoint": 0.0,
+      "dist": 0.6642362234744558
+     }
+    },
+    "loop_frequency_hz": 7.0,
+    "shape": "heart"
+   },
+   "enabled": true
+  },
+  {
+   "name": "cardioid_a5p4_f10_C_nn_M1z",
+   "kind": "imported",
+   "source_npz": "source/ff_nn_v15c/cardioid_a5p4_f10_C_nn_M1z.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "bbd8d2bd381f1387d8df138e507a5f2f9be8a099647198e346a507bc61e09c58",
+   "duration_sec": 8.0,
+   "campaign": "session2_20261011",
+   "measurement_family": "feedforward_validation",
+   "condition": "cardioid_a5p4_f10_c_nn_m1z",
+   "note": "Session 2, compensation from the model learned on the cooled data: cardioid_a5p4_f10_C_nn_M1z (inverse of the learned model M1z (trained on the 10/10 cooled data, V15c block 2)). 8 s, 7.256 mm from the centre, peak speed 694 mm/s, peak acceleration 90633 mm/s^2, max |u-r| 0.835 mm.",
+   "feedforward_design": {
+    "design": "C_nn_M1z",
+    "source_file": "cardioid_a5p4_f10_C_nn_M1z.npz",
+    "source_design": "C_nn_M1z",
+    "command_differs_from_reference": true,
+    "description": "inverse of the learned model M1z (trained on the 10/10 cooled data, V15c block 2)",
+    "design_dir": "ff_nn_v15c",
+    "params": {
+     "shape": "cardioid",
+     "scale_mm": 5.4,
+     "f_hz": 10.0,
+     "f_cmd_hz": 10.0,
+     "tau0_ms": 0.9,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.208,
+      "y": 0.198,
+      "z": 2.48
+     },
+     "GAM": {
+      "x": 0.0372,
+      "y": 0.0319,
+      "z": 0.0237
+     },
+     "ramp_sec": 0.5,
+     "nn_compensation": {
+      "model": "M1z-fast",
+      "method": "fast_newton",
+      "model_dir": "results/b2g_M1z/M1z/2",
+      "nmax": 9,
+      "loops": 2,
+      "iters": 3,
+      "probe_mm": 0.1,
+      "remeasure": false,
+      "base_design": "OFF",
+      "inplane_before": 0.6551125503939271,
+      "inplane_after": 0.06383169180607286,
+      "sec_probe": 13.554521083831787,
+      "sec_iter": [
+       11.732052326202393,
+       12.617342472076416,
+       17.60874342918396
+      ],
+      "sec_total": 93.93146705627441,
+      "limits_ok": true,
+      "offset": 7.256236742701248,
+      "speed": 694.1473127192478,
+      "accel": 90632.92491030612,
+      "endpoint": 0.0,
+      "dist": 0.8353525828820471
+     }
+    },
+    "loop_frequency_hz": 10.0,
+    "shape": "cardioid"
+   },
+   "enabled": true
+  },
+  {
+   "name": "cardioid_a10_f10_C_nn_M1z",
+   "kind": "imported",
+   "source_npz": "source/ff_nn_v15c/cardioid_a10_f10_C_nn_M1z.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "155f1b395872e35fac06fe7de6664d8288a356dcb756cf82d8067723c8557057",
+   "duration_sec": 8.0,
+   "campaign": "session2_20261011",
+   "measurement_family": "feedforward_validation",
+   "condition": "cardioid_a10_f10_c_nn_m1z",
+   "note": "Session 2, compensation from the model learned on the cooled data: cardioid_a10_f10_C_nn_M1z (inverse of the learned model M1z (trained on the 10/10 cooled data, V15c block 2)). 8 s, 13.180 mm from the centre, peak speed 1232 mm/s, peak acceleration 125631 mm/s^2, max |u-r| 1.501 mm.",
+   "feedforward_design": {
+    "design": "C_nn_M1z",
+    "source_file": "cardioid_a10_f10_C_nn_M1z.npz",
+    "source_design": "C_nn_M1z",
+    "command_differs_from_reference": true,
+    "description": "inverse of the learned model M1z (trained on the 10/10 cooled data, V15c block 2)",
+    "design_dir": "ff_nn_v15c",
+    "params": {
+     "shape": "cardioid",
+     "scale_mm": 10.0,
+     "f_hz": 10.0,
+     "f_cmd_hz": 10.0,
+     "tau0_ms": 0.9,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.208,
+      "y": 0.198,
+      "z": 2.48
+     },
+     "GAM": {
+      "x": 0.0372,
+      "y": 0.0319,
+      "z": 0.0237
+     },
+     "ramp_sec": 0.5,
+     "nn_compensation": {
+      "model": "M1z-fast",
+      "method": "fast_newton",
+      "model_dir": "results/b2g_M1z/M1z/2",
+      "nmax": 9,
+      "loops": 2,
+      "iters": 3,
+      "probe_mm": 0.1,
+      "remeasure": false,
+      "base_design": "OFF",
+      "inplane_before": 0.9923814112481562,
+      "inplane_after": 0.05115459782986209,
+      "sec_probe": 14.124356746673584,
+      "sec_iter": [
+       12.34116244316101,
+       12.354051113128662,
+       12.338657140731812
+      ],
+      "sec_total": 87.9312732219696,
+      "limits_ok": false,
+      "offset": 13.180292704145971,
+      "speed": 1231.6782786976817,
+      "accel": 125631.4011767779,
+      "endpoint": 0.0,
+      "dist": 1.500899809097041
+     }
+    },
+    "loop_frequency_hz": 10.0,
+    "shape": "cardioid"
+   },
+   "enabled": true
+  },
+  {
+   "name": "lissajous_s15_f10_C_nn_M1z",
+   "kind": "imported",
+   "source_npz": "source/ff_nn_v15c/lissajous_s15_f10_C_nn_M1z.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "3c18c1f483f3c0e53f709a00df772d85254850bcbc8bad71cd369abbc75eca3a",
+   "duration_sec": 8.0,
+   "campaign": "session2_20261011",
+   "measurement_family": "feedforward_validation",
+   "condition": "lissajous_s15_f10_c_nn_m1z",
+   "note": "Session 2, compensation from the model learned on the cooled data: lissajous_s15_f10_C_nn_M1z (inverse of the learned model M1z (trained on the 10/10 cooled data, V15c block 2)). 8 s, 15.451 mm from the centre, peak speed 1577 mm/s, peak acceleration 170097 mm/s^2, max |u-r| 1.539 mm.",
+   "feedforward_design": {
+    "design": "C_nn_M1z",
+    "source_file": "lissajous_s15_f10_C_nn_M1z.npz",
+    "source_design": "C_nn_M1z",
+    "command_differs_from_reference": true,
+    "description": "inverse of the learned model M1z (trained on the 10/10 cooled data, V15c block 2)",
+    "design_dir": "ff_nn_v15c",
+    "params": {
+     "shape": "lissajous",
+     "scale_mm": 15.0,
+     "f_hz": 10.0,
+     "tau0_ms": 0.9,
+     "ramp_sec": 0.5,
+     "offset_mm": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "f_cmd_hz": 10.0,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.208,
+      "y": 0.198,
+      "z": 2.48
+     },
+     "GAM": {
+      "x": 0.0372,
+      "y": 0.0319,
+      "z": 0.0237
+     },
+     "VXR": 0.2,
+     "VZ": 0.95,
+     "nn_compensation": {
+      "model": "M1z-fast",
+      "method": "fast_newton",
+      "model_dir": "results/b2g_M1z/M1z/2",
+      "nmax": 9,
+      "loops": 2,
+      "iters": 3,
+      "probe_mm": 0.1,
+      "remeasure": false,
+      "base_design": "OFF",
+      "inplane_before": 1.1081470296785787,
+      "inplane_after": 0.18671708139645218,
+      "sec_probe": 20.142778158187866,
+      "sec_iter": [
+       17.951233625411987,
+       17.882376194000244,
+       17.92205047607422
+      ],
+      "sec_total": 110.7312479019165,
+      "limits_ok": false,
+      "offset": 15.45050337071914,
+      "speed": 1576.5975925325213,
+      "accel": 170096.9740854752,
+      "endpoint": 0.0,
+      "dist": 1.539052027650488
+     }
+    },
+    "loop_frequency_hz": 10.0,
+    "shape": "lissajous"
+   },
+   "enabled": true
+  },
+  {
+   "name": "circle_s20_f10_C_nn_M1z",
+   "kind": "imported",
+   "source_npz": "source/ff_nn_v15c/circle_s20_f10_C_nn_M1z.npz",
+   "positions_key": "positions_mm",
+   "reference_key": "reference_mm",
+   "extra_time_keys": [
+    "time_pat_sec",
+    "time_cam_expected_sec"
+   ],
+   "positions_sha256": "27433b4d0d8c3a4b7d9c0567652fe613ed8c4338686984b63bf36531703730f5",
+   "duration_sec": 8.0,
+   "campaign": "session2_20261011",
+   "measurement_family": "feedforward_validation",
+   "condition": "circle_s20_f10_c_nn_m1z",
+   "note": "Session 2, compensation from the model learned on the cooled data: circle_s20_f10_C_nn_M1z (inverse of the learned model M1z (trained on the 10/10 cooled data, V15c block 2)). 8 s, 20.076 mm from the centre, peak speed 1266 mm/s, peak acceleration 89500 mm/s^2, max |u-r| 1.723 mm.",
+   "feedforward_design": {
+    "design": "C_nn_M1z",
+    "source_file": "circle_s20_f10_C_nn_M1z.npz",
+    "source_design": "C_nn_M1z",
+    "command_differs_from_reference": true,
+    "description": "inverse of the learned model M1z (trained on the 10/10 cooled data, V15c block 2)",
+    "design_dir": "ff_nn_v15c",
+    "params": {
+     "shape": "circle",
+     "scale_mm": 20.0,
+     "f_hz": 10.0,
+     "tau0_ms": 0.9,
+     "ramp_sec": 0.5,
+     "offset_mm": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "f_cmd_hz": 10.0,
+     "eps_ppm": 182.0,
+     "K": {
+      "x": 0.208,
+      "y": 0.198,
+      "z": 2.48
+     },
+     "GAM": {
+      "x": 0.0372,
+      "y": 0.0319,
+      "z": 0.0237
+     },
+     "VXR": 0.2,
+     "VZ": 0.95,
+     "nn_compensation": {
+      "model": "M1z-fast",
+      "method": "fast_newton",
+      "model_dir": "results/b2g_M1z/M1z/2",
+      "nmax": 9,
+      "loops": 2,
+      "iters": 3,
+      "probe_mm": 0.1,
+      "remeasure": false,
+      "base_design": "OFF",
+      "inplane_before": 1.2645510472496413,
+      "inplane_after": 0.07846063316862074,
+      "sec_probe": 13.489600419998169,
+      "sec_iter": [
+       11.67241382598877,
+       11.66703462600708,
+       11.641683101654053
+      ],
+      "sec_total": 92.4912281036377,
+      "limits_ok": false,
+      "offset": 20.07604649259537,
+      "speed": 1266.375163895196,
+      "accel": 89500.02434895557,
+      "endpoint": 0.0,
+      "dist": 1.72335715003512
+     }
+    },
+    "loop_frequency_hz": 10.0,
+    "shape": "circle"
+   },
+   "enabled": true
+  }
+ ]
+}
