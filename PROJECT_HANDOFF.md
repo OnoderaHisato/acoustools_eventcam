@@ -1,5 +1,25 @@
 # Project handoff
 
+## 2026-10-13: Tempo Disc で室温・湿度・気圧を自動記録（Bluetooth、受けるだけ）、モニター画面
+
+- ユーザーの依頼: 気圧も測りたい。Blue Maestro の Tempo Disc（名前 `F9EE9FFC`、アドレス `F9:EE:9F:FC:F9:75`、bmLogger の表示 v27 = THPD）を、手入力なしで計測に同期して記録する。bmLogger に似た画面も欲しい。手順は `TEMPO_DISC_ENV_LOGGING_JP.md`。
+- 方式: 接続はせず、広告パケット（メーカー ID `0x0133`）を受けるだけ。本体の設定・記録は変えない。venv に `bleak` 3.0.2 を入れた。
+  - 実機の v27 の中身: `1b 64 0e10 1770 00f0 0224 2771 01 00` = 電池 100 %、記録間隔 3600 s、6000 件、24.0 °C、54.8 %、1009.7 hPa。オープンソースの `bluemaestro-ble` の解析とも合う。bmLogger の表示とは突き合わせていない。
+  - **Windows の bleak は、広告と scan response（同じ 0x0133 の 25 バイト）を一つの dict にまとめるので、scan response が値を隠す**。最初の版は 1 回受けたあと受信が止まったように見えた。`tempodisc_ble.py` は bleak の `platform_data`（WinRT のイベント 2 つ）から別々に読み、広告のイベントが新しいときだけ値とする。scan response は生データ（`scan_response_hex`）だけ残す。
+  - 実測（20:20〜20:27）: 受信は約 8 秒ごと、値は 10〜30 秒ごとに変わる。本体の記録間隔（3600 s）とは関係なく更新される。
+- 新規ファイル: `tempodisc_ble.py`（解析・露点・受信）、`tempodisc_logger.py`（CSV。変化時と `--interval` 10 s ごと、`--stale-s` 120 s で error 行。`--once`／`--list`）、`tempodisc_app.py`（Tkinter と matplotlib の画面。4 枚のパネル、グラフ、記録、ログの追従表示）、`env_run_link.py`、`env_logging.ps1`、`test_tempodisc.py`（13 件）。
+- 自動計測の入口に `--env-log` を追加した。
+  - 各 run に `environment_log.csv`（前後 60 s を含む）を書く。manifest と session JSON の各 run には `environment`（平均・範囲、`stale`）を、session JSON には `env_log` を残す。
+  - `thermal_prompt` の記録と CSV に `sensor_T_C`／`sensor_RH_percent`／`sensor_pressure_hPa`／`sensor_dew_point_C`／`sensor_age_s` を足した。室温と湿度は打たなくてよい。手入力の列はそのまま。
+  - `record_supply_in_manifest` に key 引数を足した（既定は `supply`）。
+- `run_extra3_20261012.ps1`・`run_session2_20261011.ps1`・`run_cooling_remeasure_15v.ps1` は既定でロガーを起動する（`-NoEnvSensor`、`-EnvDevice`）。センサーが 30 s で見つからなければ、警告して環境の記録なしで進む。3 本の dry-run が成功。
+- 確認したこと:
+  - 実機のセンサーで、`env_logging.ps1` によるロガーの起動・停止（10 s ごとの行、プロセスの残りなし）と、無いセンサーを指定したときに null が返ることを確かめた。
+  - 画面はライブ表示とログ表示を画像で確かめた。
+  - 関連 15 スイートの 192 件が成功した。`test_pwr01_logger` の 1 件が一度だけ失敗し、単独と再実行では成功した（localhost のソケット試験の偶発とみられる）。
+- 既存の `Start-PsuLogger` も、`--once` の出力が関数の戻り値に混ざる形（動くのは偶然）。`Start-EnvLogger` は `Out-Host` で避けた。PSU 側は変えていない。
+- PAT・カメラは開いていない。コミット・push は行っていない。
+
 ## 2026-10-12: 追加計測 3（ff_extra3: 円の速さ違い・剛性の格子・斜めの段）の準備
 
 - 依頼元: 解析側（セッション間メッセージと G: の `Experiment/20261012/MESSAGE_TO_ACQUISITION_PC_20261012.md`、`ff_extra3/`）。連絡文には「ユーザーの決定で今から撮る、優先度 B も入れる」とある。開始はユーザーが決める。
@@ -29,6 +49,27 @@
     - 枠の終わりの 4 分前までの walltime で 1 本投げる。
   - 枠 487 の見張りは、最初は前の会話の中で動かしていたため、会話の終わりで止まっていた。10-12 00:45 に掛け直した。**見張りは Claude の会話が続いている間しか動かない**。
   - 追加計測 3 を撮ったら、Miyabi に `list_V15c_extra3.txt` を置けば、次の枠で一緒に処理される。
+- **計測と 3D 化の結果（10-12）**:
+  - 追加計測 3 は `auto_recording_session_20261012_003905.json`（00:39〜01:54、complete、29 本、撮り直し 1 回、LED の警告なし）。
+    - 格子の LED 残差は 3.1 ms でそろっている（ほかは 7〜8 ms）。
+    - session の記録は G: の `Experiment/20261012/V15c_20261012_extra3_records/` に置いた。SSD への複製は SHA-256 で照合済み。
+  - セッション 2 の 72 本は、枠 486（job 3530240）で 03:05 ごろに complete。
+  - 追加計測 3 は 2 か所で処理し、08:16 に全部そろった。
+    - 19 本は Miyabi の `list_V15c_extra3.txt`（枠 487、job 3531876）。
+    - 格子 10 本は dngstation の `list_V15c_extra3_kgrid.txt`（02:16〜08:12、u と r の固定比較まで）。
+  - 全 101 本で、固定比較・左マスク 720・再捕捉 0 回を確認した。
+  - 円 s20 の u に対する RMSE は、F 7→13 Hz で 2.66→3.91 mm と単調に増えた。
+  - 解析側へは G: の `MESSAGE_FROM_ACQUISITION_PC_20261012.md` §3〜5 とセッション間メッセージで知らせた。
+  - 枠 488 の見張りは不要になったので止めた。
+  - **3D 化の結果を SSD へ取り込んだ（ユーザーの依頼、10-12）**:
+    - V15c の 231 本の生データ以外のファイルを、`D:\stereo_acoustools_3d_records_V15c` の各 run に追加した。内訳は Miyabi の 190 本（`list_V15c_block12`／`_session2`／`_extra3`）と dngstation の 41 本（`_block0`／`_block3_2f`／`_heavy_slow`／`_extra3_kgrid`）。
+    - GNU tar の `--skip-old-files` を使い、すでにある計測時のファイルは上書きしていない。manifest は計測時のまま（`pending`）。
+    - サーバーの一覧 11,839 ファイルと照合し、11,608 がサイズ一致、231（各 run の `pipeline_manifest.json`）が計測時の版のまま、不一致・欠け 0。
+    - SSD の V15c は 12,386 ファイル・418 GB、D: の空きは 419 GB。
+- **PuTTY の keepalive（10-12、ユーザーが設定）**:
+  - 保存セッションの keepalive が全部 0（無効）だった。Miyabi への接続が無通信のうちに切れたのはこのためとみられる（Miyabi 側に TMOUT は無い）。
+  - `miyabi-c`・`miyabi-g`・`miyabi-x10733`・`dngstation_30` を 30 秒＋TCP keepalive にした。
+  - 元の `dngstation` と `deepstation` は 0 のまま。
 
 ## 2026-10-11: セッション 2（学習軌道の多様化と冷却後の模型の補償）の準備
 

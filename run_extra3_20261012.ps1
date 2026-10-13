@@ -41,11 +41,14 @@ param(
     [string]$PsuResource = "",
     [string]$PsuHost = "",
     [double]$PsuIntervalSec = 1.0,
+    [string]$EnvDevice = "F9EE9FFC",
+    [switch]$NoEnvSensor,
     [switch]$DryRunOnly
 )
 
 $ErrorActionPreference = "Stop"
 . (Join-Path $PSScriptRoot "psu_logging.ps1")
+. (Join-Path $PSScriptRoot "env_logging.ps1")
 Set-Location -LiteralPath $PSScriptRoot
 
 $python = ".\venv\Scripts\python.exe"
@@ -163,10 +166,14 @@ if ($DryRunOnly) {
 Write-Host "[EXTRA3] Check before starting:"
 Write-Host "  - Supply at $SupplyVoltage V, cooling fans ON. Keep the same particle all through (a change is recorded only if you note it)."
 Write-Host "  - PAT-start LED bright (kcheck LED peak count 1000 or more), and no glint of the lighting LED inside the left LED ROI."
+Write-Host "  - Room temperature, humidity and air pressure are logged from the Tempo Disc (close the bmLogger app; -NoEnvSensor turns it off)."
 Write-Host "  - Temperatures (top/bottom PAT, room, humidity) are asked on screen every 10 minutes; -NoThermalPrompts turns that off."
 Write-Host "  - If the particle falls, stop with Ctrl+C, replace it, and resume with -WarmupMin 0 -StartAt <run>."
 $psuTarget = Get-PsuTargetArgs -Usb:$PsuUsb -Resource $PsuResource -HostName $PsuHost
 $psuLogger = Start-PsuLogger -Python $python -OutputDir $OutputDir -TargetArgs $psuTarget -IntervalSec $PsuIntervalSec
+$envLogger = $null
+if (-not $NoEnvSensor) { $envLogger = Start-EnvLogger -Python $python -OutputDir $OutputDir -Device $EnvDevice }
+if ($null -ne $envLogger) { $recordArgs += @("--env-log", $envLogger.Log) }
 if ($null -ne $psuLogger) { $recordArgs += @("--psu-log", $psuLogger.Log) }
 $recordArgs += Get-CurrentGuardArgs -Logger $psuLogger -Percent $CurrentGuardPercent -BaselineMin $guardBaseline -Disabled:$NoCurrentGuard
 try {
@@ -175,6 +182,7 @@ try {
     $code = $LASTEXITCODE
 }
 finally {
+    Stop-EnvLogger $envLogger
     Stop-PsuLogger $psuLogger
     Write-PsuReport -Python $python -OutputDir $OutputDir -Logger $psuLogger
 }

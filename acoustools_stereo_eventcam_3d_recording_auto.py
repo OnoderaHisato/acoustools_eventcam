@@ -24,6 +24,7 @@ from stereo_acoustools_3d_auto_common import (
     write_preview_set,
 )
 from psu_run_link import GUARD_DROP_FRACTION, attach_supply_record, current_guard_verdict, load_psu_rows
+from env_run_link import attach_environment_record
 import thermal_prompt
 from stereo_acoustools_3d_common import PROCESSING_CONFIG_FIELDS, atomic_write_json
 from stereo_acoustools_3d_hf_common import (
@@ -52,15 +53,15 @@ MAX_AUTOMATIC_CAPTURE_RETRIES = 10
 SCHEDULE_STATUS_INTERVAL_SEC = 30.0
 
 
-def record_supply_in_manifest(run_dir: Path, supply: dict[str, Any]) -> None:
-    """Add the supply summary to a run this session just recorded (never fails the run)."""
+def record_supply_in_manifest(run_dir: Path, supply: dict[str, Any], key: str = "supply") -> None:
+    """Add the supply (or environment) summary to a run this session just recorded (never fails the run)."""
     manifest_path = run_dir / "pipeline_manifest.json"
     try:
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-        manifest["supply"] = supply
+        manifest[key] = supply
         atomic_write_json(manifest_path, manifest)
     except Exception as exc:  # noqa: BLE001
-        print(f"[AUTO][PSU][WARN] could not add the supply summary to {manifest_path}: {exc}")
+        print(f"[AUTO][WARN] could not add the {key} summary to {manifest_path}: {exc}")
 
 
 def voltage_tag(volts: float) -> str:
@@ -283,6 +284,18 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
             "cover it are copied to <run>/supply_log.csv and summarised in pipeline_manifest.json "
             "(\"supply\": means, extremes, output state, current drops such as a fuse trip). Only "
             "the CSV is read; the supply itself is not contacted."
+        ),
+    )
+    parser.add_argument(
+        "--env-log",
+        type=Path,
+        default=None,
+        metavar="CSV",
+        help=(
+            "Room-environment log being written by tempodisc_logger.py (Tempo Disc: temperature, "
+            "humidity, air pressure). When a run finishes, the rows around it are copied to "
+            "<run>/environment_log.csv and summarised in pipeline_manifest.json (\"environment\"); "
+            "the temperature notes also take the latest reading. Only the CSV is read."
         ),
     )
     parser.add_argument(
@@ -1341,6 +1354,7 @@ def main(argv: list[str] | None = None) -> int:
             session["supply_voltage_V"] = supply_voltage
             session["run_label_tag"] = run_tag
             session["psu_log"] = "" if args.psu_log is None else str(args.psu_log.resolve())
+            session["env_log"] = "" if args.env_log is None else str(args.env_log.resolve())
             if str(args.pat_board_gap_mm).strip():
                 session["pat_board_gap_mm"] = str(args.pat_board_gap_mm).strip()
             session["thermal_prompt_settings"] = (
@@ -1436,6 +1450,7 @@ def main(argv: list[str] | None = None) -> int:
                     timeout_sec=float(args.thermal_prompt_timeout_sec),
                     sound_on_wall_sec=None if sound_on_wall_ns is None else sound_on_wall_ns / 1e9,
                     psu_log=args.psu_log,
+                    env_log=args.env_log,
                     clock=time,
                 )
                 if thermal_plan is not None
@@ -1884,6 +1899,16 @@ def main(argv: list[str] | None = None) -> int:
                         for event in supply_record.get("events", []):
                             if event["kind"] in {"output_off", "current_drop", "log_gap"}:
                                 print(f"[AUTO][PSU][WARN] {condition.label}: {event}")
+                    environment_record = None
+                    if args.env_log is not None:
+                        environment_record = attach_environment_record(
+                            run_dir if code == 0 else None, args.env_log, run_started_wall, time.time(),
+                        )
+                        if code == 0 and run_dir is not None:
+                            record_supply_in_manifest(Path(run_dir), environment_record, key="environment")
+                        if environment_record.get("error") or environment_record.get("stale"):
+                            print(f"[AUTO][ENV][WARN] {condition.label}: no recent Tempo Disc reading "
+                                  f"({environment_record.get('error') or 'stale'})")
                     session["runs"].append(
                         {
                             **run_automation_metadata,
@@ -1902,6 +1927,7 @@ def main(argv: list[str] | None = None) -> int:
                             },
                             "finished_at": dt.datetime.now().isoformat(timespec="milliseconds"),
                             **({} if supply_record is None else {"supply": supply_record}),
+                            **({} if environment_record is None else {"environment": environment_record}),
                         }
                     )
                     atomic_write_json(session_path, session)

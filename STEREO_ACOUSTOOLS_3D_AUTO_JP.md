@@ -107,6 +107,15 @@ powershell -ExecutionPolicy Bypass -File .\run_large_step_all.ps1
 
 粒子の脱落は自動検知しません。
 
+## 室温・湿度・気圧の自動記録（2026-10-13追加）
+
+`--env-log <csv>` に Tempo Disc のロガー（`tempodisc_logger.py`）の CSV を渡すと、各 run に
+`environment_log.csv` と manifest の `environment`（温度・湿度・気圧・露点の平均と範囲）が付き、
+温度の問いの記録にもその時点の値が入ります（室温と湿度は打たなくてよくなります）。
+`run_extra3_20261012.ps1`・`run_session2_20261011.ps1`・`run_cooling_remeasure_15v.ps1` は既定で
+ロガーを起動します（`-NoEnvSensor` で無効）。センサーが見つからなくても計測は止まりません。
+モニター画面は `tempodisc_app.py`。詳細は `TEMPO_DISC_ENV_LOGGING_JP.md`。
+
 ## 電圧を下げた熱の保持試験（2026-09-23追加）
 
 解析側の `THERMAL_PLAN_20260922.md` §3（15 Vで熱の定常状態を作る）用に、自動計測の入口へ次を追加しました。

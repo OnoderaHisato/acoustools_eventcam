@@ -15,7 +15,9 @@ One line answers: ``top bottom room humidity [note]`` -- numbers, ``-`` for a va
 text after the numbers is kept as a note. An empty line or no answer records nothing; the note is then
 asked again at the next chance. Every answer is appended to the session JSON (``thermal_notes``) and to
 ``thermal_log_<session time>.csv`` next to it, together with the latest supply voltage and current from
-the PSU log.
+the PSU log and, with ``--env-log``, the latest Tempo Disc reading (room temperature, humidity, air
+pressure, dew point; columns ``sensor_*``). With the sensor the room temperature and humidity need not be
+typed: ``41.2 39.8`` is enough.
 """
 
 from __future__ import annotations
@@ -31,9 +33,12 @@ from typing import Any, Callable
 
 FIELDS = ("T_top_PAT_C", "T_bottom_PAT_C", "T_room_C", "RH_percent")
 FIELD_LABELS = ("上PAT [°C]", "下PAT [°C]", "室温 [°C]", "湿度 [%]")
+# latest Tempo Disc reading (env_run_link.latest_reading) -> CSV / record keys
+SENSOR_COLUMNS = ("sensor_T_C", "sensor_RH_percent", "sensor_pressure_hPa", "sensor_dew_point_C", "sensor_age_s")
+SENSOR_SOURCES = ("temperature_C", "humidity_percent", "pressure_hPa", "dew_point_C", "age_s")
 CSV_COLUMNS = (
     "recorded_at", "minutes_after_sound_on", "kind", "next_run_number", "next_label",
-    *FIELDS, "supply_V", "supply_A", "note",
+    *FIELDS, "supply_V", "supply_A", *SENSOR_COLUMNS, "note",
 )
 SCHEDULED_MIN_WAIT_SEC = 20.0  # a scheduled wait shorter than this is not used for a prompt
 SCHEDULED_LEAD_SEC = 10.0  # stop asking this long before a scheduled run is due
@@ -171,6 +176,7 @@ class ThermalNotes:
         sound_on_wall_sec: float | None,
         psu_log: Path | None = None,
         clock: Any = time,
+        env_log: Path | None = None,
         reader: Callable[..., str | None] | None = None,
     ) -> None:
         self.csv_path = Path(csv_path)
@@ -178,6 +184,7 @@ class ThermalNotes:
         self.timeout_sec = float(timeout_sec)
         self.sound_on_wall_sec = sound_on_wall_sec
         self.psu_log = psu_log
+        self.env_log = env_log
         self.clock = clock
         self.reader = reader
         self.records: list[dict[str, Any]] = []
@@ -217,6 +224,16 @@ class ThermalNotes:
             return None, None
         return rows[-1]["V"], rows[-1]["I"]
 
+    def latest_sensor(self) -> dict[str, Any]:
+        if self.env_log is None:
+            return {}
+        from env_run_link import latest_reading
+
+        reading = latest_reading(self.env_log, self.clock.time())
+        if reading is None:
+            return {name: None for name in SENSOR_COLUMNS}
+        return {column: reading.get(source) for column, source in zip(SENSOR_COLUMNS, SENSOR_SOURCES)}
+
     def ask(
         self,
         kind: str,
@@ -242,6 +259,16 @@ class ThermalNotes:
             "PAT は粒子を中央で保持しています。",
             flush=True,
         )
+        if self.env_log is not None:
+            sensor_now = self.latest_sensor()
+            if sensor_now.get("sensor_T_C") is None:
+                print("[THERMAL] 環境センサー（Tempo Disc）の値がしばらく届いていません。室温・湿度も入力してください。", flush=True)
+            else:
+                print(
+                    f"[THERMAL] 環境センサー: 室温 {sensor_now['sensor_T_C']} °C、湿度 {sensor_now['sensor_RH_percent']} %、"
+                    f"気圧 {sensor_now['sensor_pressure_hPa']} hPa（自動で記録します）。上PAT・下PAT だけの入力で構いません。",
+                    flush=True,
+                )
         reader = self.reader or read_line_with_deadline
         parsed = parse_thermal_line(reader("[THERMAL] > ", deadline_wall, self.clock))
         if parsed is None:
@@ -258,6 +285,7 @@ class ThermalNotes:
             **values,
             "supply_V": supply_v,
             "supply_A": supply_a,
+            **self.latest_sensor(),
             "note": note,
         }
         self.records.append(record)

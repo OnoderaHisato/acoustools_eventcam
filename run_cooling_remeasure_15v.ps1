@@ -78,11 +78,14 @@ param(
     [string]$PsuResource = "",
     [string]$PsuHost = "",
     [double]$PsuIntervalSec = 1.0,
+    [string]$EnvDevice = "F9EE9FFC",
+    [switch]$NoEnvSensor,
     [switch]$DryRunOnly
 )
 
 $ErrorActionPreference = "Stop"
 . (Join-Path $PSScriptRoot "psu_logging.ps1")
+. (Join-Path $PSScriptRoot "env_logging.ps1")
 Set-Location -LiteralPath $PSScriptRoot
 
 $python = ".\venv\Scripts\python.exe"
@@ -319,10 +322,14 @@ Write-Host "  - Supply at $SupplyVoltage V. Fans: block 0 starts with the fans O
 if ($Block -eq "3") { Write-Host "  - Block 3 starts warm, right after block 2 / 12, with the fans ON; the script asks when to switch them OFF and back ON." }
 if ($Block -eq "0") { Write-Host "  - Before sound: fans ON, check with a strip of tissue that no air reaches the space between the boards; then fans OFF." }
 Write-Host "  - PAT-start LED bright: kcheck LED peak count 1000 or more."
+Write-Host "  - Room temperature, humidity and air pressure are logged from the Tempo Disc (close the bmLogger app; -NoEnvSensor turns it off)."
 Write-Host "  - Temperatures (top/bottom PAT, room, humidity) are asked on screen; -NoThermalPrompts turns that off."
 Write-Host "  - Stop with Ctrl+C if the particle is gone; the session then stops and PAT is turned off."
 $psuTarget = Get-PsuTargetArgs -Usb:$PsuUsb -Resource $PsuResource -HostName $PsuHost
 $psuLogger = Start-PsuLogger -Python $python -OutputDir $OutputDir -TargetArgs $psuTarget -IntervalSec $PsuIntervalSec
+$envLogger = $null
+if (-not $NoEnvSensor) { $envLogger = Start-EnvLogger -Python $python -OutputDir $OutputDir -Device $EnvDevice }
+if ($null -ne $envLogger) { $recordArgs += @("--env-log", $envLogger.Log) }
 if ($null -ne $psuLogger) { $recordArgs += @("--psu-log", $psuLogger.Log) }
 $recordArgs += Get-CurrentGuardArgs -Logger $psuLogger -Percent $CurrentGuardPercent -BaselineMin $guardBaseline -Disabled:$NoCurrentGuard
 try {
@@ -331,6 +338,7 @@ try {
     $code = $LASTEXITCODE
 }
 finally {
+    Stop-EnvLogger $envLogger
     Stop-PsuLogger $psuLogger
     Write-PsuReport -Python $python -OutputDir $OutputDir -Logger $psuLogger
 }
