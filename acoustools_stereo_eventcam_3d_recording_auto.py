@@ -55,7 +55,7 @@ from stereo_acoustools_3d_recording_core import (
 
 DEFAULT_AUTOMATIC_CAPTURE_RETRIES = 2
 MAX_AUTOMATIC_CAPTURE_RETRIES = 10
-SCHEDULE_STATUS_INTERVAL_SEC = 30.0
+SCHEDULE_STATUS_INTERVAL_SEC = 180.0  # every 3 minutes while waiting for a scheduled run
 
 
 def record_supply_in_manifest(run_dir: Path, supply: dict[str, Any], key: str = "supply") -> None:
