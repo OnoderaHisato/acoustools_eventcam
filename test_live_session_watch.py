@@ -66,16 +66,46 @@ class LoopTests(unittest.TestCase):
     def test_stall_is_reported_once(self):
         with TemporaryDirectory() as temporary:
             session_path = Path(temporary) / "auto_recording_session_x.json"
-            running = {"status": "running", "runs": []}
-            reads = iter([running] * 4 + [{"status": "failed", "runs": []}])
+            running = {"status": "running", "runs": [{"label": "a", "exit_code": 0}]}
+            reads = iter([running] * 4 + [{"status": "failed", "runs": running["runs"]}])
             clock = iter([0.0, 0.0, 100.0, 500.0, 900.0, 1300.0, 1700.0, 2100.0])
             sent = []
             with mock.patch.object(watch, "read_session", side_effect=lambda _p: next(reads)), \
                     mock.patch.object(watch.session_notify, "notify", side_effect=lambda e, s, **k: sent.append(e)), \
                     mock.patch.object(watch.time, "time", side_effect=lambda: next(clock)), \
                     mock.patch.object(watch.time, "sleep"):
-                watch.main(["--session", str(session_path), "--stall-min", "6"])
+                watch.main(["--session", str(session_path), "--stall-min", "6", "--stall-only"])
             self.assertEqual(sent, ["session_stall"])
+
+    def test_no_stall_before_the_first_run(self):
+        with TemporaryDirectory() as temporary:
+            session_path = Path(temporary) / "auto_recording_session_x.json"
+            reads = iter([{"status": "running", "runs": []}] * 4 + [{"status": "complete", "runs": []}])
+            clock = iter([0.0, 0.0, 1000.0, 2000.0, 3000.0, 4000.0, 5000.0, 6000.0])
+            sent = []
+            with mock.patch.object(watch, "read_session", side_effect=lambda _p: next(reads)),                     mock.patch.object(watch.session_notify, "notify", side_effect=lambda e, s, **k: sent.append(e)),                     mock.patch.object(watch.time, "time", side_effect=lambda: next(clock)),                     mock.patch.object(watch.time, "sleep"):
+                watch.main(["--session", str(session_path), "--stall-only"])
+            self.assertEqual(sent, [])
+
+    def test_waits_for_a_new_session(self):
+        with TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            old = root / "auto_recording_session_old.json"
+            old.write_text(json.dumps({"status": "complete", "runs": []}), encoding="utf-8")
+            new = root / "auto_recording_session_new.json"
+            created = []
+
+            def fake_sleep(_s):
+                if not created:
+                    new.write_text(json.dumps({"status": "complete", "runs": []}), encoding="utf-8")
+                    created.append(1)
+
+            real_getctime = watch.os.path.getctime
+            with mock.patch.object(watch.time, "sleep", side_effect=fake_sleep),                     mock.patch.object(watch.os.path, "getctime",
+                                      side_effect=lambda p: 0.0 if Path(p) == old else real_getctime(p) + 10):
+                code = watch.main(["--records", str(root), "--wait-new-session", "--stall-only"])
+            self.assertEqual(code, 0)
+            self.assertTrue((root / "live_watch_new.json").is_file())
 
 
 class WaitingTests(unittest.TestCase):
@@ -92,6 +122,22 @@ class WaitingTests(unittest.TestCase):
             self.assertEqual(watch.unfinished_run_folder(root, runs), busy)
             (busy / "pipeline_manifest.json").write_text("{}", encoding="utf-8")
             self.assertIsNone(watch.unfinished_run_folder(root, runs))
+
+
+class QuietTests(unittest.TestCase):
+    def test_a_successful_retry_is_kept_but_not_sent(self):
+        with TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            session_path = root / "auto_recording_session_q.json"
+            run = {"label": "a", "exit_code": 0, "capture_report": {"failures": ["attempt 1: code 1"]}}
+            reads = iter([{"status": "running", "runs": []}, {"status": "running", "runs": [run]},
+                          {"status": "complete", "runs": [run]}])
+            sent = []
+            with mock.patch.object(watch, "read_session", side_effect=lambda _p: next(reads)),                     mock.patch.object(watch.session_notify, "notify", side_effect=lambda e, s, **k: sent.append(e)),                     mock.patch.object(watch.time, "sleep"):
+                watch.main(["--session", str(session_path), "--no-particle-check"])
+            self.assertEqual(sent, [])
+            state = json.loads((root / "live_watch_q.json").read_text(encoding="utf-8"))
+            self.assertEqual([f["event"] for f in state["findings"]], ["capture_retried"])
 
 
 if __name__ == "__main__":

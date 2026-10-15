@@ -1656,6 +1656,19 @@ def main(argv: list[str] | None = None) -> int:
         particle_reference: dict[str, Any] | None = None
         alert_context: dict[str, Any] = {}
 
+        def alert(event: str, summary: str, **details: Any) -> None:
+            """Notify the operator (email / event file / beep) and keep it in the session JSON."""
+            record = {"event": event, "summary": summary, **details,
+                      "at": dt.datetime.now().isoformat(timespec="seconds")}
+            session.setdefault("alerts", []).append(record)
+            atomic_write_json(session_path, session)
+            if notify_cfg:
+                try:
+                    session_notify.notify(event, summary, details={"session": str(session_path), **details},
+                                          config=notify_cfg)
+                except Exception as exc:  # noqa: BLE001 - a notification never stops a recording
+                    print(f"[NOTIFY][WARN] {exc}", flush=True)
+
         def capture_alert(kind: str, reason: str) -> None:
             """Notify the operator that a capture failure waits for an answer on screen."""
             record = {"kind": kind, "reason": str(reason)[:300], **alert_context,
@@ -1722,6 +1735,8 @@ def main(argv: list[str] | None = None) -> int:
             def ask_operator_actions(run_number: int, label: str) -> bool:
                 """Ask the operator actions planned before ``run_number``; False when interrupted."""
                 for action in operator_actions.get(run_number, []):
+                    alert("operator_action", f"Before run {run_number} ({label}): {action}. The session waits for Enter.",
+                          run_number=run_number, label=label, action=action)
                     print(
                         f"\n[AUTO][OPERATOR ACTION] Before run {run_number} ({label}): "
                         f"{action}. Do it now (PAT keeps holding at the centre), then press Enter. "
@@ -2123,6 +2138,16 @@ def main(argv: list[str] | None = None) -> int:
                             f"{condition.label} ({repeat_index + 1}/{condition.repeat})"
                         )
                         try:
+                            if (
+                                operator_checkpoint
+                                and attempt == 1
+                                and (run_index + 1) in checkpoint_run_numbers
+                                and (run_index + 1) not in particle_change_run_numbers
+                                and (run_index + 1) not in operator_actions
+                            ):
+                                alert("checkpoint",
+                                      f"Run {run_index + 1} ({condition.label}) waits for the preview check and Enter.",
+                                      run_number=run_index + 1, label=condition.label)
                             code, run_dir = run_recording(
                                 run_args,
                                 prepared_trajectory=trajectory,
@@ -2178,6 +2203,11 @@ def main(argv: list[str] | None = None) -> int:
                             for event in supply_record.get("events", []):
                                 if event["kind"] in {"output_off", "current_drop", "log_gap"}:
                                     print(f"[AUTO][PSU][WARN] {condition.label}: {event}")
+                                    if event["kind"] in {"output_off", "current_drop"}:
+                                        alert("supply_event",
+                                              f"Run {run_index + 1} ({condition.label}): power supply {event['kind']}.",
+                                              run_number=run_index + 1, label=condition.label,
+                                              supply_event={k: v for k, v in event.items() if k != "rows"})
                         environment_record = None
                         if args.env_log is not None:
                             environment_record = attach_environment_record(
@@ -2206,6 +2236,10 @@ def main(argv: list[str] | None = None) -> int:
                                       f"{pat_temperature_record.get('arduino_restarts')}, port events "
                                       f"{pat_temperature_record.get('port_events')}, reading gaps "
                                       f"{len(pat_temperature_record.get('reading_gaps') or [])})")
+                                alert("pat_temp_interrupted",
+                                      f"Run {run_index + 1} ({condition.label}): the temperature/LED Arduino restarted or its "
+                                      "port was lost; the lighting and the start LED may have stopped.",
+                                      run_number=run_index + 1, label=condition.label)
                                 session.setdefault("pat_temp_interrupted_runs", []).append({
                                     "run_number": len(session["runs"]) + 1,
                                     "label": condition.label,
@@ -2214,6 +2248,14 @@ def main(argv: list[str] | None = None) -> int:
                                     "port_events": pat_temperature_record.get("port_events"),
                                     "reading_gaps": len(pat_temperature_record.get("reading_gaps") or []),
                                 })
+                        led_warnings = list(
+                            (getattr(hardware_session, "last_capture_report", {}) or {}).get("led_warnings", []) or []
+                        )
+                        if code == 0 and led_warnings:
+                            alert("led_warning",
+                                  f"Run {run_index + 1} ({condition.label}): the PAT-start LED timing looks wrong "
+                                  f"({'; '.join(map(str, led_warnings))[:150]}). Check the LED; the run was kept.",
+                                  run_number=run_index + 1, label=condition.label)
                         run_particle = (
                             None if particles is None
                             else particles.note_run(run_index + 1, condition.label, int(code))

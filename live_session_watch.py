@@ -36,6 +36,9 @@ import session_notify
 
 ROOT = Path(__file__).resolve().parent
 DEFAULT_RECORDS = ROOT / "stereo_acoustools_3d_records_V15c"
+# Kept in live_watch_<stamp>.json but not sent: an automatic capture retry that succeeded needs nobody (the
+# recorder notifies by itself when the retries do not help and it asks on screen), and a stale room sensor waits.
+QUIET_EVENTS = {"capture_retried", "environment_stale"}
 
 
 def _now() -> str:
@@ -45,7 +48,7 @@ def _now() -> str:
 def read_session(path: Path) -> dict[str, Any] | None:
     for _ in range(5):
         try:
-            return json.loads(path.read_text(encoding="utf-8"))
+            return json.loads(path.read_text(encoding="utf-8-sig"))
         except (OSError, ValueError):
             time.sleep(0.5)  # the recorder replaces the file atomically; retry a half-read
     return None
@@ -112,12 +115,25 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--waiting-min", type=float, default=3.0,
                         help="notify when the newest run folder is still unfinished this long after it was created")
     parser.add_argument("--no-particle-check", action="store_true")
+    parser.add_argument("--stall-only", action="store_true",
+                        help="only the unfinished-run and stall checks (the recorder notifies everything else itself)")
+    parser.add_argument("--wait-new-session", action="store_true",
+                        help="wait for a session JSON created after this watch started (used by the batch scripts)")
     parser.add_argument("--notify-config", type=Path, default=session_notify.DEFAULT_CONFIG)
     parser.add_argument("--from-run", type=int, default=0,
                         help="check runs from this number on (default: only runs that finish after the watch starts)")
     args = parser.parse_args(argv)
 
     session_path = args.session
+    if session_path is None and args.wait_new_session:
+        started = time.time()
+        while session_path is None:
+            fresh = [p for p in Path(args.records).glob("auto_recording_session_*.json")
+                     if os.path.getctime(p) >= started - 1.0]
+            if fresh:
+                session_path = max(fresh, key=os.path.getctime)
+                break
+            time.sleep(min(args.interval_sec, 5.0))
     if session_path is None:
         candidates = sorted(Path(args.records).glob("auto_recording_session_*.json"), key=os.path.getmtime)
         if not candidates:
@@ -138,6 +154,8 @@ def main(argv: list[str] | None = None) -> int:
     def tell(event: str, summary: str, extra: dict[str, Any] | None = None) -> None:
         state["findings"].append({"event": event, "summary": summary, "at": _now(), **(extra or {})})
         save()
+        if event in QUIET_EVENTS:
+            return
         session_notify.notify(event, summary, details={"session": str(session_path), **(extra or {})}, config=cfg)
 
     session = read_session(session_path) or {}
@@ -148,7 +166,8 @@ def main(argv: list[str] | None = None) -> int:
     stalled = False
     waiting_noted: set[str] = set()
     print(f"[WATCH] {session_path.name}: {last_count} run(s) so far; watching from run {seen + 1}. "
-          f"Particle check {'off' if args.no_particle_check else 'on'}, stall {args.stall_min:g} min.", flush=True)
+          f"{'Only unfinished runs and stalls' if args.stall_only else 'Particle check ' + ('off' if args.no_particle_check else 'on')}"
+          f" (unfinished {args.waiting_min:g} min, stall {args.stall_min:g} min).", flush=True)
     save()
     while True:
         session = read_session(session_path)
@@ -165,6 +184,8 @@ def main(argv: list[str] | None = None) -> int:
         while seen < len(runs):
             seen += 1
             run = runs[seen - 1]
+            if args.stall_only:
+                continue
             try:
                 found, presence = findings_for_run(seen, run, reference, not args.no_particle_check)
             except Exception as exc:  # noqa: BLE001 - keep watching
@@ -195,7 +216,8 @@ def main(argv: list[str] | None = None) -> int:
                      f"Run {len(runs) + 1} ({newest.name[:60]}) has not finished after {age_min:.0f} min: probably "
                      "the recorder asks on screen (stereo recording failed / PAT-start LED not detected, Y/n).",
                      {"run_number": len(runs) + 1, "run_folder": newest.name})
-        if not stalled and time.time() - last_change > args.stall_min * 60.0:
+        # Before the first run the session may be warming up for 40 min: that is not a stall.
+        if runs and not stalled and time.time() - last_change > args.stall_min * 60.0:
             stalled = True
             last_label = runs[-1].get("label") if runs else "-"
             tell("session_stall", f"No run finished for {args.stall_min:g} min (last: run {len(runs)} {last_label}). "

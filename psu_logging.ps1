@@ -104,3 +104,28 @@ function Get-NotifyArgs {
     Write-Host "[NOTIFY] notify_config.json not found: no email / event-file notifications for this session."
     return @()
 }
+
+function Start-SessionWatch {
+    # Outside watcher (live_session_watch.py) for the session the recorder is about to start: notifies a run that
+    # does not finish (hang, unexpected wait) and a stalled session. Everything else the recorder notifies itself.
+    param([string]$Python, [string]$OutputDir, [double]$WaitingMin = 5.0, [double]$StallMin = 8.0)
+    if (-not (Test-Path -LiteralPath $OutputDir)) { New-Item -ItemType Directory -Force -Path $OutputDir | Out-Null }
+    $dir = (Resolve-Path $OutputDir).Path
+    $stamp = Get-Date -Format "yyyyMMdd_HHmmss"
+    $log = Join-Path $dir "live_watch_start_$stamp.log"
+    $invariant = [System.Globalization.CultureInfo]::InvariantCulture
+    $watchArgs = @(".\live_session_watch.py", "--records", "`"$dir`"", "--wait-new-session", "--stall-only",
+        "--waiting-min", $WaitingMin.ToString($invariant), "--stall-min", $StallMin.ToString($invariant))
+    $process = Start-Process -FilePath $Python -ArgumentList $watchArgs -RedirectStandardOutput $log `
+        -RedirectStandardError "$log.err" -WindowStyle Hidden -PassThru
+    Write-Host "[WATCH] Session watcher started (pid $($process.Id), log $log)."
+    return [pscustomobject]@{ Process = $process; Log = $log }
+}
+
+function Stop-SessionWatch {
+    param($Watch)
+    if ($null -eq $Watch) { return }
+    # It ends by itself once the session is no longer running; stop it if the recorder never started one.
+    try { $Watch.Process.WaitForExit(30000) | Out-Null } catch { }
+    if (-not $Watch.Process.HasExited) { Stop-Process -Id $Watch.Process.Id -Force -ErrorAction SilentlyContinue }
+}

@@ -466,5 +466,50 @@ class CaptureAlertTests(unittest.TestCase):
             self.assertEqual(session["capture_alerts"][0]["kind"], "led_failure")
 
 
+class InlineAlertTests(unittest.TestCase):
+    def test_checkpoint_supply_temperature_and_led_are_notified(self):
+        with TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            export_dir = write_export(root)
+            config = root / "notify.json"
+            config.write_text(json.dumps({"event_dir": str(root / "events")}), encoding="utf-8")
+            psu = root / "psu.csv"
+            psu.write_text("time_iso,time_unix_s,voltage_V,current_A\n", encoding="utf-8")
+            pat = root / "pat.csv"
+            pat.write_text("time_iso,time_unix_s\n", encoding="utf-8")
+            argv = ["--hf-export-dir", str(export_dir), "--output-dir", str(root / "rec"),
+                    "--hf-run", "kx=1", "--hf-run", "ky=1", "--unattended-after-first-checkpoint",
+                    "--checkpoint-run-numbers", "2", "--acknowledge-step-response-risk",
+                    "--notify-config", str(config), "--psu-log", str(psu), "--pat-temp-log", str(pat),
+                    "--no-hold-particle-until-enter"]
+            calls = []
+
+            def record(*_a, **kwargs):
+                calls.append(1)
+                kwargs["hardware_session"].last_capture_report = (
+                    {"failures": [], "led_warnings": ["onset 1.1 s before the expected time"]} if len(calls) == 2 else {}
+                )
+                return 0, None
+
+            supply = {"events": [{"kind": "current_drop", "t": 1.0}]}
+            with mock.patch.object(auto_record, "run_recording", side_effect=record), \
+                    mock.patch.object(auto_record, "attach_supply_record", return_value=supply), \
+                    mock.patch.object(auto_record, "attach_pat_temperature_record",
+                                      return_value={"interrupted": True, "arduino_restarts": 1}), \
+                    mock.patch.object(auto_record, "current_guard_verdict", return_value={"stop": False}):
+                from test_particle_presence import run_main_with_record
+                result, _events, _ = run_main_with_record(argv, None)
+            self.assertEqual(result, 0)
+            lines = (root / "events" / session_notify.EVENTS_FILE).read_text(encoding="utf-8").splitlines()
+            events = [json.loads(line)["event"] for line in lines]
+            self.assertEqual(events.count("checkpoint"), 1)
+            self.assertEqual(events.count("supply_event"), 2)
+            self.assertEqual(events.count("pat_temp_interrupted"), 2)
+            self.assertEqual(events.count("led_warning"), 1)
+            self.assertEqual(events[-1], "session_complete")
+            session = json.loads(next((root / "rec").glob("auto_recording_session_*.json")).read_text(encoding="utf-8"))
+            self.assertEqual(len(session["alerts"]), 6)
+
+
 if __name__ == "__main__":
     unittest.main()

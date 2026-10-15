@@ -13,8 +13,10 @@ the time goes to particle_changes in the session JSON).
 
 Fans ON, 15 V, current guard 3 %, temperatures asked every 10 minutes, environment (Tempo Disc) and PAT board
 temperatures (DS18B20) logged when the sensors are present. By the clock only the first run waits for -WarmupMin
-(default 40) minutes after sound-on; everything after it runs at once. Extra confirmations (stereo preview and
-Enter) are inserted before cardioid_a23_f10_OFF, the first random_rms10_*, and the first rotline_* run.
+(default 40) minutes after sound-on; everything after it runs at once. There are no extra preview stops: the
+particle is checked after every run instead (-ParticleCheck), and -CheckpointBefore adds stops if wanted.
+A watcher process (live_session_watch.py) is started alongside and notifies when a run does not finish or the
+session stalls; the recorder itself notifies everything else.
 
 If the particle falls, stop with Ctrl+C, replace it, and resume with -WarmupMin 0 -StartAt <run> (the run
 numbers are those printed by this script for the same -Session; particle changes after that point are kept).
@@ -54,6 +56,8 @@ param(
     [switch]$NoParticlePrompts,
     [ValidateSet("pause", "warn", "off")]
     [string]$ParticleCheck = "pause",
+    [string]$CheckpointBefore = "",
+    [switch]$NoSessionWatch,
     [string]$Calipers = "",
     [string]$MeasuredBy = "",
     [string]$ParticleSource = "",
@@ -148,11 +152,13 @@ foreach ($s in $sessions) {
 if ($null -ne $pendingChange) { throw "The runlist ends with a particle change" }
 if ($WarmupMin -gt 0.0) { $useClock = $true; $minutes[0] = $WarmupMin } else { $useClock = $false }
 
-# Extra confirmations: before the largest cardioid, the first rms-10 random and the first rotating line.
+# No extra preview stops by default (the particle is checked after every run); -CheckpointBefore "pattern,..."
+# adds a stop before the first run matching each pattern (for example "cardioid_a23_f10_OFF,rotline_*").
 $checkpoints = @()
-foreach ($pattern in @("cardioid_a23_f10_OFF", "random_rms10_*", "rotline_*")) {
+foreach ($pattern in ($CheckpointBefore -split ",")) {
+    if ($pattern.Trim() -eq "") { continue }
     for ($i = 0; $i -lt $runs.Count; $i++) {
-        if ($runs[$i] -like $pattern) { if (($i + 1) -gt 1) { $checkpoints += ($i + 1) }; break }
+        if ($runs[$i] -like $pattern.Trim()) { if (($i + 1) -gt 1) { $checkpoints += ($i + 1) }; break }
     }
 }
 $guardBaseline = if ($WarmupMin -gt 0.0) { $WarmupMin } else { 5.0 }
@@ -264,12 +270,15 @@ if ($null -ne $patTempLogger) { $recordArgs += @("--pat-temp-log", $patTempLogge
 if ($null -ne $psuLogger) { $recordArgs += @("--psu-log", $psuLogger.Log) }
 $recordArgs += Get-CurrentGuardArgs -Logger $psuLogger -Percent $CurrentGuardPercent -BaselineMin $guardBaseline -Disabled:$NoCurrentGuard
 $recordArgs += Get-NotifyArgs
+$sessionWatch = $null
+if (-not $NoSessionWatch) { $sessionWatch = Start-SessionWatch -Python $python -OutputDir $OutputDir }
 try {
     & $python .\acoustools_stereo_eventcam_3d_recording_auto.py @recordArgs `
         --acknowledge-ff-validation-protocol --acknowledge-step-response-risk
     $code = $LASTEXITCODE
 }
 finally {
+    Stop-SessionWatch $sessionWatch
     Stop-EnvLogger $envLogger
     Stop-PatTempLogger $patTempLogger
     Stop-PsuLogger $psuLogger

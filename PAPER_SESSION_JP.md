@@ -39,8 +39,7 @@ powershell -ExecutionPolicy Bypass -File .\run_paper_20261014.ps1 -Session S1,S2
   省く（`-KeepHead` で残す）。S4 の頭は粒子の交換なので省かない。
 - 本数と見積もり（1 本 = 記録＋65 s、交換 3 分、暖機は別）: S1 115 本 145 分、S1+S2 257 本 320 分（暖機込み 6 時間）、
   S3+S4 230 本・交換 3 回 313 分（暖機込み 5 時間 53 分）。解析側の `summary.md`（S1 145、S2 180、S3 199、S4 114 分）と合う。
-- 確認（プレビューと Enter）: 最初の run、`cardioid_a23_f10_OFF` の前、最初の `random_rms10_*` の前、最初の
-  `rotline_*` の前、粒子の交換のあと。
+- 確認（プレビューと Enter）: 最初の run と粒子の交換のあとだけ（10-16 から。粒子は各 run のあとに自動で確かめるため、`cardioid_a23` などの前の確認はやめた。必要なら `-CheckpointBefore "cardioid_a23_f10_OFF,rotline_*"`）。
 - 温度の記録は 10 分ごと。Tempo Disc と DS18B20 の値がそろっていれば聞かずに自動で記録し、欠けているときだけ画面で聞く。セッションの終わりに 1 分ごとの表 `env_timeline_<時刻>.csv`（室温・湿度・気圧・上下 PAT・電源・その分の run）を書く。DS18B20 は COM12 の Arduino（`pat_temp_sensors.json`: top_pat・bottom_pat、10-15 から自動）。この Arduino は開始 LED と照明の点滅も受け持つので、**計測の前にモニター画面 `pat_temp_app.py` を閉じる**（COM12 を握るため）。電源・環境・PAT 板の温度のロガーは既定で起動
   （`-NoEnvSensor`、`-NoPatTempSensor`）。電流の見張り 3 %。
 - **記録や開始 LED の検出に失敗したとき**: 聞かずに自動で撮り直す（`-AutomaticCaptureRetries`、既定 2 回）。それでもだめなら通知（`led_failure` / `capture_failure`、メールと見張りセッション）して、画面の「同じ軌道を再計測しますか？ (Y/n)」で待つ。`-Unattended` なら聞かずにセッションを止める。
@@ -56,6 +55,12 @@ session JSON の `particle_hold` に始め・終わり・終わり方（`enter` 
 粒子を回収してから Enter を押す。
 
 ## 通知（新規）
+
+計測スクリプトが自分で知らせるもの: 終わり（`session_complete` / `session_stopped`）、粒子の交換の前（`particle_change`）、粒子が落ちた（`particle_lost`）、
+自動の撮り直しでもだめで Y/n を聞く前（`led_failure` / `capture_failure`）、プレビューの確認待ち（`checkpoint`）、操作の待ち（`operator_action`）、
+電源の出力 OFF・電流の急落（`supply_event`）、温度・LED の Arduino の再起動（`pat_temp_interrupted`）、開始 LED の時刻のずれ（`led_warning`）。
+一括スクリプトは外の見張り `live_session_watch.py`（`--stall-only`）も自動で起動し、run が 5 分終わらない（`capture_waiting`）・
+8 分進まない（`session_stall`）ときだけ知らせる（固まった場合用。`-NoSessionWatch` で起動しない）。
 
 `notify_config.json`（git には入らない。見本 `notify_config.example.json`）があれば、次のときに知らせる:
 セッションの終わり（complete / stopped。PAT が保持中かどうかも書く）、粒子の交換の前。
