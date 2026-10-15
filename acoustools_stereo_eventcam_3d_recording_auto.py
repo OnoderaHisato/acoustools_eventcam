@@ -9,6 +9,7 @@ import dataclasses
 import datetime as dt
 import json
 import math
+import os
 import time
 from pathlib import Path
 from typing import Any
@@ -25,6 +26,10 @@ from stereo_acoustools_3d_auto_common import (
 )
 from psu_run_link import GUARD_DROP_FRACTION, attach_supply_record, current_guard_verdict, load_psu_rows
 from env_run_link import attach_environment_record
+import env_timeline
+from pat_temp_run_link import attach_pat_temperature_record
+import particle_prompt
+import session_notify
 import thermal_prompt
 from stereo_acoustools_3d_common import PROCESSING_CONFIG_FIELDS, atomic_write_json
 from stereo_acoustools_3d_hf_common import (
@@ -135,6 +140,107 @@ def wait_until_wall_time(target_wall_sec: float, description: str) -> None:
             )
             last_status = now
         time.sleep(min(1.0, remaining))
+
+
+HOLD_BEEP_INTERVAL_SEC = 30.0
+HOLD_STATUS_INTERVAL_SEC = 300.0
+
+
+def hold_particle_for_collection(
+    max_minutes: float,
+    *,
+    beep_every_sec: float = HOLD_BEEP_INTERVAL_SEC,
+    clock: Any = time,
+    beeper: Any = None,
+    key_reader: Any = None,
+) -> dict[str, Any]:
+    """Keep the PAT on (the caller has not shut it down) until Enter, Ctrl+C or the time limit.
+
+    Returns a record for the session JSON: how the hold ended ('enter', 'interrupt', 'timeout',
+    'no_console') and how long it lasted. The particle is held at the centre by the hologram that is
+    already playing; this function only waits and beeps.
+    """
+    beeper = session_notify.beep if beeper is None else beeper
+    started = clock.time()
+    limit_sec = None if float(max_minutes) <= 0.0 else float(max_minutes) * 60.0
+    record: dict[str, Any] = {
+        "started_at": dt.datetime.now().isoformat(timespec="seconds"),
+        "max_minutes": float(max_minutes),
+    }
+
+    def finish(how: str) -> dict[str, Any]:
+        record["ended"] = how
+        record["ended_at"] = dt.datetime.now().isoformat(timespec="seconds")
+        record["held_sec"] = round(clock.time() - started, 1)
+        print(f"[AUTO][HOLD] Particle hold ended ({how}) after {record['held_sec']:.0f} s; turning the PAT off.", flush=True)
+        return record
+
+    if key_reader is None:
+        import sys
+
+        if not sys.stdin or not sys.stdin.isatty():
+            print("[AUTO][HOLD][WARN] No interactive console: the particle cannot be held for collection.", flush=True)
+            return finish("no_console")
+        if os.name == "nt":
+            import msvcrt
+
+            def key_reader() -> str | None:
+                if not msvcrt.kbhit():
+                    return None
+                char = msvcrt.getwch()
+                if char in ("\x00", "\xe0"):
+                    msvcrt.getwch()
+                    return None
+                return char
+        else:
+            import select
+
+            def key_reader() -> str | None:
+                ready, _, _ = select.select([sys.stdin], [], [], 0.0)
+                if not ready:
+                    return None
+                line = sys.stdin.readline()
+                return "\n" if line != "" else "\x04"
+
+    print(
+        "\n[AUTO][HOLD] The session is over. The PAT keeps holding the particle at the centre so you can "
+        "collect it. Press Enter when the particle is collected (Ctrl+C turns the PAT off at once"
+        + ("" if limit_sec is None else f"; automatic turn-off after {max_minutes:g} min")
+        + ").",
+        flush=True,
+    )
+    last_beep = -1e9
+    last_status = clock.time()
+    try:
+        beeper(3)
+        while True:
+            now = clock.time()
+            if limit_sec is not None and now - started >= limit_sec:
+                return finish("timeout")
+            if now - last_beep >= beep_every_sec:
+                beeper(2)
+                last_beep = now
+            if now - last_status >= HOLD_STATUS_INTERVAL_SEC:
+                print(f"[AUTO][HOLD] still holding ({(now - started) / 60.0:.0f} min); press Enter once the particle is collected.", flush=True)
+                last_status = now
+            char = key_reader()
+            if char in ("\r", "\n"):
+                return finish("enter")
+            if char == "\x03":
+                raise KeyboardInterrupt
+            if char == "\x04":
+                return finish("no_console")
+            clock.sleep(0.1)
+    except KeyboardInterrupt:
+        return finish("interrupt")
+
+
+def _session_can_hold(hardware_session: Any) -> bool:
+    """Only a live AcousTools/OpenMPD session (not yet shut down) can keep holding the particle."""
+    return (
+        not getattr(hardware_session, "is_shutdown", False)
+        and getattr(hardware_session, "lev", None) is not None
+    )
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
@@ -299,6 +405,51 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         ),
     )
     parser.add_argument(
+        "--hold-particle-until-enter",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help=(
+            "On by default: at the end of the session (complete, current guard, failure, Ctrl+C) keep the PAT "
+            "holding the particle at the centre, beeping every 30 s, until Enter is pressed, so the particle "
+            "can be collected instead of being dropped when the output stops. --hold-particle-max-min bounds "
+            "the wait; Ctrl+C during the hold ends it at once. Without an interactive console it is skipped. "
+            "--no-hold-particle-until-enter turns the PAT off at once as before."
+        ),
+    )
+    parser.add_argument(
+        "--hold-particle-max-min",
+        type=float,
+        default=180.0,
+        metavar="MIN",
+        help="Longest time the end-of-session particle hold waits for Enter before the PAT is turned off (default 180; 0 = no limit).",
+    )
+    parser.add_argument(
+        "--notify-config",
+        type=Path,
+        default=None,
+        metavar="JSON",
+        help=(
+            "session_notify.py config (email / event file / beep) used when the session ends, stops, holds "
+            "the particle, or needs a particle change. Only an explicit path enables notifications (the run_*.ps1 "
+            "scripts pass notify_config.json when it exists), so tests and ad-hoc calls never send mail. "
+            "--no-notify disables it."
+        ),
+    )
+    parser.add_argument("--no-notify", action="store_true", help="Send no notifications even if a config exists.")
+    parser.add_argument(
+        "--pat-temp-log",
+        type=Path,
+        default=None,
+        metavar="CSV",
+        help=(
+            "PAT board temperature log being written by pat_temp_logger.py (DS18B20 sensors via an "
+            "Arduino). When a run finishes, the rows around it are copied to "
+            "<run>/pat_temperature_log.csv and summarised in pipeline_manifest.json "
+            "(\"pat_temperature\": per sensor and top/bottom means); the temperature notes also take "
+            "the latest top/bottom reading. Only the CSV is read."
+        ),
+    )
+    parser.add_argument(
         "--current-guard-rise-percent",
         type=float,
         default=0.0,
@@ -360,6 +511,25 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         ),
     )
     parser.add_argument(
+        "--particle-prompts",
+        action="store_true",
+        help=(
+            "Ask for the particle record on screen (particle_prompt.py): at the start (number and three "
+            "caliper diameters), at each particle change (after-use diameters of the old one, then the new "
+            "one) and after the end-of-session collection. Answers go to the session JSON under particles; "
+            "each run record gets its particle."
+        ),
+    )
+    parser.add_argument("--initial-particle", default="", metavar="LABEL",
+                        help="Particle number expected at the start (from the runlist); it may then be left out when typing.")
+    parser.add_argument("--particle-change-labels", default="", metavar="LIST",
+                        help="Particle number expected at each change, 'RUN:LABEL' items separated by ',' (e.g. '102:1,145:2').")
+    parser.add_argument("--particle-calipers", default="", metavar="TEXT", help="Calipers model and resolution, kept with every particle.")
+    parser.add_argument("--particle-measured-by", default="", metavar="TEXT", help="Who measured the diameters.")
+    parser.add_argument("--particle-source", default="", metavar="TEXT", help="Where the particles came from (bag, lot).")
+    parser.add_argument("--particle-prompt-timeout-sec", type=float, default=particle_prompt.DEFAULT_TIMEOUT_SEC,
+                        metavar="SEC", help="How long a particle question waits for typing to start (default 600).")
+    parser.add_argument(
         "--operator-actions",
         default="",
         metavar="LIST",
@@ -381,6 +551,14 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
             "waiting for a run (giving up 10 s before it is due); without a schedule the prompt sits "
             "between runs for --thermal-prompt-timeout-sec. Answers go to the session JSON "
             "(thermal_notes) and thermal_log_<session time>.csv. Empty disables the prompts."
+        ),
+    )
+    parser.add_argument(
+        "--thermal-ask-with-sensors",
+        action="store_true",
+        help=(
+            "Ask on screen even when the Tempo Disc (--env-log) and both DS18B20 (--pat-temp-log) give fresh "
+            "values. By default the temperature note is then stored from the sensors without a prompt."
         ),
     )
     parser.add_argument(
@@ -933,6 +1111,12 @@ def main(argv: list[str] | None = None) -> int:
                 "[AUTO] Particle change (with its time recorded) before run(s) "
                 + ", ".join(str(number) for number in sorted(particle_change_run_numbers))
             )
+        particle_change_labels: dict[int, str] = {}
+        for item in str(args.particle_change_labels).split(","):
+            if not item.strip():
+                continue
+            number_text, _sep, label_text = item.partition(":")
+            particle_change_labels[int(number_text)] = label_text.strip()
         operator_actions: dict[int, list[str]] = {}
         if str(args.operator_actions).strip():
             if not unattended:
@@ -1072,6 +1256,25 @@ def main(argv: list[str] | None = None) -> int:
                 "pipeline_manifest.json; use a shorter --output-dir or run name if tools "
                 "match on directory names."
             )
+        if float(args.hold_particle_max_min) < 0.0 or not math.isfinite(float(args.hold_particle_max_min)):
+            raise ValueError("--hold-particle-max-min must be finite and >= 0")
+        notify_config_path: Path | None = None
+        notify_cfg: dict[str, Any] = {}
+        if not args.no_notify:
+            candidate = args.notify_config
+            if candidate is not None and not Path(candidate).is_file():
+                raise ValueError(f"--notify-config not found: {candidate}")
+            if candidate is not None:
+                notify_config_path = Path(candidate).resolve()
+                notify_cfg = session_notify.load_config(notify_config_path)
+        if args.hold_particle_until_enter:
+            print(
+                "[AUTO] At the end the PAT keeps holding the particle at the centre until Enter "
+                f"(limit {float(args.hold_particle_max_min):g} min)."
+            )
+        if notify_cfg:
+            channels = [k for k in ("email", "event_dir", "beep") if notify_cfg.get(k)]
+            print(f"[AUTO] Notifications: {', '.join(channels) or 'none'} ({notify_config_path}).")
         if args.dry_run:
             mode_label = (
                 "feedforward validation"
@@ -1355,6 +1558,13 @@ def main(argv: list[str] | None = None) -> int:
             session["run_label_tag"] = run_tag
             session["psu_log"] = "" if args.psu_log is None else str(args.psu_log.resolve())
             session["env_log"] = "" if args.env_log is None else str(args.env_log.resolve())
+            session["pat_temp_log"] = "" if args.pat_temp_log is None else str(args.pat_temp_log.resolve())
+            if args.pat_temp_log is not None:
+                # runs during which the Arduino (illumination PWM, start LED, temperatures) restarted or lost its port
+                session["pat_temp_interrupted_runs"] = []
+            session["hold_particle_until_enter"] = bool(args.hold_particle_until_enter)
+            session["hold_particle_max_min"] = float(args.hold_particle_max_min)
+            session["notify_config"] = "" if notify_config_path is None else str(notify_config_path)
             if str(args.pat_board_gap_mm).strip():
                 session["pat_board_gap_mm"] = str(args.pat_board_gap_mm).strip()
             session["thermal_prompt_settings"] = (
@@ -1436,6 +1646,7 @@ def main(argv: list[str] | None = None) -> int:
             hardware_session, "active_output_started_wall_ns", None
         )
         atomic_write_json(session_path, session)
+        particles: particle_prompt.ParticlePrompts | None = None
         try:
             overall_code = 0
             preview_completed = False
@@ -1451,6 +1662,8 @@ def main(argv: list[str] | None = None) -> int:
                     sound_on_wall_sec=None if sound_on_wall_ns is None else sound_on_wall_ns / 1e9,
                     psu_log=args.psu_log,
                     env_log=args.env_log,
+                    pat_temp_log=args.pat_temp_log,
+                    ask_when_sensors_cover=bool(args.thermal_ask_with_sensors),
                     clock=time,
                 )
                 if thermal_plan is not None
@@ -1515,6 +1728,19 @@ def main(argv: list[str] | None = None) -> int:
                     atomic_write_json(session_path, session)
                 return True
 
+            if args.particle_prompts:
+                particles = particle_prompt.ParticlePrompts(
+                    session,
+                    calipers=args.particle_calipers,
+                    measured_by=args.particle_measured_by,
+                    source=args.particle_source,
+                    timeout_sec=float(args.particle_prompt_timeout_sec),
+                )
+                try:
+                    particles.start(str(args.initial_particle).strip() or None, first_run=1)
+                except KeyboardInterrupt:
+                    pass
+                atomic_write_json(session_path, session)
             if unattended and (schedule_offsets is not None or schedule_interval_sec is not None):
                 # With a timed schedule the first run may be many minutes away; confirm the
                 # particle now, before the clock is spent waiting, and let the runs start on
@@ -1546,6 +1772,9 @@ def main(argv: list[str] | None = None) -> int:
                     print("[AUTO] Particle check aborted; nothing was recorded.")
                     return 130
                 first_checkpoint_pending = False
+                if particles is not None:
+                    particles.mark_placed(session["initial_particle_checkpoint"]["at"])
+                    atomic_write_json(session_path, session)
                 print(
                     "[AUTO][SCHEDULE] Particle confirmed "
                     f"{session['initial_particle_checkpoint']['minutes_after_sound_on']} min after "
@@ -1662,6 +1891,15 @@ def main(argv: list[str] | None = None) -> int:
                             "replace the particle now (PAT keeps holding at the centre), then press "
                             "Enter. The time of this Enter is recorded; the stereo preview follows."
                         )
+                        if notify_cfg:
+                            session_notify.notify(
+                                "particle_change",
+                                f"Particle change needed before run {run_index + 1} ({condition.label}); "
+                                "the PAT is holding the current particle at the centre.",
+                                details={"session": str(session_path), "run_number": run_index + 1,
+                                         "label": condition.label},
+                                config=notify_cfg,
+                            )
                         try:
                             input("[AUTO][PARTICLE CHANGE] Press Enter once the new particle is levitated: ")
                         except (EOFError, KeyboardInterrupt):
@@ -1684,6 +1922,18 @@ def main(argv: list[str] | None = None) -> int:
                             }
                         )
                         atomic_write_json(session_path, session)
+                        if particles is not None:
+                            try:
+                                particles.change(
+                                    particle_change_labels.get(run_index + 1),
+                                    run_index + 1,
+                                    changed_at.isoformat(timespec="seconds"),
+                                )
+                            except KeyboardInterrupt:
+                                pass
+                            atomic_write_json(session_path, session)
+                    if particles is not None:
+                        particles.mark_placed()
                     run_started_wall = time.time()
                     if hf_mode:
                         if condition.label in precomputed_b3:
@@ -1909,9 +2159,40 @@ def main(argv: list[str] | None = None) -> int:
                         if environment_record.get("error") or environment_record.get("stale"):
                             print(f"[AUTO][ENV][WARN] {condition.label}: no recent Tempo Disc reading "
                                   f"({environment_record.get('error') or 'stale'})")
+                    pat_temperature_record = None
+                    if args.pat_temp_log is not None:
+                        pat_temperature_record = attach_pat_temperature_record(
+                            run_dir if code == 0 else None, args.pat_temp_log, run_started_wall, time.time(),
+                        )
+                        if code == 0 and run_dir is not None:
+                            record_supply_in_manifest(Path(run_dir), pat_temperature_record, key="pat_temperature")
+                        if pat_temperature_record.get("error") or pat_temperature_record.get("stale"):
+                            print(f"[AUTO][PATTEMP][WARN] {condition.label}: no recent PAT temperature reading "
+                                  f"({pat_temperature_record.get('error') or 'stale'})")
+                        if pat_temperature_record.get("interrupted"):
+                            # The same Arduino drives the illumination PWM and the start LED.
+                            print(f"[AUTO][PATTEMP][WARN] {condition.label}: the temperature Arduino restarted or "
+                                  "its port was lost/reopened during this run; the illumination and the start LED "
+                                  "may have stopped (restarts "
+                                  f"{pat_temperature_record.get('arduino_restarts')}, port events "
+                                  f"{pat_temperature_record.get('port_events')}, reading gaps "
+                                  f"{len(pat_temperature_record.get('reading_gaps') or [])})")
+                            session.setdefault("pat_temp_interrupted_runs", []).append({
+                                "run_number": len(session["runs"]) + 1,
+                                "label": condition.label,
+                                "run_dir": "" if run_dir is None else str(run_dir),
+                                "arduino_restarts": pat_temperature_record.get("arduino_restarts"),
+                                "port_events": pat_temperature_record.get("port_events"),
+                                "reading_gaps": len(pat_temperature_record.get("reading_gaps") or []),
+                            })
+                    run_particle = (
+                        None if particles is None
+                        else particles.note_run(run_index + 1, condition.label, int(code))
+                    )
                     session["runs"].append(
                         {
                             **run_automation_metadata,
+                            **({} if run_particle is None else {"particle": run_particle}),
                             "exit_code": int(code),
                             "run_dir": "" if run_dir is None else str(run_dir),
                             "error": error,
@@ -1928,6 +2209,8 @@ def main(argv: list[str] | None = None) -> int:
                             "finished_at": dt.datetime.now().isoformat(timespec="milliseconds"),
                             **({} if supply_record is None else {"supply": supply_record}),
                             **({} if environment_record is None else {"environment": environment_record}),
+                            **({} if pat_temperature_record is None
+                               else {"pat_temperature": pat_temperature_record}),
                         }
                     )
                     atomic_write_json(session_path, session)
@@ -1949,9 +2232,49 @@ def main(argv: list[str] | None = None) -> int:
             print(f"[AUTO] Recording session complete: {session_path}")
             return overall_code
         finally:
+            # The session JSON already carries the final status (complete, failed, interrupted,
+            # stopped_by_current_guard). Tell the operator, then hold the particle for collection
+            # before the one and only PAT shutdown.
+            final_status = str(session.get("status", "unknown"))
+            recorded = sum(1 for r in session.get("runs", []) if int(r.get("exit_code", 1)) == 0)
+            planned = session.get("run_count", len(session.get("runs", [])))
+            if notify_cfg:
+                try:
+                    session_notify.notify(
+                        "session_complete" if final_status.startswith("complete") else "session_stopped",
+                        f"Session {final_status}: {recorded}/{planned} runs recorded"
+                        + (". The PAT is holding the particle at the centre until Enter is pressed."
+                           if args.hold_particle_until_enter and _session_can_hold(hardware_session)
+                           else ". The PAT is turned off."),
+                        details={"session": str(session_path), "status": final_status,
+                                 "current_guard": session.get("current_guard", {})},
+                        config=notify_cfg,
+                    )
+                except Exception as exc:  # noqa: BLE001 - never let a notification block the shutdown
+                    print(f"[NOTIFY][WARN] {exc}", flush=True)
+            collected = False
+            if args.hold_particle_until_enter and _session_can_hold(hardware_session):
+                session["particle_hold"] = hold_particle_for_collection(float(args.hold_particle_max_min))
+                collected = session["particle_hold"].get("ended") == "enter"
+                atomic_write_json(session_path, session)
+            if particles is not None:
+                try:
+                    particles.finish(collected)
+                except KeyboardInterrupt:
+                    pass
+                atomic_write_json(session_path, session)
             shutdown_recording_hardware_session(hardware_session)
             session["hardware_session_closed_at"] = dt.datetime.now().isoformat(timespec="milliseconds")
             atomic_write_json(session_path, session)
+            if any(session.get(key) for key in ("env_log", "pat_temp_log", "psu_log")):
+                # One row per minute of room / PAT board temperatures and supply, with the runs of each minute.
+                try:
+                    timeline = env_timeline.timeline_for_session(session_path, session, end_unix=time.time())
+                    session["env_timeline_csv"] = timeline["csv"]
+                    atomic_write_json(session_path, session)
+                    print(f"[AUTO] Environment timeline (1 min): {timeline['csv']}")
+                except Exception as exc:  # noqa: BLE001 - a summary table must never fail the session
+                    print(f"[AUTO][WARN] Environment timeline not written: {exc}")
     except ValueError as exc:
         print(f"[AUTO][ERROR] {exc}")
         return 2

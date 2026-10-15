@@ -107,6 +107,30 @@ powershell -ExecutionPolicy Bypass -File .\run_large_step_all.ps1
 
 粒子の脱落は自動検知しません。
 
+## フルペーパー用の計測 S1〜S4（2026-10-15 統合）
+
+`G:\マイドライブ\Experiment61014\` の計画（論文のデータを 0 から撮り直す、補償なし 491 本）は、
+`paper_20261014/paper_plan.json`（296 設計）と `export_paper/` として同じ `--hf-export-dir` 経路へ統合済みです。
+撮る順は解析側の `runlist/S*_runlist.csv` をそのまま読みます。手順は `PAPER_SESSION_JP.md`。
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .
+un_paper_20261014.ps1 -Session S1,S2 -DryRunOnly
+powershell -ExecutionPolicy Bypass -File .
+un_paper_20261014.ps1 -Session S1,S2 -PsuUsb     # 1 日目
+powershell -ExecutionPolicy Bypass -File .
+un_paper_20261014.ps1 -Session S3,S4 -PsuUsb     # 2 日目（粒子 0→1→2→3）
+```
+
+## 終わりの粒子の保持と通知（2026-10-15 追加）
+
+- **既定で有効**: セッションの終わり（complete・電流の見張り・失敗・Ctrl+C）に PAT を切らず、粒子を
+  中心で保持したまま Enter を待つ（30 s ごとにビープ、`--hold-particle-max-min` 既定 180 分で自動停止）。
+  粒子を回収してから Enter。session JSON の `particle_hold` に記録。`--no-hold-particle-until-enter` で従来どおりすぐ切る。
+- `notify_config.json`（`session_notify.py`、見本 `notify_config.example.json`）があれば、終わりと粒子の交換の前に
+  email / イベントファイル / ビープで知らせる。パスワードは環境変数かファイルから。`--no-notify` で止める。
+- 粒子の記録は `particle_record.py`（`PAPER_SESSION_JP.md`）。
+
 ## 室温・湿度・気圧の自動記録（2026-10-13追加）
 
 `--env-log <csv>` に Tempo Disc のロガー（`tempodisc_logger.py`）の CSV を渡すと、各 run に
@@ -115,6 +139,14 @@ powershell -ExecutionPolicy Bypass -File .\run_large_step_all.ps1
 `run_extra3_20261012.ps1`・`run_session2_20261011.ps1`・`run_cooling_remeasure_15v.ps1` は既定で
 ロガーを起動します（`-NoEnvSensor` で無効）。センサーが見つからなくても計測は止まりません。
 モニター画面は `tempodisc_app.py`。詳細は `TEMPO_DISC_ENV_LOGGING_JP.md`。
+
+## PAT 板の温度の自動記録（2026-10-14追加）
+
+`--pat-temp-log <csv>` に DS18B20 のロガー（`pat_temp_logger.py`、Arduino 経由）の CSV を渡すと、各 run に
+`pat_temperature_log.csv` と manifest の `pat_temperature`（センサーごとと上下の平均）が付き、
+温度の問いにも上下の値が入ります。上の 3 本の一括スクリプトは既定でロガーを起動します
+（`-NoPatTempSensor` で無効）。ロガーは PAT の制御基板（FTDI FT232H）のポートを開きません。
+詳細は `PAT_TEMP_LOGGING_JP.md`。
 
 ## 電圧を下げた熱の保持試験（2026-09-23追加）
 

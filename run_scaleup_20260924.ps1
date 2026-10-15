@@ -265,6 +265,7 @@ $psuLogger = Start-PsuLogger -Python $python -OutputDir $OutputDir -TargetArgs $
 if ($null -ne $psuLogger) { $recordArgs += @("--psu-log", $psuLogger.Log) }
 $guardBaselineMin = if ($WarmupMin -gt 0.0) { $WarmupMin } else { 5.0 }
 $recordArgs += Get-CurrentGuardArgs -Logger $psuLogger -Percent $CurrentGuardPercent -BaselineMin $guardBaselineMin -Disabled:$NoCurrentGuard
+$recordArgs += Get-NotifyArgs
 try {
     & $python .\acoustools_stereo_eventcam_3d_recording_auto.py @recordArgs `
         --acknowledge-ff-validation-protocol --acknowledge-step-response-risk

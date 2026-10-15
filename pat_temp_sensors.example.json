@@ -1,0 +1,9 @@
+{
+  "_readme": "Copy to pat_temp_sensors.json and replace the ROM ids with the ones printed by: .\\venv\\Scripts\\python.exe .\\pat_temp_logger.py --once . group = top / bottom (used for the top/bottom means and the temperature notes; other values are kept but not averaged). offset_C is added to the reading (from the side-by-side check of all sensors; 0 until measured).",
+  "sensors": {
+    "28AA000000000001": {"name": "top_ft232h", "group": "top", "offset_C": 0.0, "note": "top controller board, green surface next to the FT232H (the non-contact thermometer spot)"},
+    "28AA000000000002": {"name": "top_array_centre", "group": "top", "offset_C": 0.0, "note": "back of the top transducer array, centre"},
+    "28AA000000000003": {"name": "bottom_ft232h", "group": "bottom", "offset_C": 0.0, "note": "bottom controller board, next to the FT232H"},
+    "28AA000000000004": {"name": "bottom_array_centre", "group": "bottom", "offset_C": 0.0, "note": "back of the bottom transducer array, centre"}
+  }
+}

@@ -1,10 +1,79 @@
 # Project handoff
 
+## 2026-10-16: 温度の Arduino の再起動・ポートの開き直しを run の記録に残す
+
+- 依頼（ユーザーが貼った解析側の文）: 照明 10 kHz と開始 LED も温度の Arduino（COM12、v3）が受け持つので、(1) ロガーの起動・開き直しで点滅が途切れるか実機で見る、(2) 途切れるなら DTR を下げて開くか RESET–GND 10 µF、(3) 途中の開き直しを manifest／session JSON に残す。
+- (2) は 10-15 に実装済み（`open_link()` が DTR／RTS を切り替えない）。10 µF は入れず、手順書に予備策として書いた。
+- (3) を実装:
+  - `pat_temp_logger.py`: CSV の末尾に `event` 列。開いたとき `port_opened`／`port_opened_reset`（handshake で、`s` を送る前にバナーか一覧が来たらリセットと判定、`StreamState.reset_on_open`）、失ったとき `port_lost`。
+  - `pat_temp_run_link.py`: `cycle` と `event` も読む。`arduino_restarts()`（センサーごとに `cycle` が戻った時刻）。要約に `arduino_restarts`・`port_events`・`reading_gaps`（`no reading` の行）・`interrupted`。`event` 列の無い古い CSV も読める。
+  - 自動計測の入口: `interrupted` の run で `[AUTO][PATTEMP][WARN]`、session JSON に `pat_temp_interrupted_runs`（run 番号・label・フォルダ・再起動・ポートの出来事・読めなかった数）。`--pat-temp-log` のときは空のリストで作る。
+  - テスト 6 件追加（リセットあり／なしの開き直しの行、失ったときの行、run の窓の中の再起動と窓の外、読めない行、古い CSV、入口で 2 本目だけが一覧に載る）。関連 5 スイートの 61 件が成功。
+- **実機確認（10-16 00:04〜00:07、ユーザーがモニター画面を閉じたあと、Arduino だけ）**: ロガーを 30 s（20 s）動かして止め、すぐもう一度動かした（スクラッチの CSV）。
+  - 2 回とも `port_opened`（リセットなし）。スケッチの `cycle` は止める前後で続き（5797 から、起動から約 1.6 時間）、Arduino は再起動していない。DTR を切り替えない開き方が効いている。
+  - 1 回目の確認で、開いた直後の温度の行が重複していた（cycle 5797 が 2 回、どちらも開いた時刻）。開く前にたまっていたデータとみられる。`open_link()` で開いた直後に `reset_input_buffer()`、ロガーで同じセンサー・同じ `cycle` の行を書かない（`is_new_reading()`、再起動で小さくなった `cycle` は書く）ようにした。
+  - リセットなしの `port_opened` も `interrupted` にしていたので、`interrupted` にするのは `port_lost`・`port_opened_reset`・再起動・読めない行だけにした（`INTERRUPTING_EVENTS`）。
+  - 直した版で再確認（20 s×2）: 重複なし、`cycle` 5928→5967 が途切れずに続き、`arduino_restarts` 空、`interrupted` False。
+  - テスト 2 件追加（重複は 1 回だけ書き、再起動は残す。リセットなしの開き直しは中断にしない）。関連 5 スイートの 63 件が成功。
+- 照明の点滅と開始 LED の目視・短い run の撮影（依頼の (1)）はユーザーの確認待ち。PAT・カメラは開いていない。コミット・push は行っていない。
+- **計測前にライブの温度画面を閉じる**: `pat_temp_app.py` のライブ表示は COM12 を使うので、開いたまま一括スクリプトを始めるとロガーが開けず、温度の記録なしで進む。3 本の一括スクリプトの計測前の確認の文と、`Start-PatTempLogger` の `--once` 失敗時の警告に「まず画面を閉じる」を足した（3 本の dry-run 成功）。計測中は `--follow`。
+- 「追加計測の整備 (fork)」セッションへ、温度の記録・中断の記録・画面の注意をセッション間メッセージで送った（10-16、両セッションの権限モードをそろえた後。10-15 の 1 回目はモードの違いで期限切れ）。
+
+## 2026-10-15: 開始 LED・照明のストロボ・DS18B20 を 1 台の Arduino にまとめたスケッチ、PAT 温度のモニター画面
+
+- **統合スケッチ（ユーザーの依頼、DS18B20 が届いた）**: 新規 `Arduino/pat_sync_strobe_temp/pat_sync_strobe_temp.ino`。元の `Arduino/led_sync_marker_and_strobe/led_sync_marker_and_strobe.ino`（`loop()` で D2 を見て D8 を 0.5 ms、D9 を `micros()` でストロボ）は変えていない。
+  - ピンと設定値は元と同じ（D2 入力、D8 開始 LED 500 µs、再アーム 50 ms、D9 ストロボ 10 ms 周期・5 ms 点灯、PAT 中だけ、保持 1 ms）。DS18B20 は **D4**（4.7 kΩ プルアップ、3 本線）。
+  - DS18B20 1 個の読み取りで CPU が約 11 ms 止まるので、時刻に効く部分をハードウェアへ移した。開始 LED は INT0（D2 立ち上がり）の割り込みで点け、Timer2 の one-shot で消す。ストロボは Timer1 の fast PWM（ICR1 が TOP、0.5 µs 刻み、OC1A = D9）で、PAT の最初の立ち上がりで点灯から始める。止める判定だけ `loop()`（PAT が止まって 1 ms ＋温度の読み取り中なら最大約 11 ms）。
+  - OneWire 2.3.8 のソースで、割り込みを止めるのは 1 ビットの間だけ（最長 70 µs）と確かめた。開始 LED に足される遅れの上限はこれ。
+  - リセット直後は PAT が 50 ms 止まるまで開始 LED を光らせない（計測中のリセットで余計な点灯を出さない）。
+  - 温度は 1 回の `loop()` で 1-Wire の 1 手順だけ（要求、待ち、1 センサーずつ読む）。出力の形は `ds18b20_serial_logger.ino` と同じで、バナーは `# ds18b20_serial_logger v2 (pat_sync_strobe_temp)`、`# config,...` の行を足した。
+  - Uno／Nano（ATmega328P）専用（`#error`）。Timer1・Timer2 を使うので D3/D9/D10/D11 の analogWrite、Servo、tone() は使えない。
+  - 3 本（統合版、温度だけの版、元のスケッチ）を arduino-cli（IDE 同梱）で `arduino:avr:uno` 向けにコンパイルし、すべて通った（統合版は 7,770 B・RAM 361 B）。ライブラリはスクラッチの sketchbook にだけ入れ、ユーザーの sketchbook（`OneDrive\Documents\Arduino`、ライブラリ未導入）には触れていない。**Arduino への書き込みと実機での確認はしていない。**
+- `pat_temp_logger.open_link()` は DTR／RTS を切り替えずに開くようにした（Uno のリセットでストロボが止まらないように）。リセットされなければ handshake が 2.5 s 後に `s` を送って一覧を読む。実機では未確認。
+- **PAT 温度のモニター画面（ユーザーの依頼）**: 新規 `pat_temp_app.py`（Tkinter＋matplotlib、Tempo Disc の画面とは配色とカードの形を変えた）。上PAT・下PAT の平均と差、センサーごとのカード（値、10 分の変化、最高・最低、切断の表示）、全センサーの線グラフ（カードを押すと強調、マウスを重ねるとその時刻の値）、記録、ログの追従表示、センサーの探し直し。線の色はセンサー対応表の順で固定。作り物のログで画面を画像で確かめた。新規 `test_pat_temp_app.py` 4 件。
+- **実機（10-15、ユーザーが統合版を COM12 の Uno に書き込み、DS18B20 を 1 個つないだ）**: ライブラリはユーザーの依頼で IDE のスケッチブック（`OneDrive\Documents\Arduino\libraries`）に OneWire 2.3.8・DallasTemperature 4.0.6 を arduino-cli で入れた。`--once` で ROM `28FD50D8000000AE`、25.6〜25.8 °C。ポートを開いてもリセットされなかった（DTR を切り替えない開き方が効いている）。そのため最初は一覧が無く `sensors None` と出たので、handshake は温度の行を先に受けたらすぐ `s` を送るようにした（テスト 1 件追加）。直した版の実機の `--once` で、バナーと「センサー 1 個」が出た。上下 2 個目は D4 に並列（抵抗は 4.7 kΩ 1 本）。
+- **照明の部分を v2 に合わせて作り直した（10-15、ユーザーの指摘）**: 正しいのは `Arduino/led_sync_marker_and_strobe_2/led_sync_marker_and_strobe_2.ino`（Timer1 分周 1、fast PWM mode 14、ICR1 1599 で 10 kHz、OCR1A 800 で約 50 %、起動直後から常時、D9 は PT4115 DIM／MOSFET ゲート）。v1（`micros()` の点滅、PAT 中だけ）では 10 kHz・50 % が点滅しなかった。統合版は v2 と同じレジスタ設定にし、PAT による点滅の開始・停止をやめた。開始 LED（INT0＋Timer2、リセット後は 50 ms 静かになるまで待つ）と温度はそのまま。バナーは `v3`、`# config` は `pwm_top`・`pwm_duty_counts`。統合版と v2 のコンパイルが通った（統合版 7,656 B）。書き込みはしていない（10-15 時点の COM12 は v2 とみられ、`--once` は応答なし）。
+- ユーザーが統合版 v3 を COM12 に書き込み、`--once` でバナー v3・センサー 1 個・`28FD50D8000000AE top_pat [top]` 23.25 °C を確認した（10-15）。照明の 10 kHz 点滅と開始 LED の実機確認はまだ報告を受けていない。
+- `pat_temp_sensors.json` を作った。ROM `28FD50D8000000AE` が上の板（`top_pat`、group top、ユーザーの確認）、`2821CCD600000094` が下の板（`bottom_pat`、group bottom、2 個目につないだもの）。2 個とも D4 で読めた（10-15、上 25.5 °C・下 29.56 °C）。補正値はまだ 0。
+- `.gitignore` に `Arduino/*/*.ino` を許可した。`test_pat_temp`・`test_pat_temp_app` の 18 件が成功。PAT・カメラは開いていない。コミット・push は行っていない。
+
+## 2026-10-15: フルペーパー用の計測 S1〜S4 の取り込み、終了後の粒子の保持、通知、粒子の記録
+
+- 依頼元: 解析側（G: の `Experiment/20261014/`（計画・指令・runlist）と `20261015/`（開始の依頼、正本の確定））。ユーザーの指示は「取り込んで計画を提示」「計測後に粒子を保持」「終わったら通知」。計測の開始はユーザーが決める。
+- 新規 `paper_20261014/`: `paper_plan.json`（296 設計。新しい 201 本は G: から `source/` へ写して内容ハッシュで固定、旧データの 95 本は cooling/session2/extra3 の plan から同じ run 名で写した）、`export_paper/`（296 本。新 201 本は G: とビット一致、再利用 95 本は元の export とバイト一致、`reference_comparison_20261015.json`）、`runlist/`（解析側の csv と summary の写し）、計画書と連絡文の写し。ビルダーはスクラッチの `build_paper_plan.py`。`.gitignore` に許可を追加した。
+- 新規 `run_paper_20261014.ps1 -Session S1,S2|S3,S4`: 順番は csv を読む。2 つ目のセッションの頭の kcheck/hold は省く（`-KeepHead`）。交換の行は `--particle-change-run-numbers`。確認は最初・`cardioid_a23`・最初の `random_rms10_*`・最初の `rotline_*`・交換のあと。`-StartAt` で再開。見積もりは S1 145 分、S1+S2 257 本 320 分、S3+S4 230 本 313 分で解析側の summary と一致。dry-run は 4 通り成功。
+- **終了後の粒子の保持（auto 入口の既定、ユーザーの指示「デフォルト ON」。`--no-hold-particle-until-enter` で無効、`--hold-particle-max-min` 既定 180 分）**: `finally` で PAT を切る前に、30 s ごとにビープしながら Enter を待つ。complete・見張り・失敗・Ctrl+C のどれでも。生きた AcousTools のセッション（`lev` あり、未停止）のときだけ。対話の端末が無ければ飛ばす。session JSON の `particle_hold`。全 runner に効く（paper は `-NoHoldAtEnd`）。
+- **通知 `session_notify.py`**: `notify_config.json`（git 対象外、見本 `notify_config.example.json`）で email（SMTP、パスワードは環境変数かファイル）・イベントファイル（`notify_events.jsonl`、`latest_event.json`。Claude が会話中なら見張れる）・ビープ。終わり（`session_complete`/`session_stopped`）と粒子の交換の前。失敗しても計測は止まらない。`--notify-config`／`--no-notify`。試し送りは `session_notify.py --test`（10-15 にメールの着信を確認）。**21:24 にテスト（別のセッションが回した auto のテスト、Temp の session）が既定の `notify_config.json` を拾って本物の「session complete」メールを送った**ため、auto 入口は `--notify-config` を明示したときだけ通知するように変えた。一括スクリプト 8 本は `psu_logging.ps1` の `Get-NotifyArgs` で、`notify_config.json` があれば渡す（`run_ff_heart_validation`・`run_thermal_hold_test` は電流の見張りの行が無く未対応）。テスト「設定を明示しなければ送らない」を追加し、165 件の実行で通知のイベントが増えないことを確かめた。ユーザーは email・ビープ・Claude 経由をすべて使う。`notify_config.json`（event_dir と beep は有効、email はアドレス未記入で `enabled: false`）を作った。Gmail のアプリ パスワードはユーザーが環境変数 `PAT_NOTIFY_SMTP_PASSWORD` に入れる。Claude 経由は、計測開始を聞いたら `notify_events/latest_event.json` を Monitor で見張り PushNotification（会話中だけ）。
+- **粒子の記録 `particle_record.py`**: 計測中は横の `particles_<stamp>.json`（auto が session JSON を書き直すため）、終わってから `particles` に統合。`particles_pending.json` は次の session が引き取る。
+- **粒子の記録を計測中の画面で入力（10-16、ユーザーの依頼）**: 新規 `particle_prompt.py`、auto 入口の `--particle-prompts`・`--initial-particle`・`--particle-change-labels`・`--particle-calipers`・`--particle-measured-by`・`--particle-source`・`--particle-prompt-timeout-sec`（既定 600 s）。始め・交換・回収後に `番号 d1 d2 d3 [メモ]` を聞き、session JSON の `particles` と各 run の `particle` に入れる。paper の runner は既定で付ける（一覧の粒子番号を渡す、`-NoParticlePrompts`・`-Calipers`・`-MeasuredBy`・`-ParticleSource`）。`particle_record.py` の統合は置き換えではなく足し込み（重複なし）にした。テスト 25 件、関連 13 スイート 181 件成功、両日の dry-run 成功。
+- **温度の問いをセンサーで自動に（10-16、ユーザーの指摘）**: Tempo Disc（室温・湿度）と DS18B20（上下）の値がそろっていれば、`thermal_prompt.ThermalNotes.ask` は聞かずにセンサーの値で記録する（`source: sensors`）。欠けているときだけ従来どおり聞く。`--thermal-ask-with-sensors` で常に聞く。01:31 の S1+S2 は修正前のコードで暖機中だったため、ユーザーが止めて起動し直す（`auto_recording_session_20261016_013108.json` は粒子 0 の記録つきで残る）。
+- **1 分ごとの環境の表（10-16、ユーザーの依頼）**: 新規 `env_timeline.py`。セッションの終わりに `env_timeline_<stamp>.csv`（室温・湿度・気圧・露点・上下 PAT・電源 V/A・その分の run）を session JSON の隣に書き、`env_timeline_csv` に残す。過去のセッションは `env_timeline.py --session <json>`。ロガーの容量は 6 時間で計約 8 MB（PAT 1 s・電源 1 s・Tempo Disc 約 10 s）で問題なし。新規 `test_env_timeline.py` 3 件、関連 13 スイート 182 件成功。
+- **空き容量（10-16）**: C: の空き 143 GB では 1 日目（約 340〜400 GB）が入らないため、`delete_backed_up_records.py` に `v15c`（V15c の run フォルダだけ）を足した。ユーザーが SSD との照合と削除を行い、空きは 529 GB。2 日目の前に 1 日目の分を SSD・Miyabi へ送って同じ `v15c` で消す。
+- **prepost の予約（ユーザー、10-16）**: 494 10/16 06:00、495 12:15、496 18:30、497 10/17 00:45、498 07:00（各 2 ノード 6 時間）。
+- 手順は `PAPER_SESSION_JP.md`。`STEREO_ACOUSTOOLS_3D_AUTO_JP.md` に節を足した。新規 `test_paper_plan.py` 19 件。関連 12 スイートの 163 件が成功。
+- 解析側への返事は G: の `Experiment/20261015/MESSAGE_FROM_ACQUISITION_PC_20261015_dryrun.md`（取り込み・dry-run・見積もり、S5 の 7 本の先行 3D 化は kcheck/chirp なら 1.5〜2 時間、48 s の走査は 5〜7 時間で S5 中には無理、S1〜S4 の 3D 化は枠 4 つ・約 1 日）。セッション間メッセージも送る。
+- PAT・カメラは開いていない。コミット・push は行っていない。
+
+## 2026-10-14: PAT 板の温度の自動記録（DS18B20＋Arduino）の準備
+
+- ユーザーの方針: 非接触温度計の手入力をやめ、DS18B20 を Arduino で読む。買う予定の商品ページは私からは開いていない（ユーザーがブラウザの使用を断った）。
+- 新規 `ds18b20_serial_logger/ds18b20_serial_logger.ino`（OneWire＋DallasTemperature、D2・4.7 kΩ プルアップ・通常給電、12 bit、1 s ごと、`T,<cycle>,<millis>,<ROM>,<°C>,<status>`、`s` で再走査）。未コンパイル・実機未確認。`.gitignore` に許可を追加した。
+- **PC 側のロガーを実装（ユーザーの依頼、電源・Tempo Disc と同じ形）**。手順は `PAT_TEMP_LOGGING_JP.md`。
+  - `pat_temp_logger.py`: `--list`／`--once`／`--output`／`--stop-file`／`--duration`、`--stale-s` 10 s で error 行、ポートを失ったら 5 s ごとに開き直す。CSV は 1 センサー 1 行（`temp_raw_C`・`offset_C`・`temp_C`・`status`）。`.meta.json` に ROM 一覧と対応表に無い ROM。
+  - **PAT の制御基板は FTDI FT232H（0403:6014、10-14 時点で COM5・COM6）**。自動選択は Arduino 系の VID だけで FTDI を選ばず、FT232H は `--port` で名前を指定しても拒否する。Arduino へ送るのは `s` だけ。実機の `--list` で COM12（Arduino Uno）が選ばれ、COM5・COM6 が除外されることを確かめた。`--once` は COM12 だけを開き、スケッチ未書き込みのため「応答なし」で終了（予想どおり）。
+  - センサー対応表 `pat_temp_sensors.json`（見本 `pat_temp_sensors.example.json`）: ROM ごとに name・group（top/bottom）・offset_C。まだ実物の ROM は無い。
+  - `pat_temp_run_link.py`: run の前後 5 s を `pat_temperature_log.csv` に切り出し、manifest と session JSON の各 run に `pat_temperature`（センサーごとの平均・最小・最大・最初・最後、`top_mean_C`／`bottom_mean_C`、`stale` は 30 s）。
+  - 自動計測の入口に `--pat-temp-log`（session JSON の `pat_temp_log`）。
+  - `thermal_prompt` に `pat_sensor_top_C`／`pat_sensor_bottom_C`／`pat_sensor_age_s`／`pat_sensor_values` を足した。センサーの値があれば、空の Enter や時間切れでもセンサーの値だけで記録が残る（目盛りも済みになる）。手入力の `T_top_PAT_C`／`T_bottom_PAT_C` は非接触の値のまま別に残す。
+  - `pat_temp_logging.ps1`（`Start-PatTempLogger`／`Stop-PatTempLogger`）を、`run_extra3_20261012.ps1`・`run_session2_20261011.ps1`・`run_cooling_remeasure_15v.ps1` に組み込んだ（`-PatTempPort` 既定 auto、`-PatTempSensorMap`、`-NoPatTempSensor`）。Arduino が応答しなければ警告して温度なしで進む。3 本の dry-run が成功。
+  - 新規 `test_pat_temp.py` 14 件。関連 11 スイートの 120 件が成功。`test_pwr01_logger` の 1 件が一度だけ失敗し、単独の再実行 3 回では成功した（前回と同じ localhost のソケット試験の偶発とみられる）。
+- 次: センサーが届いたら、スケッチの書き込み、`--once`、対応表、全センサーを束ねたずれの測定。最初の 1 セッションは手入力と並べて記録し、過去の非接触の値と対応をとる。PAT・カメラは開いていない。コミット・push は行っていない。
+
 ## 2026-10-13: Tempo Disc で室温・湿度・気圧を自動記録（Bluetooth、受けるだけ）、モニター画面
 
 - ユーザーの依頼: 気圧も測りたい。Blue Maestro の Tempo Disc（名前 `F9EE9FFC`、アドレス `F9:EE:9F:FC:F9:75`、bmLogger の表示 v27 = THPD）を、手入力なしで計測に同期して記録する。bmLogger に似た画面も欲しい。手順は `TEMPO_DISC_ENV_LOGGING_JP.md`。
 - 方式: 接続はせず、広告パケット（メーカー ID `0x0133`）を受けるだけ。本体の設定・記録は変えない。venv に `bleak` 3.0.2 を入れた。
-  - 実機の v27 の中身: `1b 64 0e10 1770 00f0 0224 2771 01 00` = 電池 100 %、記録間隔 3600 s、6000 件、24.0 °C、54.8 %、1009.7 hPa。オープンソースの `bluemaestro-ble` の解析とも合う。bmLogger の表示とは突き合わせていない。
+  - 実機の v27 の中身: `1b 64 0e10 1770 00f0 0224 2771 01 00` = 電池 100 %、記録間隔 3600 s、6000 件、24.0 °C、54.8 %、1009.7 hPa。オープンソースの `bluemaestro-ble` の解析とも合う。**bmLogger の表示と一致することをユーザーが確かめた（10-13）。**
   - **Windows の bleak は、広告と scan response（同じ 0x0133 の 25 バイト）を一つの dict にまとめるので、scan response が値を隠す**。最初の版は 1 回受けたあと受信が止まったように見えた。`tempodisc_ble.py` は bleak の `platform_data`（WinRT のイベント 2 つ）から別々に読み、広告のイベントが新しいときだけ値とする。scan response は生データ（`scan_response_hex`）だけ残す。
   - 実測（20:20〜20:27）: 受信は約 8 秒ごと、値は 10〜30 秒ごとに変わる。本体の記録間隔（3600 s）とは関係なく更新される。
 - 新規ファイル: `tempodisc_ble.py`（解析・露点・受信）、`tempodisc_logger.py`（CSV。変化時と `--interval` 10 s ごと、`--stale-s` 120 s で error 行。`--once`／`--list`）、`tempodisc_app.py`（Tkinter と matplotlib の画面。4 枚のパネル、グラフ、記録、ログの追従表示）、`env_run_link.py`、`env_logging.ps1`、`test_tempodisc.py`（13 件）。

@@ -209,6 +209,7 @@ $psuTarget = Get-PsuTargetArgs -Usb:$PsuUsb -Resource $PsuResource -HostName $Ps
 $psuLogger = Start-PsuLogger -Python $python -OutputDir $OutputDir -TargetArgs $psuTarget -IntervalSec $PsuIntervalSec
 if ($null -ne $psuLogger) { $recordArgs += @("--psu-log", $psuLogger.Log) }
 $recordArgs += Get-CurrentGuardArgs -Logger $psuLogger -Percent $CurrentGuardPercent -BaselineMin 40.0 -Disabled:$NoCurrentGuard
+$recordArgs += Get-NotifyArgs
 try {
     & $python .\acoustools_stereo_eventcam_3d_recording_auto.py @recordArgs `
         --acknowledge-ff-validation-protocol --acknowledge-step-response-risk

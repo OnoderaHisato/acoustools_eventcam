@@ -13,6 +13,8 @@ Targets (choose on the command line):
              (the 14 mm session; session JSONs and supply logs are kept)
   v15_0923   the same for 2026-09-23 (kcheck and the five scanned planes at 15 V)
   v15_0925   the same for 2026-09-25 (scale-up parts A/B, retries, field-scan rounds 1/2)
+  v15c       the run folders of stereo_acoustools_3d_records_V15c (cooled, 2026-10-10..12: blocks 0/12/3,
+             session 2, extra 3); the session JSONs, thermal and supply logs at the top are kept
 
   python delete_backed_up_records.py ff_heart steps v15_0924            # check only
   python delete_backed_up_records.py ff_heart steps v15_0924 --delete   # check, then delete
@@ -27,7 +29,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 SSD = Path("D:/")
 V15_DAYS = {"v15_0923": "20260923", "v15_0924": "20260924", "v15_0925": "20260925"}
-TARGETS = ["ff_heart", "steps", *V15_DAYS]
+TARGETS = ["ff_heart", "steps", *V15_DAYS, "v15c"]
 
 
 def targets(name: str) -> list[Path]:
@@ -39,6 +41,9 @@ def targets(name: str) -> list[Path]:
         records = ROOT / "stereo_acoustools_3d_records_V15"
         tag = f"_V15_{V15_DAYS[name]}_"
         return sorted(p for p in records.iterdir() if p.is_dir() and tag in p.name)
+    if name == "v15c":
+        records = ROOT / "stereo_acoustools_3d_records_V15c"
+        return sorted(p for p in records.iterdir() if p.is_dir()) if records.is_dir() else []
     raise SystemExit(f"unknown target {name!r}")
 
 

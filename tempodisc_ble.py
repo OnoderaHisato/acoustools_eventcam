@@ -7,7 +7,7 @@ advertising.
 
 Layout of the advertisement (big-endian), checked against the THPD on 2026-10-13
 (``1b640e10177000f0022427710100`` = v27, battery 100 %, log interval 3600 s, 6000 records,
-24.0 degC, 54.8 %RH, 1009.7 hPa; not yet compared with the bmLogger display) and against the
+24.0 degC, 54.8 %RH, 1009.7 hPa; the user confirmed the values match the bmLogger display) and against the
 open-source decoder ``bluemaestro-ble`` (struct ``!B4xhHH`` after the version byte):
 
     byte  0     version (13 = Tempo Disc T, 22/23 = THD, 27 = THPD)

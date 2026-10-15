@@ -18,6 +18,12 @@ asked again at the next chance. Every answer is appended to the session JSON (``
 the PSU log and, with ``--env-log``, the latest Tempo Disc reading (room temperature, humidity, air
 pressure, dew point; columns ``sensor_*``). With the sensor the room temperature and humidity need not be
 typed: ``41.2 39.8`` is enough.
+
+With ``--pat-temp-log`` (DS18B20 on the PAT boards, pat_temp_logger.py) the latest top / bottom readings go
+to the columns ``pat_sensor_*``. Then an empty Enter, or no answer in time, still stores a record with the
+sensor values only, so the notes keep their schedule without anyone at the keyboard. The typed columns
+``T_top_PAT_C`` / ``T_bottom_PAT_C`` stay the non-contact thermometer values (kept apart on purpose, to
+compare the two methods).
 """
 
 from __future__ import annotations
@@ -36,9 +42,11 @@ FIELD_LABELS = ("上PAT [°C]", "下PAT [°C]", "室温 [°C]", "湿度 [%]")
 # latest Tempo Disc reading (env_run_link.latest_reading) -> CSV / record keys
 SENSOR_COLUMNS = ("sensor_T_C", "sensor_RH_percent", "sensor_pressure_hPa", "sensor_dew_point_C", "sensor_age_s")
 SENSOR_SOURCES = ("temperature_C", "humidity_percent", "pressure_hPa", "dew_point_C", "age_s")
+# latest DS18B20 reading on the PAT boards (pat_temp_run_link.latest_reading) -> CSV / record keys
+PAT_SENSOR_COLUMNS = ("pat_sensor_top_C", "pat_sensor_bottom_C", "pat_sensor_age_s", "pat_sensor_values")
 CSV_COLUMNS = (
     "recorded_at", "minutes_after_sound_on", "kind", "next_run_number", "next_label",
-    *FIELDS, "supply_V", "supply_A", *SENSOR_COLUMNS, "note",
+    *FIELDS, "supply_V", "supply_A", *SENSOR_COLUMNS, *PAT_SENSOR_COLUMNS, "note",
 )
 SCHEDULED_MIN_WAIT_SEC = 20.0  # a scheduled wait shorter than this is not used for a prompt
 SCHEDULED_LEAD_SEC = 10.0  # stop asking this long before a scheduled run is due
@@ -178,13 +186,19 @@ class ThermalNotes:
         clock: Any = time,
         env_log: Path | None = None,
         reader: Callable[..., str | None] | None = None,
+        pat_temp_log: Path | None = None,
+        ask_when_sensors_cover: bool = False,
     ) -> None:
         self.csv_path = Path(csv_path)
+        # With the Tempo Disc (room, humidity) and both DS18B20 (top, bottom PAT) fresh, every field is
+        # covered: the note is stored from the sensors without asking (nobody needs to be at the keyboard).
+        self.ask_when_sensors_cover = bool(ask_when_sensors_cover)
         self.plan = plan
         self.timeout_sec = float(timeout_sec)
         self.sound_on_wall_sec = sound_on_wall_sec
         self.psu_log = psu_log
         self.env_log = env_log
+        self.pat_temp_log = pat_temp_log
         self.clock = clock
         self.reader = reader
         self.records: list[dict[str, Any]] = []
@@ -234,6 +248,21 @@ class ThermalNotes:
             return {name: None for name in SENSOR_COLUMNS}
         return {column: reading.get(source) for column, source in zip(SENSOR_COLUMNS, SENSOR_SOURCES)}
 
+    def latest_pat_sensor(self) -> dict[str, Any]:
+        if self.pat_temp_log is None:
+            return {}
+        from pat_temp_run_link import latest_reading
+
+        reading = latest_reading(self.pat_temp_log, self.clock.time())
+        if reading is None:
+            return {name: None for name in PAT_SENSOR_COLUMNS}
+        return {
+            "pat_sensor_top_C": reading.get("top_C"),
+            "pat_sensor_bottom_C": reading.get("bottom_C"),
+            "pat_sensor_age_s": reading.get("age_s"),
+            "pat_sensor_values": ";".join(f"{name}={value}" for name, value in reading["values"].items()),
+        }
+
     def ask(
         self,
         kind: str,
@@ -249,6 +278,9 @@ class ThermalNotes:
         """
         now = self.clock.time()
         minute = self.minutes(now)
+        if not self.ask_when_sensors_cover and self.sensors_cover_everything():
+            return self.store(({name: None for name in FIELDS}, ""), kind, next_run_number, next_label,
+                              covers_wall, quiet=True)
         when = "" if minute is None else f"音を出してから {minute:.1f} 分、"
         upcoming = "" if next_run_number is None else f"次は run {next_run_number}（{next_label}）。"
         limit = "" if deadline_wall is None else f"{max(0.0, deadline_wall - now):.0f} 秒以内に"
@@ -269,10 +301,43 @@ class ThermalNotes:
                     f"気圧 {sensor_now['sensor_pressure_hPa']} hPa（自動で記録します）。上PAT・下PAT だけの入力で構いません。",
                     flush=True,
                 )
+        pat_now: dict[str, Any] = {}
+        if self.pat_temp_log is not None:
+            pat_now = self.latest_pat_sensor()
+            if pat_now.get("pat_sensor_top_C") is None and pat_now.get("pat_sensor_bottom_C") is None:
+                print("[THERMAL] PAT の温度センサー（DS18B20）の値がしばらく届いていません。", flush=True)
+            else:
+                print(
+                    f"[THERMAL] PAT センサー: 上 {pat_now['pat_sensor_top_C']} °C、下 {pat_now['pat_sensor_bottom_C']} °C"
+                    "（自動で記録します）。空の Enter か入力なしでも、センサーの値だけ記録します。",
+                    flush=True,
+                )
         reader = self.reader or read_line_with_deadline
         parsed = parse_thermal_line(reader("[THERMAL] > ", deadline_wall, self.clock))
         if parsed is None:
-            return None
+            if pat_now.get("pat_sensor_top_C") is None and pat_now.get("pat_sensor_bottom_C") is None:
+                return None
+            parsed = ({name: None for name in FIELDS}, "")  # sensor values only
+        return self.store(parsed, kind, next_run_number, next_label, covers_wall)
+
+    def sensors_cover_everything(self) -> bool:
+        """True when fresh sensor values exist for room temperature, humidity and both PAT boards."""
+        if self.env_log is None or self.pat_temp_log is None:
+            return False
+        env = self.latest_sensor()
+        pat = self.latest_pat_sensor()
+        return all(v is not None for v in (env.get("sensor_T_C"), env.get("sensor_RH_percent"),
+                                             pat.get("pat_sensor_top_C"), pat.get("pat_sensor_bottom_C")))
+
+    def store(
+        self,
+        parsed: tuple[dict[str, float | None], str],
+        kind: str,
+        next_run_number: int | None,
+        next_label: str,
+        covers_wall: float | None,
+        quiet: bool = False,
+    ) -> dict:
         values, note = parsed
         answered = self.clock.time()
         supply_v, supply_a = self.latest_supply()
@@ -286,6 +351,7 @@ class ThermalNotes:
             "supply_V": supply_v,
             "supply_A": supply_a,
             **self.latest_sensor(),
+            **self.latest_pat_sensor(),
             "note": note,
         }
         self.records.append(record)
@@ -295,6 +361,15 @@ class ThermalNotes:
         else:
             self.covered_mark_min = 0.0
         self.write_csv()
+        if quiet:
+            record["source"] = "sensors"
+            print(
+                f"[THERMAL] センサーから自動記録（{kind}）: 上PAT {record.get('pat_sensor_top_C')} °C、"
+                f"下PAT {record.get('pat_sensor_bottom_C')} °C、室温 {record.get('sensor_T_C')} °C、"
+                f"湿度 {record.get('sensor_RH_percent')} %、気圧 {record.get('sensor_pressure_hPa')} hPa",
+                flush=True,
+            )
+            return record
         shown = ", ".join(f"{label}={'-' if values[name] is None else values[name]}"
                           for name, label in zip(FIELDS, FIELD_LABELS))
         print(f"[THERMAL] 記録しました: {shown}" + (f"、メモ: {note}" if note else ""), flush=True)

@@ -80,12 +80,16 @@ param(
     [double]$PsuIntervalSec = 1.0,
     [string]$EnvDevice = "F9EE9FFC",
     [switch]$NoEnvSensor,
+    [string]$PatTempPort = "auto",
+    [string]$PatTempSensorMap = "",
+    [switch]$NoPatTempSensor,
     [switch]$DryRunOnly
 )
 
 $ErrorActionPreference = "Stop"
 . (Join-Path $PSScriptRoot "psu_logging.ps1")
 . (Join-Path $PSScriptRoot "env_logging.ps1")
+. (Join-Path $PSScriptRoot "pat_temp_logging.ps1")
 Set-Location -LiteralPath $PSScriptRoot
 
 $python = ".\venv\Scripts\python.exe"
@@ -323,6 +327,7 @@ if ($Block -eq "3") { Write-Host "  - Block 3 starts warm, right after block 2 /
 if ($Block -eq "0") { Write-Host "  - Before sound: fans ON, check with a strip of tissue that no air reaches the space between the boards; then fans OFF." }
 Write-Host "  - PAT-start LED bright: kcheck LED peak count 1000 or more."
 Write-Host "  - Room temperature, humidity and air pressure are logged from the Tempo Disc (close the bmLogger app; -NoEnvSensor turns it off)."
+Write-Host "  - PAT board temperatures are logged from the DS18B20 Arduino (-PatTempPort, default auto; -NoPatTempSensor turns it off). CLOSE the live monitor (pat_temp_app.py) first; during the session view the log with pat_temp_app.py --follow."
 Write-Host "  - Temperatures (top/bottom PAT, room, humidity) are asked on screen; -NoThermalPrompts turns that off."
 Write-Host "  - Stop with Ctrl+C if the particle is gone; the session then stops and PAT is turned off."
 $psuTarget = Get-PsuTargetArgs -Usb:$PsuUsb -Resource $PsuResource -HostName $PsuHost
@@ -330,8 +335,12 @@ $psuLogger = Start-PsuLogger -Python $python -OutputDir $OutputDir -TargetArgs $
 $envLogger = $null
 if (-not $NoEnvSensor) { $envLogger = Start-EnvLogger -Python $python -OutputDir $OutputDir -Device $EnvDevice }
 if ($null -ne $envLogger) { $recordArgs += @("--env-log", $envLogger.Log) }
+$patTempLogger = $null
+if (-not $NoPatTempSensor) { $patTempLogger = Start-PatTempLogger -Python $python -OutputDir $OutputDir -Port $PatTempPort -SensorMap $PatTempSensorMap }
+if ($null -ne $patTempLogger) { $recordArgs += @("--pat-temp-log", $patTempLogger.Log) }
 if ($null -ne $psuLogger) { $recordArgs += @("--psu-log", $psuLogger.Log) }
 $recordArgs += Get-CurrentGuardArgs -Logger $psuLogger -Percent $CurrentGuardPercent -BaselineMin $guardBaseline -Disabled:$NoCurrentGuard
+$recordArgs += Get-NotifyArgs
 try {
     & $python .\acoustools_stereo_eventcam_3d_recording_auto.py @recordArgs `
         --acknowledge-ff-validation-protocol --acknowledge-step-response-risk
@@ -339,6 +348,7 @@ try {
 }
 finally {
     Stop-EnvLogger $envLogger
+    Stop-PatTempLogger $patTempLogger
     Stop-PsuLogger $psuLogger
     Write-PsuReport -Python $python -OutputDir $OutputDir -Logger $psuLogger
 }

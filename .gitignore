@@ -9,6 +9,7 @@
 !/*.md
 !/*.json
 /*_metadata.json
+/notify_config.json
 /stereo_depth_theory_summary.json
 
 !/20260820/
@@ -123,6 +124,19 @@
 !/run_cooling_post_docker.sh
 !/prepost_main_cooling.sh
 !/prepost_part_cooling.sh
+# Arduino sketch for the PAT board temperatures (DS18B20)
+!/ds18b20_serial_logger/
+!/ds18b20_serial_logger/*.ino
+# Arduino sketches for the PAT start marker LED, the illumination strobe and the temperatures
+!/Arduino/
+!/Arduino/*/
+!/Arduino/*/*.ino
+!/paper_20261014/
+!/paper_20261014/*.json
+!/paper_20261014/*.md
+!/paper_20261014/runlist/
+!/paper_20261014/runlist/*.csv
+!/paper_20261014/runlist/*.md
 
 # Standalone camera-only code and instructions; keep SDKs/captures/calibration outputs ignored.
 !/eventcam_standalone/

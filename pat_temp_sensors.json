@@ -1,0 +1,7 @@
+{
+  "_readme": "DS18B20 sensors on the PAT boards (ROM id -> name, group top/bottom, offset_C added to the reading). Used by pat_temp_logger.py and pat_temp_app.py. Add the bottom sensor after it is connected (its id is printed by: .\\venv\\Scripts\\python.exe .\\pat_temp_logger.py --once).",
+  "sensors": {
+    "28FD50D8000000AE": {"name": "top_pat", "group": "top", "offset_C": 0.0, "note": "top PAT board (identified by the user on 2026-10-15, first sensor connected)"},
+    "2821CCD600000094": {"name": "bottom_pat", "group": "bottom", "offset_C": 0.0, "note": "bottom PAT board (the second sensor connected on 2026-10-15)"}
+  }
+}

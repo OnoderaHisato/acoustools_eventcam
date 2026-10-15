@@ -1,0 +1,17 @@
+{
+  "_comment": "Copy to notify_config.json (ignored by git). Remove the channels you do not use. The SMTP password is read from the environment variable password_env or from the file password_file; never write it here.",
+  "email": {
+    "enabled": true,
+    "smtp_host": "smtp.gmail.com",
+    "smtp_port": 587,
+    "starttls": true,
+    "ssl": false,
+    "username": "your.address@gmail.com",
+    "password_env": "PAT_NOTIFY_SMTP_PASSWORD",
+    "password_file": "",
+    "from": "your.address@gmail.com",
+    "to": ["your.address@gmail.com"]
+  },
+  "event_dir": "C:/Users/digit/Documents/scripts/python/eventcam_control/notify_events",
+  "beep": true
+}

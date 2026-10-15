@@ -95,3 +95,12 @@ function Stop-PsuLogger {
     Remove-Item -LiteralPath $Logger.Stop -ErrorAction SilentlyContinue
     Write-Host "[PSU] Supply log: $($Logger.Log)"
 }
+
+function Get-NotifyArgs {
+    # Notifications (session_notify.py) go out only when notify_config.json exists next to the scripts;
+    # the recorder never reads it on its own, so tests and ad-hoc calls send nothing.
+    $config = Join-Path $PSScriptRoot "notify_config.json"
+    if (Test-Path -LiteralPath $config) { return @("--notify-config", $config) }
+    Write-Host "[NOTIFY] notify_config.json not found: no email / event-file notifications for this session."
+    return @()
+}
