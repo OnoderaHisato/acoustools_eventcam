@@ -52,6 +52,8 @@ param(
     [string]$PatBoardGapMm = "236.5-237",
     [switch]$NoHoldAtEnd,
     [switch]$NoParticlePrompts,
+    [ValidateSet("pause", "warn", "off")]
+    [string]$ParticleCheck = "pause",
     [string]$Calipers = "",
     [string]$MeasuredBy = "",
     [string]$ParticleSource = "",
@@ -209,8 +211,12 @@ if (-not $NoThermalPrompts) {
 if ($PatBoardGapMm -ne "") { $recordArgs += @("--pat-board-gap-mm", $PatBoardGapMm) }
 if ($KeepFailedCaptures) { $recordArgs += "--keep-failed-captures" }
 if ($NoHoldAtEnd) { $recordArgs += "--no-hold-particle-until-enter" }   # the hold is on by default
-if ($Unattended) { $recordArgs += @("--automatic-capture-retries", "$AutomaticCaptureRetries") }
-else { $recordArgs += "--prompt-on-capture-failure" }
+# After each run: is the particle back at the centre? pause = wait for a new particle and retake the run once.
+$recordArgs += @("--particle-check", $ParticleCheck)
+# A failed capture (LED, recorder) is re-recorded automatically up to -AutomaticCaptureRetries times; then the
+# operator is notified and asked (Y/n) -- unless -Unattended, which stops the session instead.
+$recordArgs += @("--automatic-capture-retries", "$AutomaticCaptureRetries")
+if (-not $Unattended) { $recordArgs += "--prompt-on-capture-failure" }
 
 # Estimate like the analysis side's summary.md: record length + 65 s per run, 3 min per particle change.
 $estimateMin = 0.0
@@ -244,7 +250,8 @@ Write-Host "  - PAT-start LED bright (kcheck LED peak count 1000 or more), and n
 Write-Host "  - Room temperature, humidity and air pressure are logged from the Tempo Disc (close the bmLogger app; -NoEnvSensor turns it off)."
 Write-Host "  - PAT board temperatures are logged from the DS18B20 Arduino (COM12, which also drives the start LED and the lighting strobe; -PatTempPort, default auto; -NoPatTempSensor turns it off). Close pat_temp_app.py first (it holds COM12)."
 Write-Host "  - Temperatures are asked on screen every 10 minutes; the sensors fill what they cover. -NoThermalPrompts turns that off."
-Write-Host "  - If the particle falls, stop with Ctrl+C, replace it, and resume with -WarmupMin 0 -StartAt <run>."
+Write-Host "  - After each run the events are checked for the particle at the centre (-ParticleCheck $ParticleCheck). If it is gone, you are"
+Write-Host "    notified and the session waits: put a particle back, confirm it in the preview, and the run is recorded again once."
 Write-Host "  - At the end the PAT keeps holding the particle at the centre until you press Enter (collect it first)."
 $psuTarget = Get-PsuTargetArgs -Usb:$PsuUsb -Resource $PsuResource -HostName $PsuHost
 $psuLogger = Start-PsuLogger -Python $python -OutputDir $OutputDir -TargetArgs $psuTarget -IntervalSec $PsuIntervalSec

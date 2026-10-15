@@ -211,15 +211,16 @@ class LargeStepAutoEntryTests(unittest.TestCase):
             self.assertIs(first.kwargs["precomputed_playback"], playback)
             self.assertTrue(second.args[0].no_preview)
             self.assertFalse(second.kwargs["prompt_before_capture"])
-            # None keeps the recording core's own "re-record? (Y/n)" prompt.
+            # Automatic retries first, then the recording core asks "re-record? (Y/n)" (and notifies).
             for call in events.record.call_args_list:
-                self.assertIsNone(call.kwargs["automatic_capture_retries"])
+                self.assertEqual(call.kwargs["automatic_capture_retries"], 2)
+                self.assertTrue(call.kwargs["ask_after_automatic_retries"])
             session = json.loads(
                 next(output_root.glob("auto_recording_session_*.json")).read_text(encoding="utf-8")
             )
             self.assertTrue(session["unattended_after_first_checkpoint"])
             self.assertTrue(session["prompt_on_capture_failure"])
-            self.assertIsNone(session["automatic_capture_retry_limit"])
+            self.assertEqual(session["automatic_capture_retry_limit"], 2)
 
     def test_automatic_retries_still_available_and_mutually_exclusive(self) -> None:
         with TemporaryDirectory() as temporary:
@@ -236,14 +237,17 @@ class LargeStepAutoEntryTests(unittest.TestCase):
             self.assertEqual(result, 0)
             for call in events.record.call_args_list:
                 self.assertEqual(call.kwargs["automatic_capture_retries"], 3)
+            # with the prompt, the given number of automatic retries comes first
+            result, events, _playback = self._run(
+                base + ["--unattended-after-first-checkpoint", "--prompt-on-capture-failure",
+                        "--automatic-capture-retries", "3"]
+            )
+            self.assertEqual(result, 0)
+            for call in events.record.call_args_list:
+                self.assertEqual(call.kwargs["automatic_capture_retries"], 3)
+                self.assertTrue(call.kwargs["ask_after_automatic_retries"])
             rejected = {
                 "prompt without unattended": base + ["--prompt-on-capture-failure"],
-                "prompt with automatic retries": base
-                + [
-                    "--unattended-after-first-checkpoint",
-                    "--prompt-on-capture-failure",
-                    "--automatic-capture-retries", "2",
-                ],
             }
             for name, argv in rejected.items():
                 with self.subTest(case=name):

@@ -438,5 +438,33 @@ class ThermalFromSensorsTests(unittest.TestCase):
             reader.assert_called_once()
 
 
+class CaptureAlertTests(unittest.TestCase):
+    def test_a_capture_question_is_notified(self):
+        with TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            export_dir = write_export(root)
+            config = root / "notify.json"
+            config.write_text(json.dumps({"event_dir": str(root / "events")}), encoding="utf-8")
+            argv = ["--hf-export-dir", str(export_dir), "--output-dir", str(root / "rec"), "--hf-run", "kx=1",
+                    "--unattended-after-first-checkpoint", "--prompt-on-capture-failure",
+                    "--acknowledge-step-response-risk", "--notify-config", str(config)]
+
+            def record(*_a, **kwargs):
+                self.assertTrue(kwargs["ask_after_automatic_retries"])
+                kwargs["operator_alert"]("led_failure", "LED detection failed: no onset")
+                return 0, None
+
+            with mock.patch.object(auto_record, "run_recording", side_effect=record):
+                from test_particle_presence import run_main_with_record
+                result, _events, _ = run_main_with_record(argv, None)
+            self.assertEqual(result, 0)
+            lines = (root / "events" / session_notify.EVENTS_FILE).read_text(encoding="utf-8").splitlines()
+            events = [json.loads(line) for line in lines]
+            self.assertEqual([e["event"] for e in events], ["led_failure", "session_complete"])
+            self.assertIn("run 1 (kx)", events[0]["summary"])
+            session = json.loads(next((root / "rec").glob("auto_recording_session_*.json")).read_text(encoding="utf-8"))
+            self.assertEqual(session["capture_alerts"][0]["kind"], "led_failure")
+
+
 if __name__ == "__main__":
     unittest.main()

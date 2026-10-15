@@ -43,7 +43,8 @@ powershell -ExecutionPolicy Bypass -File .\run_paper_20261014.ps1 -Session S1,S2
   `rotline_*` の前、粒子の交換のあと。
 - 温度の記録は 10 分ごと。Tempo Disc と DS18B20 の値がそろっていれば聞かずに自動で記録し、欠けているときだけ画面で聞く。セッションの終わりに 1 分ごとの表 `env_timeline_<時刻>.csv`（室温・湿度・気圧・上下 PAT・電源・その分の run）を書く。DS18B20 は COM12 の Arduino（`pat_temp_sensors.json`: top_pat・bottom_pat、10-15 から自動）。この Arduino は開始 LED と照明の点滅も受け持つので、**計測の前にモニター画面 `pat_temp_app.py` を閉じる**（COM12 を握るため）。電源・環境・PAT 板の温度のロガーは既定で起動
   （`-NoEnvSensor`、`-NoPatTempSensor`）。電流の見張り 3 %。
-- 落ちたら同じ設計を 1 本だけ撮り直し（`-StartAt` の番号は落ちた run）、2 回落ちたら次へ。
+- **記録や開始 LED の検出に失敗したとき**: 聞かずに自動で撮り直す（`-AutomaticCaptureRetries`、既定 2 回）。それでもだめなら通知（`led_failure` / `capture_failure`、メールと見張りセッション）して、画面の「同じ軌道を再計測しますか？ (Y/n)」で待つ。`-Unattended` なら聞かずにセッションを止める。
+- **粒子が落ちたかを各 run のあとに自動で確かめる**（`-ParticleCheck pause`、既定）。落ちていれば通知が来て、次の run の前で止まって待つ。置き直して Enter → 同じ run を 1 回撮り直す（2 回落ちたら次へ）。詳しくは `PARTICLE_PRESENCE_JP.md`。
 
 ## 終わりの粒子の保持（新規、既定で有効）
 

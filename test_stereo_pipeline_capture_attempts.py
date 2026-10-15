@@ -360,6 +360,8 @@ class AutomaticCaptureRetryTests(unittest.TestCase):
         reference_positions: list[tuple[float, float, float]] | None = None,
         recorder_hangs: int = 0,
         extra_argv: list[str] | None = None,
+        ask_after: bool = False,
+        alert=None,
     ):
         output_root = root / "records"
         args = recording_core.build_recording_parser().parse_args(
@@ -480,6 +482,8 @@ class AutomaticCaptureRetryTests(unittest.TestCase):
                     return_to_centre=True,
                     hardware_session=session,
                     automatic_capture_retries=retries,
+                    ask_after_automatic_retries=ask_after,
+                    operator_alert=alert,
                 )
             except Exception as exc:  # returned for assertions
                 outcome = exc
@@ -771,6 +775,46 @@ class AutomaticCaptureRetryTests(unittest.TestCase):
                 # SystemExit is raised during argument validation, before any recorder starts.
                 with self.assertRaises(SystemExit):
                     self._record(Path(temporary), retries=None, extra_argv=argv)
+
+    def test_led_failure_retries_automatically_then_asks_and_alerts(self) -> None:
+        with TemporaryDirectory() as temporary:
+            failure = RuntimeError("no LED onset")
+            alerts = []
+            result = self._record(
+                Path(temporary), retries=1, led_results=[failure, failure, self.LED_OK],
+                input_answers=[""], ask_after=True, alert=lambda kind, reason: alerts.append(kind),
+            )
+            code, run_dir = result.outcome
+            self.assertEqual(code, 0)
+            self.assertEqual(result.detect.call_count, 3)        # 1 failure + 1 automatic retry + 1 asked retry
+            self.assertEqual(alerts, ["led_failure"])
+            self.assertEqual(result.answers_left, [])
+            retry = self._manifest(run_dir)["capture_retry"]
+            self.assertTrue(retry["ask_after_automatic_retries"])
+            self.assertTrue(retry["asked_operator"])
+            self.assertEqual(len(retry["automatic_failures"]), 2)
+
+    def test_recorder_failure_asked_after_retries_and_declined_raises(self) -> None:
+        with TemporaryDirectory() as temporary:
+            alerts = []
+            result = self._record(
+                Path(temporary), retries=1, recorder_exit_codes=[1, 1], input_answers=["n"],
+                ask_after=True, alert=lambda kind, reason: alerts.append((kind, reason)),
+            )
+            self.assertIsInstance(result.outcome, RuntimeError)
+            self.assertEqual(len(result.processes), 2)
+            self.assertEqual([k for k, _ in alerts], ["capture_failure"])
+            self.assertIn("code 1", alerts[0][1])
+
+    def test_interactive_questions_also_alert(self) -> None:
+        with TemporaryDirectory() as temporary:
+            alerts = []
+            result = self._record(
+                Path(temporary), retries=None, led_results=[RuntimeError("no LED onset")],
+                input_answers=["n"], alert=lambda kind, reason: alerts.append(kind),
+            )
+            self.assertEqual(result.outcome, (2, None))
+            self.assertEqual(alerts, ["led_failure"])
 
     def test_interactive_mode_still_asks_after_led_failure(self) -> None:
         with TemporaryDirectory() as temporary:

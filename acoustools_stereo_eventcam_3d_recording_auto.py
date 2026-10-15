@@ -28,6 +28,7 @@ from psu_run_link import GUARD_DROP_FRACTION, attach_supply_record, current_guar
 from env_run_link import attach_environment_record
 import env_timeline
 from pat_temp_run_link import attach_pat_temperature_record
+import particle_presence
 import particle_prompt
 import session_notify
 import thermal_prompt
@@ -508,6 +509,17 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
             "ask the operator to replace the particle, then press Enter. The time of that Enter is "
             "written to the session JSON under particle_changes, and the run also gets the stereo "
             "preview and Enter checkpoint so the new particle is confirmed."
+        ),
+    )
+    parser.add_argument(
+        "--particle-check",
+        choices=("off", "warn", "pause"),
+        default="off",
+        help=(
+            "After each run, check the recorded events for the particle back at the centre "
+            "(particle_presence.py). warn: record and notify when it is gone; pause: also stop before the next "
+            "run, ask the operator to put a particle back, and record the same run once more (a second loss "
+            "goes on to the next run). Off by default; the paper runner uses pause."
         ),
     )
     parser.add_argument(
@@ -1001,11 +1013,6 @@ def main(argv: list[str] | None = None) -> int:
             raise ValueError(
                 "--prompt-on-capture-failure requires --unattended-after-first-checkpoint"
             )
-        if prompt_on_capture_failure and args.automatic_capture_retries is not None:
-            raise ValueError(
-                "--prompt-on-capture-failure cannot be combined with "
-                "--automatic-capture-retries"
-            )
         if unattended:
             if len(step_response_conditions) + len(ff_conditions) != len(conditions):
                 raise ValueError(
@@ -1026,11 +1033,10 @@ def main(argv: list[str] | None = None) -> int:
                     "--unattended-after-first-checkpoint cannot be combined with "
                     "--confirm-each-run or --preview-each-run."
                 )
-            # None keeps the interactive "re-record? (Y/n)" prompt of the recording core.
+            # Failed captures are re-recorded automatically first; with --prompt-on-capture-failure
+            # the operator is then asked (and notified) instead of the session stopping.
             automatic_capture_retries = (
-                None
-                if prompt_on_capture_failure
-                else DEFAULT_AUTOMATIC_CAPTURE_RETRIES
+                DEFAULT_AUTOMATIC_CAPTURE_RETRIES
                 if args.automatic_capture_retries is None
                 else int(args.automatic_capture_retries)
             )
@@ -1647,6 +1653,24 @@ def main(argv: list[str] | None = None) -> int:
         )
         atomic_write_json(session_path, session)
         particles: particle_prompt.ParticlePrompts | None = None
+        particle_reference: dict[str, Any] | None = None
+        alert_context: dict[str, Any] = {}
+
+        def capture_alert(kind: str, reason: str) -> None:
+            """Notify the operator that a capture failure waits for an answer on screen."""
+            record = {"kind": kind, "reason": str(reason)[:300], **alert_context,
+                      "at": dt.datetime.now().isoformat(timespec="seconds")}
+            session.setdefault("capture_alerts", []).append(record)
+            atomic_write_json(session_path, session)
+            if notify_cfg:
+                what = "PAT-start LED not detected" if kind == "led_failure" else "Stereo recording failed"
+                session_notify.notify(
+                    kind,
+                    f"{what} in run {alert_context.get('run_number')} ({alert_context.get('label')}) after the "
+                    "automatic retries; the session waits for Y/n on screen.",
+                    details={"session": str(session_path), **record},
+                    config=notify_cfg,
+                )
         try:
             overall_code = 0
             preview_completed = False
@@ -1934,293 +1958,374 @@ def main(argv: list[str] | None = None) -> int:
                             atomic_write_json(session_path, session)
                     if particles is not None:
                         particles.mark_placed()
-                    run_started_wall = time.time()
-                    if hf_mode:
-                        if condition.label in precomputed_b3:
-                            trajectory, prepared_playback = precomputed_b3[
-                                condition.label
-                            ]
-                        elif precomputed_first_run is not None:
-                            trajectory, prepared_playback = precomputed_first_run
-                            precomputed_first_run = None
-                        else:
-                            trajectory = prepare_hf_trajectory(
+                    for attempt in (1, 2):
+                        alert_context.update({"run_number": run_index + 1, "label": condition.label})
+                        run_started_wall = time.time()
+                        if hf_mode:
+                            if condition.label in precomputed_b3:
+                                trajectory, prepared_playback = precomputed_b3[
+                                    condition.label
+                                ]
+                            elif precomputed_first_run is not None:
+                                trajectory, prepared_playback = precomputed_first_run
+                                precomputed_first_run = None
+                            else:
+                                trajectory = prepare_hf_trajectory(
+                                    condition.run,
+                                    center_m=hardware_session.current_pos,
+                                    command_scale=float(condition.command_scale),
+                                )
+                                prepared_playback = None
+                            # Each run records the manifest of the export directory it came from.
+                            run_automation_metadata = hf_automation_metadata(
                                 condition.run,
-                                center_m=hardware_session.current_pos,
-                                command_scale=float(condition.command_scale),
+                                condition.run.directory.parent / "export_manifest.json",
+                                float(condition.command_scale),
+                            )
+                            if _plan_b_family(condition):
+                                run_automation_metadata["operator_context"] = dict(
+                                    plan_b_contexts.get(condition.label, {})
+                                )
+                            trajectory = tag_trajectory_label(trajectory, run_tag)
+                            if supply_voltage is not None:
+                                run_automation_metadata["supply_voltage_V"] = supply_voltage
+                                run_automation_metadata["run_label_tag"] = run_tag
+                            if sound_on_wall_ns is not None:
+                                run_automation_metadata["sound_on_since"] = dt.datetime.fromtimestamp(
+                                    sound_on_wall_ns / 1e9
+                                ).isoformat(timespec="seconds")
+                                run_automation_metadata["seconds_since_sound_on_at_run_start"] = round(
+                                    run_started_wall - sound_on_wall_ns / 1e9, 1
+                                )
+                            if schedule_interval_sec is not None:
+                                run_automation_metadata["schedule_group"] = (
+                                    run_index // schedule_group_size
+                                )
+                                run_automation_metadata["scheduled_group_offset_sec"] = (
+                                    (run_index // schedule_group_size) * schedule_interval_sec
+                                )
+                            elif schedule_offsets is not None:
+                                run_automation_metadata["scheduled_start_offset_sec"] = scheduled_offset
+                        else:
+                            # Every automatic condition returns to the PAT origin,
+                            # so JSON trajectories are resolved in that stable
+                            # coordinate frame just as in the original workflow.
+                            trajectory = prepare_auto_trajectory(condition, repeat_index)
+                            run_automation_metadata = automation_metadata(
+                                condition, source_path, repeat_index
                             )
                             prepared_playback = None
-                        # Each run records the manifest of the export directory it came from.
-                        run_automation_metadata = hf_automation_metadata(
-                            condition.run,
-                            condition.run.directory.parent / "export_manifest.json",
-                            float(condition.command_scale),
+                        run_args = _condition_args(args, condition.processing_config)
+                        run_args.entry_script = Path(__file__).name
+                        step_checkpoint = bool(
+                            hf_mode
+                            and str(condition.metadata.get("kind", "")).lower() == "staircase"
+                            and str(condition.metadata.get("measurement_family", ""))
+                            == "step_response_identification"
                         )
-                        if _plan_b_family(condition):
-                            run_automation_metadata["operator_context"] = dict(
-                                plan_b_contexts.get(condition.label, {})
-                            )
-                        trajectory = tag_trajectory_label(trajectory, run_tag)
-                        if supply_voltage is not None:
-                            run_automation_metadata["supply_voltage_V"] = supply_voltage
-                            run_automation_metadata["run_label_tag"] = run_tag
-                        if sound_on_wall_ns is not None:
-                            run_automation_metadata["sound_on_since"] = dt.datetime.fromtimestamp(
-                                sound_on_wall_ns / 1e9
-                            ).isoformat(timespec="seconds")
-                            run_automation_metadata["seconds_since_sound_on_at_run_start"] = round(
-                                run_started_wall - sound_on_wall_ns / 1e9, 1
-                            )
-                        if schedule_interval_sec is not None:
-                            run_automation_metadata["schedule_group"] = (
-                                run_index // schedule_group_size
-                            )
-                            run_automation_metadata["scheduled_group_offset_sec"] = (
-                                (run_index // schedule_group_size) * schedule_interval_sec
-                            )
-                        elif schedule_offsets is not None:
-                            run_automation_metadata["scheduled_start_offset_sec"] = scheduled_offset
-                    else:
-                        # Every automatic condition returns to the PAT origin,
-                        # so JSON trajectories are resolved in that stable
-                        # coordinate frame just as in the original workflow.
-                        trajectory = prepare_auto_trajectory(condition, repeat_index)
-                        run_automation_metadata = automation_metadata(
-                            condition, source_path, repeat_index
+                        plan_b_checkpoint = bool(hf_mode and _plan_b_family(condition))
+                        vzr_checkpoint = bool(hf_mode and _vzr_condition(condition))
+                        ff_checkpoint = bool(hf_mode and _ff_condition(condition))
+                        retention_checkpoint = bool(
+                            not hf_mode and condition.risk_level == "retention_boundary"
                         )
+                        operator_checkpoint = bool(
+                            retention_checkpoint
+                            or step_checkpoint
+                            or plan_b_checkpoint
+                            or vzr_checkpoint
+                            or ff_checkpoint
+                        )
+                        if unattended:
+                            # Only the very first run keeps the forced preview/Enter checkpoint,
+                            # plus any run the operator asked to confirm explicitly.
+                            operator_checkpoint = (
+                                first_checkpoint_pending
+                                or (run_index + 1) in checkpoint_run_numbers
+                                or attempt > 1
+                            )
+                            unattended_run_number += 1
+                            run_automation_metadata["unattended_after_first_checkpoint"] = True
+                            run_automation_metadata["automatic_capture_retry_limit"] = (
+                                automatic_capture_retries
+                            )
+                            run_automation_metadata["unattended_run_number"] = unattended_run_number
+                            run_automation_metadata["unattended_run_count"] = len(conditions)
+                        run_automation_metadata["operator_checkpoint_before_capture"] = (
+                            operator_checkpoint
+                        )
+                        # The core opens the camera preview only after PAT is holding the particle at centre.
+                        if operator_checkpoint:
+                            run_args.no_preview = False
+                        elif unattended:
+                            run_args.no_preview = True
+                        else:
+                            run_args.no_preview = bool(
+                                args.no_preview
+                                or (preview_completed and not args.preview_each_run)
+                            )
+                        source_label = (
+                            "step-response export"
+                            if step_checkpoint
+                            else "Plan B export" if plan_b_checkpoint
+                            else "vzr export" if vzr_checkpoint
+                            else "feedforward-validation export" if ff_checkpoint
+                            else "HF export" if hf_mode else "JSON"
+                        )
+                        if unattended and operator_checkpoint:
+                            print(
+                                "\n[AUTO][STEP CHECKPOINT] First run of an unattended series: "
+                                "confirm in the stereo preview and press Enter. After this run "
+                                f"the remaining {len(conditions) - 1} run(s) proceed without "
+                                "checkpoints. Abort now if the particle is not stable at centre "
+                                "or not visible in both cameras."
+                            )
+                        elif unattended:
+                            print(
+                                f"\n[AUTO][UNATTENDED] Run {unattended_run_number}/{len(conditions)}: "
+                                "no preview or Enter checkpoint."
+                            )
+                        elif ff_checkpoint:
+                            print(
+                                "\n[AUTO][FF CHECKPOINT] Imported feedforward-validation command "
+                                f"(design {condition.metadata.get('feedforward_design', {}).get('design', '-')}). "
+                                "Confirm that the particle survived the previous run, is stable at "
+                                "centre, and is visible in both cameras before pressing Enter. "
+                                "Abort with Ctrl+C if it was lost."
+                            )
+                        elif step_checkpoint:
+                            print(
+                                "\n[AUTO][STEP CHECKPOINT] Stereo preview and explicit Enter "
+                                "confirmation are mandatory. Abort if the particle was lost, is "
+                                "not stable at centre, or is not visible in both cameras."
+                            )
+                        if retention_checkpoint:
+                            print(
+                                "\n[AUTO][RETENTION CHECKPOINT] Stereo preview and explicit "
+                                "Enter confirmation are mandatory. Abort if the particle is not "
+                                "retained and visible."
+                            )
+                        if plan_b_checkpoint:
+                            print(
+                                "\n[AUTO][PLAN B CHECKPOINT] Confirm the named condition, drive "
+                                "scale, particle/environment context, particle retention, and "
+                                "visibility in both cameras before pressing Enter."
+                            )
+                        if vzr_checkpoint:
+                            print(
+                                "\n[AUTO][VZR CHECKPOINT] Confirm that the particle survived the "
+                                "previous run, is stable at centre, and is visible in both cameras "
+                                "before pressing Enter. Abort with Ctrl+C if it was lost; the "
+                                "session then stops and PAT output is turned off."
+                            )
+                        print(
+                            f"\n[AUTO] Recording {source_label} #{condition.json_index:03d} "
+                            f"{condition.label} ({repeat_index + 1}/{condition.repeat})"
+                        )
+                        try:
+                            code, run_dir = run_recording(
+                                run_args,
+                                prepared_trajectory=trajectory,
+                                prompt_before_capture=bool(
+                                    args.confirm_each_run or operator_checkpoint
+                                ),
+                                return_to_centre=True,
+                                automation_metadata=run_automation_metadata,
+                                hardware_session=hardware_session,
+                                precomputed_playback=prepared_playback,
+                                active_warmup_target_minutes=(
+                                    float(
+                                        plan_b_contexts[condition.label][
+                                            "actual_warmup_minutes"
+                                        ]
+                                    )
+                                    if _plan_b_family(condition)
+                                    == "plan_b3_drift_source"
+                                    else None
+                                ),
+                                automatic_capture_retries=automatic_capture_retries,
+                                ask_after_automatic_retries=prompt_on_capture_failure,
+                                operator_alert=capture_alert,
+                            )
+                            error = ""
+                        except KeyboardInterrupt:
+                            code, run_dir, error = 130, None, "KeyboardInterrupt"
+                        except SystemExit as exc:
+                            raw_code = exc.code if isinstance(exc.code, int) else 1
+                            code, run_dir, error = int(raw_code), None, str(exc)
+                            print(f"[AUTO][ERROR] {condition.label}: {exc}")
+                        except Exception as exc:
+                            code, run_dir, error = 1, None, repr(exc)
+                            print(f"[AUTO][ERROR] {condition.label}: {exc}")
+                        if not run_args.no_preview:
+                            preview_completed = True
+                        # Release this run's holograms before the next run computes its own.
+                        trajectory = None
                         prepared_playback = None
-                    run_args = _condition_args(args, condition.processing_config)
-                    run_args.entry_script = Path(__file__).name
-                    step_checkpoint = bool(
-                        hf_mode
-                        and str(condition.metadata.get("kind", "")).lower() == "staircase"
-                        and str(condition.metadata.get("measurement_family", ""))
-                        == "step_response_identification"
-                    )
-                    plan_b_checkpoint = bool(hf_mode and _plan_b_family(condition))
-                    vzr_checkpoint = bool(hf_mode and _vzr_condition(condition))
-                    ff_checkpoint = bool(hf_mode and _ff_condition(condition))
-                    retention_checkpoint = bool(
-                        not hf_mode and condition.risk_level == "retention_boundary"
-                    )
-                    operator_checkpoint = bool(
-                        retention_checkpoint
-                        or step_checkpoint
-                        or plan_b_checkpoint
-                        or vzr_checkpoint
-                        or ff_checkpoint
-                    )
-                    if unattended:
-                        # Only the very first run keeps the forced preview/Enter checkpoint,
-                        # plus any run the operator asked to confirm explicitly.
-                        operator_checkpoint = (
-                            first_checkpoint_pending
-                            or (run_index + 1) in checkpoint_run_numbers
+                        if code == 0:
+                            first_checkpoint_pending = False
+                        supply_record = None
+                        if args.psu_log is not None:
+                            supply_record = attach_supply_record(
+                                run_dir if code == 0 else None,
+                                args.psu_log,
+                                run_started_wall,
+                                time.time(),
+                                None if sound_on_wall_ns is None else sound_on_wall_ns / 1e9,
+                            )
+                            if code == 0 and run_dir is not None:
+                                record_supply_in_manifest(Path(run_dir), supply_record)
+                            for event in supply_record.get("events", []):
+                                if event["kind"] in {"output_off", "current_drop", "log_gap"}:
+                                    print(f"[AUTO][PSU][WARN] {condition.label}: {event}")
+                        environment_record = None
+                        if args.env_log is not None:
+                            environment_record = attach_environment_record(
+                                run_dir if code == 0 else None, args.env_log, run_started_wall, time.time(),
+                            )
+                            if code == 0 and run_dir is not None:
+                                record_supply_in_manifest(Path(run_dir), environment_record, key="environment")
+                            if environment_record.get("error") or environment_record.get("stale"):
+                                print(f"[AUTO][ENV][WARN] {condition.label}: no recent Tempo Disc reading "
+                                      f"({environment_record.get('error') or 'stale'})")
+                        pat_temperature_record = None
+                        if args.pat_temp_log is not None:
+                            pat_temperature_record = attach_pat_temperature_record(
+                                run_dir if code == 0 else None, args.pat_temp_log, run_started_wall, time.time(),
+                            )
+                            if code == 0 and run_dir is not None:
+                                record_supply_in_manifest(Path(run_dir), pat_temperature_record, key="pat_temperature")
+                            if pat_temperature_record.get("error") or pat_temperature_record.get("stale"):
+                                print(f"[AUTO][PATTEMP][WARN] {condition.label}: no recent PAT temperature reading "
+                                      f"({pat_temperature_record.get('error') or 'stale'})")
+                            if pat_temperature_record.get("interrupted"):
+                                # The same Arduino drives the illumination PWM and the start LED.
+                                print(f"[AUTO][PATTEMP][WARN] {condition.label}: the temperature Arduino restarted or "
+                                      "its port was lost/reopened during this run; the illumination and the start LED "
+                                      "may have stopped (restarts "
+                                      f"{pat_temperature_record.get('arduino_restarts')}, port events "
+                                      f"{pat_temperature_record.get('port_events')}, reading gaps "
+                                      f"{len(pat_temperature_record.get('reading_gaps') or [])})")
+                                session.setdefault("pat_temp_interrupted_runs", []).append({
+                                    "run_number": len(session["runs"]) + 1,
+                                    "label": condition.label,
+                                    "run_dir": "" if run_dir is None else str(run_dir),
+                                    "arduino_restarts": pat_temperature_record.get("arduino_restarts"),
+                                    "port_events": pat_temperature_record.get("port_events"),
+                                    "reading_gaps": len(pat_temperature_record.get("reading_gaps") or []),
+                                })
+                        run_particle = (
+                            None if particles is None
+                            else particles.note_run(run_index + 1, condition.label, int(code))
                         )
-                        unattended_run_number += 1
-                        run_automation_metadata["unattended_after_first_checkpoint"] = True
-                        run_automation_metadata["automatic_capture_retry_limit"] = (
-                            automatic_capture_retries
-                        )
-                        run_automation_metadata["unattended_run_number"] = unattended_run_number
-                        run_automation_metadata["unattended_run_count"] = len(conditions)
-                    run_automation_metadata["operator_checkpoint_before_capture"] = (
-                        operator_checkpoint
-                    )
-                    # The core opens the camera preview only after PAT is holding the particle at centre.
-                    if operator_checkpoint:
-                        run_args.no_preview = False
-                    elif unattended:
-                        run_args.no_preview = True
-                    else:
-                        run_args.no_preview = bool(
-                            args.no_preview
-                            or (preview_completed and not args.preview_each_run)
-                        )
-                    source_label = (
-                        "step-response export"
-                        if step_checkpoint
-                        else "Plan B export" if plan_b_checkpoint
-                        else "vzr export" if vzr_checkpoint
-                        else "feedforward-validation export" if ff_checkpoint
-                        else "HF export" if hf_mode else "JSON"
-                    )
-                    if unattended and operator_checkpoint:
-                        print(
-                            "\n[AUTO][STEP CHECKPOINT] First run of an unattended series: "
-                            "confirm in the stereo preview and press Enter. After this run "
-                            f"the remaining {len(conditions) - 1} run(s) proceed without "
-                            "checkpoints. Abort now if the particle is not stable at centre "
-                            "or not visible in both cameras."
-                        )
-                    elif unattended:
-                        print(
-                            f"\n[AUTO][UNATTENDED] Run {unattended_run_number}/{len(conditions)}: "
-                            "no preview or Enter checkpoint."
-                        )
-                    elif ff_checkpoint:
-                        print(
-                            "\n[AUTO][FF CHECKPOINT] Imported feedforward-validation command "
-                            f"(design {condition.metadata.get('feedforward_design', {}).get('design', '-')}). "
-                            "Confirm that the particle survived the previous run, is stable at "
-                            "centre, and is visible in both cameras before pressing Enter. "
-                            "Abort with Ctrl+C if it was lost."
-                        )
-                    elif step_checkpoint:
-                        print(
-                            "\n[AUTO][STEP CHECKPOINT] Stereo preview and explicit Enter "
-                            "confirmation are mandatory. Abort if the particle was lost, is "
-                            "not stable at centre, or is not visible in both cameras."
-                        )
-                    if retention_checkpoint:
-                        print(
-                            "\n[AUTO][RETENTION CHECKPOINT] Stereo preview and explicit "
-                            "Enter confirmation are mandatory. Abort if the particle is not "
-                            "retained and visible."
-                        )
-                    if plan_b_checkpoint:
-                        print(
-                            "\n[AUTO][PLAN B CHECKPOINT] Confirm the named condition, drive "
-                            "scale, particle/environment context, particle retention, and "
-                            "visibility in both cameras before pressing Enter."
-                        )
-                    if vzr_checkpoint:
-                        print(
-                            "\n[AUTO][VZR CHECKPOINT] Confirm that the particle survived the "
-                            "previous run, is stable at centre, and is visible in both cameras "
-                            "before pressing Enter. Abort with Ctrl+C if it was lost; the "
-                            "session then stops and PAT output is turned off."
-                        )
-                    print(
-                        f"\n[AUTO] Recording {source_label} #{condition.json_index:03d} "
-                        f"{condition.label} ({repeat_index + 1}/{condition.repeat})"
-                    )
-                    try:
-                        code, run_dir = run_recording(
-                            run_args,
-                            prepared_trajectory=trajectory,
-                            prompt_before_capture=bool(
-                                args.confirm_each_run or operator_checkpoint
-                            ),
-                            return_to_centre=True,
-                            automation_metadata=run_automation_metadata,
-                            hardware_session=hardware_session,
-                            precomputed_playback=prepared_playback,
-                            active_warmup_target_minutes=(
-                                float(
-                                    plan_b_contexts[condition.label][
-                                        "actual_warmup_minutes"
-                                    ]
-                                )
-                                if _plan_b_family(condition)
-                                == "plan_b3_drift_source"
-                                else None
-                            ),
-                            automatic_capture_retries=automatic_capture_retries,
-                        )
-                        error = ""
-                    except KeyboardInterrupt:
-                        code, run_dir, error = 130, None, "KeyboardInterrupt"
-                    except SystemExit as exc:
-                        raw_code = exc.code if isinstance(exc.code, int) else 1
-                        code, run_dir, error = int(raw_code), None, str(exc)
-                        print(f"[AUTO][ERROR] {condition.label}: {exc}")
-                    except Exception as exc:
-                        code, run_dir, error = 1, None, repr(exc)
-                        print(f"[AUTO][ERROR] {condition.label}: {exc}")
-                    if not run_args.no_preview:
-                        preview_completed = True
-                    # Release this run's holograms before the next run computes its own.
-                    trajectory = None
-                    prepared_playback = None
-                    if code == 0:
-                        first_checkpoint_pending = False
-                    supply_record = None
-                    if args.psu_log is not None:
-                        supply_record = attach_supply_record(
-                            run_dir if code == 0 else None,
-                            args.psu_log,
-                            run_started_wall,
-                            time.time(),
-                            None if sound_on_wall_ns is None else sound_on_wall_ns / 1e9,
-                        )
-                        if code == 0 and run_dir is not None:
-                            record_supply_in_manifest(Path(run_dir), supply_record)
-                        for event in supply_record.get("events", []):
-                            if event["kind"] in {"output_off", "current_drop", "log_gap"}:
-                                print(f"[AUTO][PSU][WARN] {condition.label}: {event}")
-                    environment_record = None
-                    if args.env_log is not None:
-                        environment_record = attach_environment_record(
-                            run_dir if code == 0 else None, args.env_log, run_started_wall, time.time(),
-                        )
-                        if code == 0 and run_dir is not None:
-                            record_supply_in_manifest(Path(run_dir), environment_record, key="environment")
-                        if environment_record.get("error") or environment_record.get("stale"):
-                            print(f"[AUTO][ENV][WARN] {condition.label}: no recent Tempo Disc reading "
-                                  f"({environment_record.get('error') or 'stale'})")
-                    pat_temperature_record = None
-                    if args.pat_temp_log is not None:
-                        pat_temperature_record = attach_pat_temperature_record(
-                            run_dir if code == 0 else None, args.pat_temp_log, run_started_wall, time.time(),
-                        )
-                        if code == 0 and run_dir is not None:
-                            record_supply_in_manifest(Path(run_dir), pat_temperature_record, key="pat_temperature")
-                        if pat_temperature_record.get("error") or pat_temperature_record.get("stale"):
-                            print(f"[AUTO][PATTEMP][WARN] {condition.label}: no recent PAT temperature reading "
-                                  f"({pat_temperature_record.get('error') or 'stale'})")
-                        if pat_temperature_record.get("interrupted"):
-                            # The same Arduino drives the illumination PWM and the start LED.
-                            print(f"[AUTO][PATTEMP][WARN] {condition.label}: the temperature Arduino restarted or "
-                                  "its port was lost/reopened during this run; the illumination and the start LED "
-                                  "may have stopped (restarts "
-                                  f"{pat_temperature_record.get('arduino_restarts')}, port events "
-                                  f"{pat_temperature_record.get('port_events')}, reading gaps "
-                                  f"{len(pat_temperature_record.get('reading_gaps') or [])})")
-                            session.setdefault("pat_temp_interrupted_runs", []).append({
-                                "run_number": len(session["runs"]) + 1,
-                                "label": condition.label,
+                        session["runs"].append(
+                            {
+                                **run_automation_metadata,
+                                **({} if run_particle is None else {"particle": run_particle}),
+                                "exit_code": int(code),
                                 "run_dir": "" if run_dir is None else str(run_dir),
-                                "arduino_restarts": pat_temperature_record.get("arduino_restarts"),
-                                "port_events": pat_temperature_record.get("port_events"),
-                                "reading_gaps": len(pat_temperature_record.get("reading_gaps") or []),
-                            })
-                    run_particle = (
-                        None if particles is None
-                        else particles.note_run(run_index + 1, condition.label, int(code))
-                    )
-                    session["runs"].append(
-                        {
-                            **run_automation_metadata,
-                            **({} if run_particle is None else {"particle": run_particle}),
-                            "exit_code": int(code),
-                            "run_dir": "" if run_dir is None else str(run_dir),
-                            "error": error,
-                            "active_warmup": dict(
-                                getattr(hardware_session, "last_active_warmup", {})
-                            ),
-                            # Failed attempts are deleted, so their reasons are kept here.
-                            "capture_report": {
-                                key: list(value)
-                                for key, value in dict(
-                                    getattr(hardware_session, "last_capture_report", {}) or {}
-                                ).items()
-                            },
-                            "finished_at": dt.datetime.now().isoformat(timespec="milliseconds"),
-                            **({} if supply_record is None else {"supply": supply_record}),
-                            **({} if environment_record is None else {"environment": environment_record}),
-                            **({} if pat_temperature_record is None
-                               else {"pat_temperature": pat_temperature_record}),
-                        }
-                    )
-                    atomic_write_json(session_path, session)
-                    if code != 0:
-                        overall_code = int(code)
-                        if code == 130 or not args.keep_going:
-                            session["status"] = "interrupted" if code == 130 else "failed"
-                            session["finished_at"] = dt.datetime.now().isoformat(timespec="milliseconds")
+                                "error": error,
+                                "active_warmup": dict(
+                                    getattr(hardware_session, "last_active_warmup", {})
+                                ),
+                                # Failed attempts are deleted, so their reasons are kept here.
+                                "capture_report": {
+                                    key: list(value)
+                                    for key, value in dict(
+                                        getattr(hardware_session, "last_capture_report", {}) or {}
+                                    ).items()
+                                },
+                                "finished_at": dt.datetime.now().isoformat(timespec="milliseconds"),
+                                **({} if supply_record is None else {"supply": supply_record}),
+                                **({} if environment_record is None else {"environment": environment_record}),
+                                **({} if pat_temperature_record is None
+                                   else {"pat_temperature": pat_temperature_record}),
+                            }
+                        )
+                        atomic_write_json(session_path, session)
+                        if code != 0:
+                            overall_code = int(code)
+                            if code == 130 or not args.keep_going:
+                                session["status"] = "interrupted" if code == 130 else "failed"
+                                session["finished_at"] = dt.datetime.now().isoformat(timespec="milliseconds")
+                                atomic_write_json(session_path, session)
+                                return overall_code
+                        retake_requested = False
+                        if args.particle_check != "off" and code == 0 and run_dir is not None:
+                            try:
+                                presence = particle_presence.check_run(Path(run_dir), particle_reference)
+                            except Exception as exc:  # noqa: BLE001 - the check must never stop a session
+                                presence = {"verdict": "uncertain", "error": repr(exc)[:200]}
+                            session["runs"][-1]["particle_presence"] = presence
+                            try:
+                                record_supply_in_manifest(Path(run_dir), presence, key="particle_presence")
+                            except Exception:  # noqa: BLE001
+                                pass
+                            if presence.get("verdict") == "present" and particle_reference is None:
+                                particle_reference = presence
+                            print(f"[AUTO][PARTICLE] {condition.label}: {particle_presence.describe(presence)}")
+                            if presence.get("verdict") in ("lost", "absent_at_start"):
+                                loss = {
+                                    "run_number": run_index + 1,
+                                    "label": condition.label,
+                                    "attempt": attempt,
+                                    "verdict": presence["verdict"],
+                                    "run_dir": str(run_dir),
+                                    "detected_at": dt.datetime.now().isoformat(timespec="seconds"),
+                                }
+                                session.setdefault("particle_losses", []).append(loss)
+                                atomic_write_json(session_path, session)
+                                will_pause = args.particle_check == "pause"
+                                print(
+                                    f"\n[AUTO][PARTICLE LOST] {condition.label} (run {run_index + 1}): the particle is "
+                                    "not at the centre at the end of the run"
+                                    + (" (it was already gone at the start)." if presence["verdict"] == "absent_at_start" else ".")
+                                    + (" The session waits for a new particle." if will_pause else " Recording goes on.")
+                                )
+                                if notify_cfg:
+                                    session_notify.notify(
+                                        "particle_lost",
+                                        f"Particle lost in run {run_index + 1} ({condition.label})"
+                                        + ("; waiting for a new particle." if will_pause else "; recording goes on."),
+                                        details={"session": str(session_path), **loss},
+                                        config=notify_cfg,
+                                    )
+                                if will_pause:
+                                    if attempt == 1:
+                                        choices = ("Put a particle back and confirm it in the preview that follows: Enter = "
+                                                   "record this run again; s Enter = go on to the next run without a retake; "
+                                                   "q Enter = stop the session")
+                                    else:
+                                        choices = ("Lost twice: the plan goes on to the next run. Put a particle back, then "
+                                                   "Enter = next run; q Enter = stop the session")
+                                    try:
+                                        answer = input(f"[AUTO][PARTICLE LOST] {choices}: ").strip().lower()
+                                    except (EOFError, KeyboardInterrupt):
+                                        answer = "q"
+                                    loss["answer"] = answer or "enter"
+                                    loss["answered_at"] = dt.datetime.now().isoformat(timespec="seconds")
+                                    if answer == "q":
+                                        session["status"] = "interrupted"
+                                        session["finished_at"] = dt.datetime.now().isoformat(timespec="milliseconds")
+                                        atomic_write_json(session_path, session)
+                                        print("[AUTO] Stopped after the particle loss.")
+                                        return 130
+                                    if particles is not None and particles.current is not None:
+                                        try:
+                                            particles.change(
+                                                f"{particles.current['particle']}'", run_index + 1,
+                                                loss["answered_at"],
+                                            )
+                                        except KeyboardInterrupt:
+                                            pass
+                                    retake_requested = attempt == 1 and answer != "s"
+                                    if not retake_requested:
+                                        # The next run starts with the preview so the new particle is confirmed.
+                                        first_checkpoint_pending = True
                             atomic_write_json(session_path, session)
-                            return overall_code
+                        if not retake_requested:
+                            break
+                        print(f"\n[AUTO][PARTICLE LOST] Recording {condition.label} again with the new particle.")
 
             try:
                 ask_temperatures("end", None, "", time.time() + 2.0 * float(args.thermal_prompt_timeout_sec))

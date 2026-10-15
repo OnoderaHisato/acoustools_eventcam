@@ -25,7 +25,7 @@ import sys
 import time
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Any, Mapping, Sequence, Tuple
+from typing import Any, Callable, Mapping, Sequence, Tuple
 
 import torch
 
@@ -939,6 +939,8 @@ def run_recording(
     precomputed_playback: PrecomputedHologramPlayback | None = None,
     active_warmup_target_minutes: float | None = None,
     automatic_capture_retries: int | None = None,
+    ask_after_automatic_retries: bool = False,
+    operator_alert: Callable[[str, str], None] | None = None,
 ) -> tuple[int, Path | None]:
     """Record one prepared trajectory.
 
@@ -949,6 +951,11 @@ def run_recording(
     discarded and re-recorded with the same prepared holograms up to N times
     without prompting.  Once N is exhausted, an LED failure ends the run like a
     declined retry (exit code 2) and any other capture failure raises as before.
+
+    ``ask_after_automatic_retries=True`` (with N) asks the operator instead of giving up once
+    the N automatic retries are used; from then on every further failure of this run is asked.
+    ``operator_alert(kind, reason)`` is called just before any such question (and before the
+    questions of the interactive mode) so the caller can notify an operator who is away.
     """
     if automatic_capture_retries is not None and (
         isinstance(automatic_capture_retries, bool)
@@ -1149,6 +1156,32 @@ def run_recording(
             return True
 
         interactive_capture_failures: list[str] = []
+        escalated_to_operator = [False]
+
+        def ask_operator(question: str, kind: str, reason: str) -> bool:
+            """Alert (notification) and ask the operator; True unless the answer is no."""
+            interactive_capture_failures.append(reason)
+            if operator_alert is not None:
+                try:
+                    operator_alert(kind, reason)
+                except Exception as exc:  # noqa: BLE001 - a notification never stops a recording
+                    print(f"[CAPTURE][WARN] operator alert failed: {exc}")
+            try:
+                answer = input(question).strip().lower()
+            except EOFError:
+                answer = "n"
+            return answer not in {"n", "no", "いいえ"}
+
+        def retry_after_failure(reason: str, question: str, kind: str) -> bool:
+            """Automatic retries first; then (if allowed) the operator decides."""
+            if automatic_capture_retries is not None and not escalated_to_operator[0]:
+                if automatic_retry_allowed(reason):
+                    return True
+                if not ask_after_automatic_retries:
+                    return False
+                escalated_to_operator[0] = True
+                print("[CAPTURE] Automatic retries did not help; asking the operator.")
+            return ask_operator(question, kind, reason)
 
         def capture_retry_requested(reason: str) -> bool:
             """Decide whether a failed stereo capture is recorded again with the same holograms.
@@ -1157,17 +1190,13 @@ def run_recording(
             the operator instead of ending the whole PAT session, exactly as after an LED failure.
             """
             capture_failure_log.append(f"attempt {attempt_number}: {reason}")
-            if automatic_capture_retries is not None:
-                return automatic_retry_allowed(reason)
-            interactive_capture_failures.append(reason)
-            print(f"\n[CAPTURE] Stereo recording failed on attempt {attempt_number}: {reason}")
-            try:
-                retry_answer = input(
-                    "\nステレオ記録に失敗しました。粒子とカメラを確認して、同じ軌道を再計測しますか？ (Y/n): "
-                ).strip().lower()
-            except EOFError:
-                retry_answer = "n"
-            return retry_answer not in {"n", "no", "いいえ"}
+            if automatic_capture_retries is None:
+                print(f"\n[CAPTURE] Stereo recording failed on attempt {attempt_number}: {reason}")
+            return retry_after_failure(
+                reason,
+                "\nステレオ記録に失敗しました。粒子とカメラを確認して、同じ軌道を再計測しますか？ (Y/n): ",
+                "capture_failure",
+            )
 
         def discard_failed_attempt() -> None:
             """Stop a failed recorder and remove its temporary attempt directory."""
@@ -1398,20 +1427,16 @@ def run_recording(
                     remove_capture_attempt(attempt_dir, run_dir)
                     active_attempt_dir = None
                     print("[CAPTURE] Failed stereo RAW/NPZ and LED diagnostics were permanently deleted.")
-                if automatic_capture_retries is not None:
-                    retry_requested = automatic_retry_allowed(
-                        f"LED detection failed: {led_failure}"
-                    )
-                    decline_reason = "Automatic retries exhausted"
-                else:
-                    try:
-                        retry_answer = input(
-                            "\nLEDを確認・調整して、同じ軌道を再計測しますか？ (Y/n): "
-                        ).strip().lower()
-                    except EOFError:
-                        retry_answer = "n"
-                    retry_requested = retry_answer not in {"n", "no", "いいえ"}
-                    decline_reason = "Retry declined"
+                retry_requested = retry_after_failure(
+                    f"LED detection failed: {led_failure}",
+                    "\nLEDを確認・調整して、同じ軌道を再計測しますか？ (Y/n): ",
+                    "led_failure",
+                )
+                decline_reason = (
+                    "Automatic retries exhausted"
+                    if automatic_capture_retries is not None and not escalated_to_operator[0]
+                    else "Retry declined"
+                )
                 if retry_requested:
                     return_to_start_for_retry()
                     continue
@@ -1492,6 +1517,9 @@ def run_recording(
                     "automatic" if automatic_capture_retries is not None else "interactive"
                 ),
                 "automatic_retry_limit": automatic_capture_retries,
+                "ask_after_automatic_retries": bool(ask_after_automatic_retries),
+                "asked_operator": bool(escalated_to_operator[0] or (
+                    automatic_capture_retries is None and interactive_capture_failures)),
                 "automatic_failures": list(automatic_capture_failures),
                 "interactive_failures": list(interactive_capture_failures),
             },

@@ -99,8 +99,9 @@ powershell -ExecutionPolicy Bypass -File .\run_large_step_all.ps1
 
 `run_ff_heart_validation.ps1`、`run_vzr_step_all.ps1`、`run_large_step_all.ps1` は、既定で**最初のrunだけ**
 ステレオpreviewとEnter確認を行い、残りは自動で続けます（`--unattended-after-first-checkpoint`）。
-記録やLED検出に失敗したときは、従来どおり「同じ軌道を再計測しますか？ (Y/n)」を出します
-（新設の `--prompt-on-capture-failure`）。
+記録やLED検出に失敗したときは、まず聞かずに自動で撮り直し（既定 2 回、`--automatic-capture-retries`）、
+それでもだめなら「同じ軌道を再計測しますか？ (Y/n)」を出します（`--prompt-on-capture-failure`、2026-10-16 から。
+`--notify-config` があれば `led_failure` / `capture_failure` を通知）。
 
 - `-ConfirmEachRun`: 変更前と同じく、全runでpreviewとEnterを行う。
 - `-Unattended`: 失敗時も尋ねず、`-AutomaticCaptureRetries`（既定2）回まで自動で撮り直す。
