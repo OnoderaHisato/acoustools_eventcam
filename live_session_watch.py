@@ -26,6 +26,7 @@ import argparse
 import datetime as dt
 import json
 import os
+import shutil
 import sys
 import time
 from pathlib import Path
@@ -117,6 +118,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--no-particle-check", action="store_true")
     parser.add_argument("--stall-only", action="store_true",
                         help="only the unfinished-run and stall checks (the recorder notifies everything else itself)")
+    parser.add_argument("--disk-low-gb", type=float, default=80.0,
+                        help="notify once when the free space of the records drive falls below this (0 = off)")
     parser.add_argument("--wait-new-session", action="store_true",
                         help="wait for a session JSON created after this watch started (used by the batch scripts)")
     parser.add_argument("--notify-config", type=Path, default=session_notify.DEFAULT_CONFIG)
@@ -165,6 +168,7 @@ def main(argv: list[str] | None = None) -> int:
     last_count = len(session.get("runs", []))
     stalled = False
     waiting_noted: set[str] = set()
+    disk_warned = False
     print(f"[WATCH] {session_path.name}: {last_count} run(s) so far; watching from run {seen + 1}. "
           f"{'Only unfinished runs and stalls' if args.stall_only else 'Particle check ' + ('off' if args.no_particle_check else 'on')}"
           f" (unfinished {args.waiting_min:g} min, stall {args.stall_min:g} min).", flush=True)
@@ -217,6 +221,13 @@ def main(argv: list[str] | None = None) -> int:
                      "the recorder asks on screen (stereo recording failed / PAT-start LED not detected, Y/n).",
                      {"run_number": len(runs) + 1, "run_folder": newest.name})
         # Before the first run the session may be warming up for 40 min: that is not a stall.
+        if args.disk_low_gb > 0 and not disk_warned:
+            free_gb = shutil.disk_usage(session_path.parent).free / 1e9
+            if free_gb < args.disk_low_gb:
+                disk_warned = True
+                tell("disk_low", f"Only {free_gb:.0f} GB free on the recording drive (a run takes about 1.5-5 GB). "
+                                 "Free space now (copy to the SSD, then delete_backed_up_records.py) or the recording stops.",
+                     {"free_gb": round(free_gb, 1)})
         if runs and not stalled and time.time() - last_change > args.stall_min * 60.0:
             stalled = True
             last_label = runs[-1].get("label") if runs else "-"

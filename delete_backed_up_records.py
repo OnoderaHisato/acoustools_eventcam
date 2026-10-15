@@ -16,6 +16,9 @@ Targets (choose on the command line):
   v15c       the run folders of stereo_acoustools_3d_records_V15c (cooled, 2026-10-10..12: blocks 0/12/3,
              session 2, extra 3); the session JSONs, thermal and supply logs at the top are kept
 
+  --session-json FILE [FILE ...]: instead of a named target, the run folders listed in these auto session JSONs
+             (for example the day-1 sessions while day 2 is being recorded into the same folder)
+
   python delete_backed_up_records.py ff_heart steps v15_0924            # check only
   python delete_backed_up_records.py ff_heart steps v15_0924 --delete   # check, then delete
 """
@@ -70,15 +73,29 @@ def check(path: Path) -> tuple[int, int, list[str]]:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("targets", nargs="+", choices=TARGETS)
+    ap.add_argument("targets", nargs="*", metavar="TARGET", help=f"one of {', '.join(TARGETS)}")
+    ap.add_argument("--session-json", nargs="+", type=Path, default=[],
+                    help="the run folders of these auto_recording_session_*.json (one target per file)")
     ap.add_argument("--delete", action="store_true", help="delete the targets that passed the check")
     args = ap.parse_args()
+    if not args.targets and not args.session_json:
+        ap.error("give a target or --session-json")
+    unknown = [t for t in args.targets if t not in TARGETS]
+    if unknown:
+        ap.error(f"unknown target(s) {unknown}; choose from {TARGETS}")
     if not SSD.is_dir():
         raise SystemExit("D: (the SSD) is not available")
 
     passed: list[tuple[Path, int]] = []
-    for name in args.targets:
-        paths = targets(name)
+    named = [(name, targets(name)) for name in args.targets]
+    for session_json in args.session_json:
+        import json
+
+        data = json.loads(Path(session_json).read_text(encoding="utf-8"))
+        dirs = sorted({Path(r["run_dir"]) for r in data.get("runs", []) if r.get("run_dir")})
+        dirs = [d for d in dirs if d.resolve().is_relative_to(ROOT.resolve())]
+        named.append((Path(session_json).name, dirs))
+    for name, paths in named:
         results = [(p, *check(p)) for p in paths if p.exists()]
         bad = [r for r in results if r[3]]
         files = sum(r[1] for r in results)

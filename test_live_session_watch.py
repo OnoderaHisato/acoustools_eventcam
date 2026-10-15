@@ -140,5 +140,20 @@ class QuietTests(unittest.TestCase):
             self.assertEqual([f["event"] for f in state["findings"]], ["capture_retried"])
 
 
+class DiskTests(unittest.TestCase):
+    def test_low_disk_is_notified_once(self):
+        with TemporaryDirectory() as temporary:
+            session_path = Path(temporary) / "auto_recording_session_d.json"
+            reads = iter([{"status": "running", "runs": []}] * 3 + [{"status": "complete", "runs": []}])
+            sent = []
+            usage = mock.Mock(free=50e9)
+            with mock.patch.object(watch, "read_session", side_effect=lambda _p: next(reads)), \
+                    mock.patch.object(watch.session_notify, "notify", side_effect=lambda e, s, **k: sent.append(e)), \
+                    mock.patch.object(watch.shutil, "disk_usage", return_value=usage), \
+                    mock.patch.object(watch.time, "sleep"):
+                watch.main(["--session", str(session_path), "--stall-only"])
+            self.assertEqual(sent, ["disk_low"])
+
+
 if __name__ == "__main__":
     unittest.main()
