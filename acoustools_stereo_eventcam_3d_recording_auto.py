@@ -2320,14 +2320,14 @@ def main(argv: list[str] | None = None) -> int:
                                 will_pause = args.particle_check == "pause"
                                 print(
                                     f"\n[AUTO][PARTICLE LOST] {condition.label} (run {run_index + 1}): the particle is "
-                                    "not at the centre at the end of the run"
+                                    "not at the centre at the end of the run (it fell, or it is held in another node of the trap)"
                                     + (" (it was already gone at the start)." if presence["verdict"] == "absent_at_start" else ".")
                                     + (" The session waits for a new particle." if will_pause else " Recording goes on.")
                                 )
                                 if notify_cfg:
                                     session_notify.notify(
                                         "particle_lost",
-                                        f"Particle lost in run {run_index + 1} ({condition.label})"
+                                        f"Particle not at the centre in run {run_index + 1} ({condition.label}; fell or in another node)"
                                         + ("; waiting for a new particle." if will_pause else "; recording goes on."),
                                         details={"session": str(session_path), **loss},
                                         config=notify_cfg,
