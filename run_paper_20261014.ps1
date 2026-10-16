@@ -165,20 +165,22 @@ $guardBaseline = if ($WarmupMin -gt 0.0) { $WarmupMin } else { 5.0 }
 
 if ($StartAt -lt 1 -or $StartAt -gt $runs.Count) { throw "-StartAt must be between 1 and $($runs.Count)" }
 if ($StartAt -gt 1) {
-    # Resume from run $StartAt of the same list at once (no clock); the runs are renumbered from 1.
-    $useClock = $false
+    # Resume from run $StartAt of the same list; the runs are renumbered from 1. Without an explicit -WarmupMin it
+    # starts at once; with one (e.g. -WarmupMin 10 after the boards cooled a little) the first run waits for it.
+    $resumeWarmup = $PSBoundParameters.ContainsKey("WarmupMin") -and ($WarmupMin -gt 0.0)
+    $useClock = $resumeWarmup
     $shift = $StartAt - 1
     $runs = [System.Collections.ArrayList]@($runs[$shift..($runs.Count - 1)])
     $minutes = [System.Collections.ArrayList]@($minutes[$shift..($minutes.Count - 1)])
     $recordSec = [System.Collections.ArrayList]@($recordSec[$shift..($recordSec.Count - 1)])
     $blocks = [System.Collections.ArrayList]@($blocks[$shift..($blocks.Count - 1)])
     $particleOf = [System.Collections.ArrayList]@($particleOf[$shift..($particleOf.Count - 1)])
-    $minutes[0] = $null
+    $minutes[0] = if ($resumeWarmup) { $WarmupMin } else { $null }
     $checkpoints = @($checkpoints | Where-Object { $_ -gt $StartAt } | ForEach-Object { $_ - $shift })
     $shifted = @{}
     foreach ($k in $changeBefore.Keys) { if ($k -gt $StartAt) { $shifted[$k - $shift] = $changeBefore[$k] } }
     $changeBefore = $shifted
-    $guardBaseline = 5.0
+    $guardBaseline = if ($resumeWarmup) { $WarmupMin } else { 5.0 }
     Write-Host "[PAPER] -StartAt ${StartAt}: resuming from run $StartAt of the full list; runs are renumbered from 1."
 }
 

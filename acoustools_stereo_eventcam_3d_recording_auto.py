@@ -2390,6 +2390,17 @@ def main(argv: list[str] | None = None) -> int:
                     session_notify.notify(
                         "session_complete" if final_status.startswith("complete") else "session_stopped",
                         f"Session {final_status}: {recorded}/{planned} runs recorded"
+                        + (
+                            f" (current guard: {session['current_guard'].get('reason')} before run "
+                            f"{session['current_guard'].get('stopped_before_run_number')}"
+                            + (f", {session['current_guard']['event'].get('kind')} "
+                               f"{session['current_guard']['event'].get('from_A')} -> "
+                               f"{session['current_guard']['event'].get('to_A')} A at "
+                               f"{str(session['current_guard']['event'].get('time', ''))[11:19]}"
+                               if isinstance(session['current_guard'].get('event'), dict) else "")
+                            + "; check the power supply)"
+                            if session.get("current_guard") else ""
+                        )
                         + (". The PAT is holding the particle at the centre until Enter is pressed."
                            if args.hold_particle_until_enter and _session_can_hold(hardware_session)
                            else ". The PAT is turned off."),

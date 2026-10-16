@@ -26,6 +26,7 @@ import argparse
 import datetime as dt
 import json
 import os
+import re
 import shutil
 import sys
 import time
@@ -91,6 +92,43 @@ def findings_for_run(number: int, run: dict[str, Any], reference: dict[str, Any]
     return out, presence
 
 
+OPERATOR_WAIT_EVENTS = {"particle_change", "particle_lost", "capture_failure", "led_failure", "checkpoint",
+                        "operator_action"}
+
+
+def label_from_folder(name: str) -> str:
+    """'feedforward_validation_040_heart_s4_f10_OFF_scale100_V15_2026...' -> 'heart_s4_f10_OFF'."""
+    match = re.match(r"^(?:feedforward_validation|step_response_identification|[a-z_]+?)_\d{3}_(.+?)_scale\d+", name)
+    return match.group(1) if match else name
+
+
+def operator_already_called(session_path: Path, since_unix: float) -> str | None:
+    """The recorder's own latest 'waiting for the operator' notice for this session after ``since_unix``."""
+    cfg = session_notify.load_config()
+    event_dir = Path(str(cfg.get("event_dir"))) if cfg.get("event_dir") else None
+    if event_dir is None or not (event_dir / session_notify.EVENTS_FILE).is_file():
+        return None
+    latest = None
+    try:
+        lines = (event_dir / session_notify.EVENTS_FILE).read_text(encoding="utf-8").splitlines()[-50:]
+    except OSError:
+        return None
+    for line in lines:
+        try:
+            event = json.loads(line)
+        except ValueError:
+            continue
+        if Path(str((event.get("details") or {}).get("session", ""))).name != session_path.name:
+            continue
+        try:
+            at = dt.datetime.fromisoformat(event["at"]).timestamp()
+        except (KeyError, ValueError):
+            continue
+        if at >= since_unix:
+            latest = event.get("event")
+    return latest if latest in OPERATOR_WAIT_EVENTS else None
+
+
 def unfinished_run_folder(records: Path, runs: list[dict[str, Any]]) -> Path | None:
     """The newest run folder that is not among the recorded runs and has no pipeline_manifest.json yet."""
     known = {Path(str(r.get("run_dir") or "")).name for r in runs}
@@ -105,6 +143,15 @@ def unfinished_run_folder(records: Path, runs: list[dict[str, Any]]) -> Path | N
         except ValueError:
             pass
     return None if (newest / "pipeline_manifest.json").is_file() else newest
+
+
+def _finished_unix(runs: list[dict[str, Any]]) -> float | None:
+    if not runs or not runs[-1].get("finished_at"):
+        return None
+    try:
+        return dt.datetime.fromisoformat(runs[-1]["finished_at"]).timestamp()
+    except ValueError:
+        return None
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -212,14 +259,20 @@ def main(argv: list[str] | None = None) -> int:
             print(f"[WATCH] session {status}; watch ends.", flush=True)
             return 0
         newest = unfinished_run_folder(session_path.parent, runs)
+        last_finished = _finished_unix(runs)
         if newest is not None and newest.name not in waiting_noted:
             age_min = (time.time() - newest.stat().st_ctime) / 60.0
             if age_min > args.waiting_min:
                 waiting_noted.add(newest.name)
-                tell("capture_waiting",
-                     f"Run {len(runs) + 1} ({newest.name[:60]}) has not finished after {age_min:.0f} min: probably "
-                     "the recorder asks on screen (stereo recording failed / PAT-start LED not detected, Y/n).",
-                     {"run_number": len(runs) + 1, "run_folder": newest.name})
+                already = operator_already_called(session_path, last_finished or newest.stat().st_ctime)
+                if already is None:
+                    tell("capture_waiting",
+                         f"{session_path.stem.replace('auto_recording_session_', 'session ')}: run {len(runs) + 1} "
+                         f"({label_from_folder(newest.name)}) has not finished after {age_min:.0f} min. The screen "
+                         "probably waits for you (stereo preview + Enter, or a Y/n after a failed capture), or the "
+                         "recorder hangs.",
+                         {"run_number": len(runs) + 1, "label": label_from_folder(newest.name),
+                          "run_folder": newest.name})
         # Before the first run the session may be warming up for 40 min: that is not a stall.
         if args.disk_low_gb > 0 and not disk_warned:
             free_gb = shutil.disk_usage(session_path.parent).free / 1e9
@@ -231,6 +284,8 @@ def main(argv: list[str] | None = None) -> int:
         if runs and not stalled and time.time() - last_change > args.stall_min * 60.0:
             stalled = True
             last_label = runs[-1].get("label") if runs else "-"
+            if operator_already_called(session_path, last_finished or 0.0) is not None:
+                continue  # the recorder already called the operator (particle change, Y/n, ...)
             tell("session_stall", f"No run finished for {args.stall_min:g} min (last: run {len(runs)} {last_label}). "
                                   "The recorder may be waiting for an answer on screen (Y/n, Enter) or hung.",
                  {"run_number": len(runs)})

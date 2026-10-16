@@ -155,5 +155,22 @@ class DiskTests(unittest.TestCase):
             self.assertEqual(sent, ["disk_low"])
 
 
+class OperatorAlreadyCalledTests(unittest.TestCase):
+    def test_no_stall_notice_when_the_recorder_already_called(self):
+        with TemporaryDirectory() as temporary:
+            session_path = Path(temporary) / "auto_recording_session_p.json"
+            running = {"status": "running", "runs": [{"label": "a", "exit_code": 0, "finished_at": "2026-10-16T10:00:00"}]}
+            reads = iter([running] * 4 + [{"status": "complete", "runs": running["runs"]}])
+            clock = iter([0.0, 0.0, 100.0, 900.0, 1300.0, 1700.0, 2100.0, 2500.0])
+            sent = []
+            with mock.patch.object(watch, "read_session", side_effect=lambda _p: next(reads)),                     mock.patch.object(watch, "operator_already_called", return_value="particle_change"),                     mock.patch.object(watch.session_notify, "notify", side_effect=lambda e, s, **k: sent.append(e)),                     mock.patch.object(watch.time, "time", side_effect=lambda: next(clock)),                     mock.patch.object(watch.time, "sleep"):
+                watch.main(["--session", str(session_path), "--stall-only", "--disk-low-gb", "0"])
+            self.assertEqual(sent, [])
+
+    def test_label_from_folder(self):
+        self.assertEqual(watch.label_from_folder("feedforward_validation_040_heart_s4_f10_OFF_scale100_V15_20261016_033504"),
+                         "heart_s4_f10_OFF")
+
+
 if __name__ == "__main__":
     unittest.main()
